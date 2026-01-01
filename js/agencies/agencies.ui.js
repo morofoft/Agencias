@@ -1,5 +1,6 @@
 import { addAgency, getAllAgencies } from './agencies.store.js';
 import { ZONE_COLORS } from '../utils/zoneColors.js';
+import { renderAgenciesList } from './agencies.list.ui.js';
 const markers = new Map();
 
 function colorByState(state) {
@@ -63,5 +64,6 @@ export async function createAgencyFromMap(latlng, map, formValues) {
   
     await addAgency(agency);
     await renderAgencies(map);
+    await renderAgenciesList();
   }
   

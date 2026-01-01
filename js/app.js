@@ -5,6 +5,7 @@ import { startLocationTracking } from './gps/location.service.js';
 import { checkAgencies } from './gps/geofence.service.js';
 import { onLocationUpdate } from './routes/tracking.service.js';
 import { exportAll } from './export/excel.js';
+import { renderAgenciesList } from './agencies/agencies.list.ui.js';
 
 let agencies = [];
 let map = null;
@@ -29,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkAgencies(pos, agencies);
     onLocationUpdate(pos);
   });
-  
+  await renderAgenciesList();
 });
 
 // Exportación global (botón HTML)

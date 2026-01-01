@@ -1,7 +1,9 @@
 let map;
 let userMarker = null;
-let firstFix = true; // 👈 clave
+let firstFix = true;
 const SAN_JUAN = [18.8059, -71.2299];
+import { setMapInstance } from './map.instance.js';
+
 
 export function initMap() {
   map = L.map('map').setView(SAN_JUAN, 17);
@@ -15,7 +17,8 @@ export function initMap() {
 
   renderAgencies(map);
   setupCreateAgency(map);
-
+  setMapInstance(map)
+  
   return map;
 }
 
