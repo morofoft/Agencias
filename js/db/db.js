@@ -1,7 +1,7 @@
 const DB_NAME = 'control_agencias_db';
 const DB_VERSION = 1;
 
-const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
+export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
   upgrade(db) {
 
     if (!db.objectStoreNames.contains('agencies')) {
@@ -29,5 +29,3 @@ const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
     }
   }
 });
-
-export default dbPromise;

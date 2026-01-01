@@ -2,87 +2,122 @@
 <html lang="es">
 
 <head>
-  <meta charset="UTF-8">
-  <title>Control de Agencias</title>
+  <meta charset="UTF-8" />
+  <title>Control de Agencias | Dashboard</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2563eb" />
 
-  <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="assets/icons/icon-192.ico">
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
 
-  <!-- Tailwind -->
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    /* Personalización para que el scroll sea fino y moderno */
+    #agencies-list::-webkit-scrollbar {
+      width: 6px;
+    }
 
-  <link rel="stylesheet" href="css/app.css">
+    #agencies-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
 
-  
+    #agencies-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
 
-
+    #agencies-list::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
 </head>
 
-<body class="bg-gray-100 text-gray-800">
+<body class="h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased">
 
-
-  <header class="bg-blue-600 text-white p-3 flex justify-between">
-    <h1 class="font-bold">Control de Agencias</h1>
-    <button id="btnAddAgency" class="bg-white text-blue-600 px-3 py-1 rounded">
-      + Agencia
-    </button>
-    <span id="networkStatus" class="text-sm"> 🟢🔴</span>
+  <header
+    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+    <div class="flex items-center gap-2">
+      <div class="bg-blue-600 p-2 rounded-lg">
+        <i class="fas fa-map-location-dot text-white"></i>
+      </div>
+      <h1 class="font-bold text-lg tracking-tight text-slate-800">Control de Agencias</h1>
+    </div>
   </header>
 
-  <!-- MAIN -->
-  <main class="p-4">
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t max-h-64 overflow-y-auto">
-      <div class="p-2 font-bold text-sm">Agencias</div>
-      <div id="agencies-list"></div>
-    </div>
-    
-    <div class="bg-white rounded shadow p-4">
-      <h2 class="font-semibold text-lg mb-2">
-        Estado del sistema
-      </h2>
+  <main class="flex-1 flex flex-col overflow-hidden">
 
-      <ul class="space-y-2 text-sm">
-        <li>✔ PWA instalada</li>
-        <li>✔ Modo offline activo</li>
-        <li>✔ Service Worker registrado</li>
-      </ul>
-    </div>
-    <button onclick="exportAll()" class="bg-green-600 text-white px-4 py-2 rounded">
-      Exportar Excel
-    </button>
-    
-    <div id="map" class="w-full h-[70vh] rounded shadow mt-4"></div>
+    <section class="flex-1 relative m-3 rounded-xl overflow-hidden shadow-inner border border-slate-200">
+      <div id="map" class="absolute inset-0 z-0"></div>
+    </section>
+
+    <section class="h-80 bg-white border-t border-slate-200 flex flex-col shadow-2xl z-10">
+
+      <div class="px-4 pt-3 pb-2 border-b border-slate-100 bg-slate-50/50">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Rutas Disponibles</h2>
+          <span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">4 ACTIVAS</span>
+        </div>
+        <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <button id="btnRouteA"
+            class="flex-1 min-w-[80px] py-2 px-3 rounded-lg bg-white border border-slate-200 text-sm font-semibold hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm">Ruta
+            A</button>
+          <button id="btnRouteB"
+            class="flex-1 min-w-[80px] py-2 px-3 rounded-lg bg-white border border-slate-200 text-sm font-semibold hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm">Ruta
+            B</button>
+          <button id="btnRouteC"
+            class="flex-1 min-w-[80px] py-2 px-3 rounded-lg bg-white border border-slate-200 text-sm font-semibold hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm">Ruta
+            C</button>
+          <button id="btnRouteD"
+            class="flex-1 min-w-[80px] py-2 px-3 rounded-lg bg-white border border-slate-200 text-sm font-semibold hover:border-blue-500 hover:text-blue-600 transition-colors shadow-sm">Ruta
+            D</button>
+        </div>
+      </div>
+
+      <div id="agencies-list" class="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
+        <div
+          class="p-3 border border-slate-100 rounded-xl hover:bg-blue-50 transition-colors cursor-pointer flex items-center justify-between group">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-blue-100 group-hover:text-blue-600">
+              <i class="fas fa-building"></i>
+            </div>
+            <div>
+              <p class="font-bold text-slate-800">Agencia Central</p>
+              <p class="text-xs text-slate-500 italic">Calle Principal #123</p>
+            </div>
+          </div>
+          <i class="fas fa-chevron-right text-slate-300 group-hover:text-blue-400"></i>
+        </div>
+      </div>
+    </section>
 
   </main>
 
-  <!-- IDB LOCAL (GLOBAL) -->
+  <footer class="h-10 bg-slate-900 text-white flex items-center justify-between px-6 text-[11px] shrink-0">
+    <div class="flex items-center gap-4">
+      <span class="flex items-center gap-1.5" id="networkStatus">
+        <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+        onLine / offLine
+      </span>
+    </div>
+    <div class="opacity-50 font-medium">v1.0.1 © 2025</div>
+  </footer>
+
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
-<!-- Leaflet CSS -->
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<!-- Leaflet JS (GLOBAL) -->
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  defer
-></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"defer />
+  <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
 
+  <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
 
-  <!-- JS -->
   <script src="js/network.js"></script>
   <script src="js/sw-register.js"></script>
   <script type="module" src="js/app.js"></script>

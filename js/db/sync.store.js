@@ -1,7 +1,7 @@
-import db from './db.js';
 
+import { dbPromise } from './db.js';
 export async function queueSync(action, entity, payload) {
-  const dbConn = await db;
+  const dbConn = await dbPromise;
 
   await dbConn.add('sync_queue', {
     action,

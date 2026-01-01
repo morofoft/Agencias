@@ -1,7 +1,8 @@
-import db from '../db/db.js';
+
 import { uuid } from '../utils/uuid.js';
 import { now } from '../utils/time.js';
 import { queueSync } from '../db/sync.store.js';
+import { dbPromise } from '../db/db.js';
 
 export async function createRoute(name) {
   const route = {
@@ -13,14 +14,14 @@ export async function createRoute(name) {
     updated_at: now()
   };
 
-  const dbConn = await db;
+  const dbConn = await dbPromise;
   await dbConn.put('routes', route);
   await queueSync('CREATE', 'routes', route);
   return route;
 }
 
 export async function addPointToRoute(routeId, point) {
-  const dbConn = await db;
+  const dbConn = await dbPromise;
   const route = await dbConn.get('routes', routeId);
 
   route.points.push(point);
@@ -31,7 +32,7 @@ export async function addPointToRoute(routeId, point) {
 }
 
 export async function endRoute(routeId) {
-  const dbConn = await db;
+  const dbConn = await dbPromise;
   const route = await dbConn.get('routes', routeId);
   route.ended_at = now();
   route.updated_at = now();

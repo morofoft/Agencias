@@ -1,6 +1,7 @@
-import db from './db.js';
+
 import { uuid } from '../utils/uuid.js';
 import { now } from '../utils/time.js';
+import { dbPromise } from './db.js';
 
 export async function addObservation(visitId, text) {
   const obs = {
@@ -10,7 +11,7 @@ export async function addObservation(visitId, text) {
     timestamp: now()
   };
 
-  const dbConn = await db;
+  const dbConn = await dbPromise;
   await dbConn.put('observations', obs);
 
   await queueSync('CREATE', 'observations', obs);

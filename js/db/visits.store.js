@@ -1,4 +1,5 @@
-import db from './db.js';
+
+import { dbPromise } from './db.js';
 import { uuid } from '../utils/uuid.js';
 import { now } from '../utils/time.js';
 import { queueSync } from './sync.store.js';
@@ -6,7 +7,7 @@ import { queueSync } from './sync.store.js';
 const MIN_INTERVAL = 5 * 60 * 1000; // 5 minutos
 
 export async function registerVisit(agencyId) {
-  const dbConn = await db;
+  const dbConn = await dbPromise;
   const agency = await dbConn.get('agencies', agencyId);
 
   if (!agency) {

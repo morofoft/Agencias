@@ -1,7 +1,7 @@
-import db from '../db/db.js';
+import { dbPromise } from '../db/db.js';
 
 export async function exportAll() {
-  const dbConn = await db;
+  const dbConn = await dbPromise;
 
   const agencies = await dbConn.getAll('agencies');
   const visits = await dbConn.getAll('visits');
