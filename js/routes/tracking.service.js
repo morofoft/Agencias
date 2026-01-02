@@ -21,4 +21,6 @@ export function onLocationUpdate(pos) {
     lng: pos.lng,
     timestamp: Date.now()
   });
+
+
 }

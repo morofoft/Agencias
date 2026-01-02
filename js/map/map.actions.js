@@ -13,4 +13,7 @@ export function goToAgency(agency) {
       ${agency.direccion}
     `)
     .openOn(map);
+  
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${agency.lat},${agency.lng}&travelmode=driving`;
+  window.open(url, '_blank');
 }

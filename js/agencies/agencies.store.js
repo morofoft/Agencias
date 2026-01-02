@@ -49,3 +49,87 @@ export async function createAgency(data) {
 
     return agency;
 }
+
+// --- EXPORTAR ---
+export async function exportAgenciesAdvanced() {
+    const agencies = await getAllAgencies();
+    const dataStr = JSON.stringify(agencies, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+  
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `agencias_${new Date().toISOString()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  
+  // --- IMPORTAR ---
+  export async function importAgenciesAdvanced(file) {
+    if (!file) return;
+  
+    const text = await file.text();
+    let imported;
+    try {
+      imported = JSON.parse(text);
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Archivo inválido', text: 'No se pudo leer el JSON.' });
+      return;
+    }
+  
+    if (!Array.isArray(imported)) {
+      Swal.fire({ icon: 'error', title: 'Formato incorrecto', text: 'El JSON debe ser un arreglo de agencias.' });
+      return;
+    }
+  
+    const db = await dbPromise;
+    let count = 0;
+  
+    for (const agency of imported) {
+      if (!agency.id) agency.id = uuid();
+  
+      const existing = await db.get('agencies', agency.id);
+  
+      if (existing) {
+        // Preguntar si se quiere sobrescribir
+        const result = await Swal.fire({
+          title: `Agencia ${agency.nombre} ya existe`,
+          text: '¿Deseas sobrescribirla?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, sobrescribir',
+          cancelButtonText: 'No, mantener original'
+        });
+  
+        if (result.isConfirmed) {
+          agency.updated_at = now();
+          await db.put('agencies', agency);
+          await queueSync('UPDATE', 'agencies', agency);
+          count++;
+        }
+      } else {
+        // Crear nueva
+        agency.created_at = now();
+        agency.updated_at = now();
+        await db.put('agencies', agency);
+        await queueSync('CREATE', 'agencies', agency);
+        count++;
+      }
+    }
+  
+    Swal.fire({ icon: 'success', title: 'Importación completa', text: `${count} agencias importadas o actualizadas.` });
+    return count;
+  }
+
+  export async function deleteAgency(agencyId) {
+    const db = await dbPromise;
+    const agency = await db.get('agencies', agencyId);
+  
+    if (!agency) return;
+  
+    await db.delete('agencies', agencyId);
+    await queueSync('DELETE', 'agencies', { id: agencyId });
+  }
+  

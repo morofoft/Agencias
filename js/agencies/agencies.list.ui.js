@@ -1,4 +1,4 @@
-import { getAllAgencies, updateAgency } from './agencies.store.js';
+import { getAllAgencies, updateAgency, deleteAgency } from './agencies.store.js';
 import { goToAgency } from '../map/map.actions.js';
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.esm.js';
 
@@ -15,8 +15,7 @@ export async function renderAgenciesList() {
 
   agencies.forEach(agency => {
     const item = document.createElement('div');
-    item.className =
-      'flex justify-between items-center p-2 border-b text-sm';
+    item.className = 'flex justify-between items-center p-2 border-b text-sm';
 
     item.innerHTML = `
       <div>
@@ -27,16 +26,9 @@ export async function renderAgenciesList() {
       </div>
 
       <div class="flex space-x-1">
-        <button
-          class="px-2 py-1 bg-blue-500 text-white rounded text-xs"
-          data-id="${agency.id}">
-          📍 IR
-        </button>
-        <button
-          class="px-2 py-1 bg-yellow-500 text-white rounded text-xs"
-          data-id="${agency.id}">
-          ✏️ Editar
-        </button>
+        <button class="px-2 py-1 bg-blue-500 text-white rounded text-xs" data-id="${agency.id}">📍 IR</button>
+        <button class="px-2 py-1 bg-yellow-500 text-white rounded text-xs" data-id="${agency.id}">✏️ Editar</button>
+        <button class="px-2 py-1 bg-red-500 text-white rounded text-xs" data-id="${agency.id}">🗑️ Eliminar</button>
       </div>
     `;
 
@@ -93,6 +85,30 @@ export async function renderAgenciesList() {
 
         await updateAgency(agency);
         await renderAgenciesList();
+      }
+    };
+
+    // Eliminar
+    item.querySelector('button:nth-child(3)').onclick = async () => {
+      const result = await Swal.fire({
+        title: '¿Eliminar agencia?',
+        text: `Se eliminará "${agency.nombre}" permanentemente.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        await deleteAgency(agency.id);
+        await renderAgenciesList();
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminada',
+          text: `"${agency.nombre}" ha sido eliminada.`,
+          timer: 1500,
+          showConfirmButton: false
+        });
       }
     };
 

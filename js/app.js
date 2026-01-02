@@ -48,6 +48,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         startRouteByZone(map, e.currentTarget.dataset.ruta);
     })
   })
+
+
+
 });
 
 // Exportación global (botón HTML)
