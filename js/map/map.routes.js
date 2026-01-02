@@ -1,31 +1,26 @@
 import { getAllAgencies } from '../agencies/agencies.store.js';
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.esm.js';
 
-// Variable global dentro de este módulo para guardar la ruta actual
+// Guardar la ruta actual
 let currentRouteControl = null;
 
 export async function generateRouteByZone(map, zone) {
   const agencies = await getAllAgencies();
+
+  // Filtrar puntos de la zona
   const points = agencies
     .filter(a => a.zona === zone)
-    .map(a => L.latLng(a.lat, a.lng));
+    .map(a => L.latLng(a.lat, a.lng))
+    .filter(p => p.lat && p.lng); // ⚡ eliminar puntos inválidos
 
   if (points.length < 2) {
-    const texto = 'La zona ' + zone + ' no cuenta con los suficientes puntos!';
     Swal.fire({
-        icon: 'error',
-        title: '¡Pocas agencias!',
-        text: texto,
-        toast: true,                // Esto lo convierte en tipo Toast
-        position: 'top-end',        // Ubicación (esquina superior derecha)
-        showConfirmButton: false,
-        timer: 5000,                // Un poco más de tiempo para que alcance a leerse
-        timerProgressBar: true,     // Barra de progreso visual
-        didOpen: (toast) => {
-          toast.addEventListener('mouseenter', Swal.stopTimer)
-          toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-      });
+      icon: 'error',
+      title: 'Pocas agencias!',
+      text: `La zona ${zone} no cuenta con los suficientes puntos!`,
+      timer: 1800,
+      showConfirmButton: false
+    });
     return;
   }
 
@@ -35,14 +30,23 @@ export async function generateRouteByZone(map, zone) {
     currentRouteControl = null;
   }
 
+  // ⚡ Recalcular tamaño del mapa (importante para móvil)
+  map.invalidateSize();
+
   // ✅ Crear nueva ruta
   currentRouteControl = L.Routing.control({
     waypoints: points,
-  lineOptions: { styles: [{ color: '#f59e0b', weight: 4 }] },
-  createMarker: () => null,
-  addWaypoints: false,
-  routeWhileDragging: false,
-  draggableWaypoints: false,
-  show: false
+    lineOptions: { styles: [{ color: '#f59e0b', weight: 4 }] },
+    router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+    routeWhileDragging: false,
+    draggableWaypoints: false,
+    addWaypoints: false,
+    createMarker: () => null, // ❌ ocultar marcadores extra
+    show: false,              // ❌ ocultar panel de ruta
+    fitSelectedRoutes: false  // ❌ evitar zoom automático incorrecto
   }).addTo(map);
+
+  // Centrar el mapa manualmente en la ruta
+  const bounds = L.latLngBounds(points);
+  map.fitBounds(bounds, { padding: [50, 50] });
 }
