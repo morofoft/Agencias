@@ -14,7 +14,6 @@ export function initMap() {
   ).addTo(map);
 
   
-
   renderAgencies(map);
   setupCreateAgency(map);
   setMapInstance(map)
@@ -28,8 +27,6 @@ export function updateUserPosition(map, position) {
   if (!userMarker) {
     userMarker = L.circleMarker([position.lat, position.lng], {
       radius: 10,
-      color: '#2563eb',
-      fillColor: '#00ff00',
     //   color: '#2563eb',
     //   fillColor: '#3b82f6',
       fillOpacity: 0.9

@@ -7,7 +7,7 @@ import { checkAgencies } from './gps/geofence.service.js';
 import { onLocationUpdate } from './routes/tracking.service.js';
 import { exportAll } from './export/excel.js';
 import { renderAgenciesList } from './agencies/agencies.list.ui.js';
-import { generateRouteByZone } from './map/map.routes.js';
+import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.routes.js';
 
 let agencies = [];
 let map = null;
@@ -40,6 +40,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnRouteD').onclick = () => {
     generateRouteByZone(map, 'D');
   };
+
+  const botonesIrRutas = document.querySelectorAll('.btnRouteIr');
+  botonesIrRutas.forEach(boton => {
+    boton.addEventListener('click', (e)=>{
+        console.log('Iniciando ruta ' + e.currentTarget.dataset.ruta)
+        startRouteByZone(map, e.currentTarget.dataset.ruta);
+    })
+  })
 });
 
 // Exportación global (botón HTML)
