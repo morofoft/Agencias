@@ -9,7 +9,7 @@ export function agencyMarker(agency) {
       radius: 7,
       color: colors[agency.estado] || 'gray'
     }).bindPopup(`
-      <strong>${agency.nombre}</strong><br>
+      <strong>${agency.idReal}</strong><br>
       Visitas: ${agency.contador_visitas}
     `);
   }

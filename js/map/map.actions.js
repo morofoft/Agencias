@@ -9,7 +9,7 @@ export function goToAgency(agency) {
   L.popup()
     .setLatLng([agency.lat, agency.lng])
     .setContent(`
-      <b>${agency.nombre}</b><br>
+      <b>${agency.idReal}</b><br>
       ${agency.direccion}
     `)
     .openOn(map);

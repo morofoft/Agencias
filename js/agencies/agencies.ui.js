@@ -30,7 +30,7 @@ export async function renderAgencies(map) {
     ).addTo(map);
   
     marker.bindPopup(`
-      <b>${agency.nombre}</b><br>
+      <b>${agency.idReal}</b><br>
       Zona: ${agency.zona}<br>
       Estado: ${agency.estado}
     `);
@@ -45,11 +45,10 @@ export async function createAgencyFromMap(latlng, map, formValues) {
   
     const agency = {
       id: crypto.randomUUID(),          // id local
-      idReal: formValues.codigo,        // AG00001
-      nombre: formValues.codigo,        // luego editable
-      direccion: formValues.direccion,
-      referencia: '',
+      idReal: formValues.codigo,        // AG00001      // luego editable
+      direccion: formValues.direccion || '',
       zona: formValues.zona,
+  
       lat: latlng.lat,
       lng: latlng.lng,
       estado: 'verde',

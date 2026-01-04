@@ -59,7 +59,7 @@ export async function checkAgencies(position, agencies) {
       Swal.fire({
         icon: 'success',
         title: 'Agencia visitada',
-        text: agency.nombre,
+        text: agency.idReal,
         timer: 1800,
         showConfirmButton: false
       });

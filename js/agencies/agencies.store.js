@@ -95,7 +95,7 @@ export async function exportAgenciesAdvanced() {
       if (existing) {
         // Preguntar si se quiere sobrescribir
         const result = await Swal.fire({
-          title: `Agencia ${agency.nombre} ya existe`,
+          title: `Agencia ${agency.idReal} ya existe`,
           text: '¿Deseas sobrescribirla?',
           icon: 'question',
           showCancelButton: true,

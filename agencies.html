@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Agencias</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/icons/icon-192.ico" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+
+<body class="bg-slate-50 h-screen flex flex-col text-slate-800 overflow-hidden">
+
+    <header class="bg-gradient-to-br from-indigo-700 to-blue-600 text-white px-6 py-8 shadow-xl rounded-b-[2.5rem] shrink-0">
+        <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full flex items-center justify-center transition-all">
+                    <i class="fa fa-arrow-left"></i>
+                </a>
+                <div>
+                    <p class="text-indigo-100 text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Administración</p>
+                    <h1 class="font-extrabold text-2xl tracking-tight">Agencias</h1>
+                </div>
+            </div>
+
+            <button id="btn-add-current"
+                class="bg-emerald-500 hover:bg-emerald-400 text-white px-5 py-2.5 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 flex items-center gap-2">
+                <i class="fa fa-plus-circle"></i>
+                <span>Nueva</span>
+            </button>
+        </div>
+
+        <div class="relative group">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-indigo-300 group-focus-within:text-white transition-colors">
+                <i class="fa fa-search"></i>
+            </span>
+            <input id="search" type="text" placeholder="Buscar por nombre, código o zona..."
+                class="w-full bg-white/10 border border-white/20 text-white placeholder-indigo-200 pl-11 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 transition-all backdrop-blur-md" />
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto px-6 py-6 custom-scroll">
+        <div class="flex justify-between items-center mb-6 px-1">
+            <h2 class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Base de datos de agencias</h2>
+            <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100">
+                <span class="text-slate-400 text-[10px] font-bold uppercase">Total:</span>
+                <span class="text-indigo-600 text-xs font-black" id="count-badge">0</span>
+            </div>
+        </div>
+
+        <div id="agencies-list" class="grid gap-4 pb-10">
+            </div>
+    </main>
+
+    <footer class="h-12 bg-white border-t border-slate-200 text-slate-400 flex items-center justify-between px-8 text-[10px] shrink-0 font-bold uppercase tracking-widest">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-2" id="networkStatus">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            Sincronizado
+          </span>
+        </div>
+        <div>&copy; 2026 Dashboard</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/sw-register.js"></script>
+    <script type="module" src="js/agencies/agencies.page.js"></script>
+</body>
+</html>

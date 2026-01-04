@@ -75,9 +75,6 @@ function setupCreateAgency(map) {
           <option value="B">B</option>
           <option value="C">C</option>
           <option value="D">D</option>
-          <option value="E">E</option>
-          <option value="F">F</option>
-          <option value="G">G</option>
           <option value="OTRA">OTRA</option>
         </select>
         <input id="direccion" class="swal2-input" placeholder="Dirección">
