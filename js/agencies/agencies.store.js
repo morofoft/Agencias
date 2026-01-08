@@ -133,3 +133,9 @@ export async function exportAgenciesAdvanced() {
     await queueSync('DELETE', 'agencies', { id: agencyId });
   }
   
+  export async function getAgencyByIdReal(idReal) {
+    const db = await dbPromise;
+    const agencies = await db.getAll('agencies');
+  
+    return agencies.find(a => a.idReal === idReal);
+  }

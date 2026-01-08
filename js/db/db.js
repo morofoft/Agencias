@@ -1,5 +1,5 @@
 const DB_NAME = 'control_agencias_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
   upgrade(db) {
@@ -26,6 +26,14 @@ export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
         keyPath: 'id',
         autoIncrement: true
       });
+    }
+
+    if (!db.objectStoreNames.contains('findings')) {
+      const store = db.createObjectStore('findings', { keyPath: 'id' });
+      store.createIndex('agency_id', 'agency_id');
+      store.createIndex('fecha', 'fecha');
+      store.createIndex('gravedad', 'gravedad');
+      store.createIndex('synced', 'synced');
     }
   }
 });
