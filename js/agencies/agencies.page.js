@@ -86,9 +86,8 @@ function renderList(data) {
 
 search.addEventListener('input', e => {
   const q = e.target.value.toLowerCase();
-
+console.log(agencies)
   const filtered = agencies.filter(a =>
-    a.nombre.toLowerCase().includes(q) ||
     a.zona.toLowerCase().includes(q) ||
     (a.idReal && a.idReal.toLowerCase().includes(q))
   );
