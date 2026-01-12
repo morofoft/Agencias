@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte Diario</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icons/icon-192.ico">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-slate-50 h-screen flex flex-col">
+
+<header class="bg-indigo-600 text-white p-5 rounded-b-3xl shadow">
+  <div class="flex justify-between items-center">
+    <div>
+      <p class="text-xs uppercase opacity-80">Bitácora diaria</p>
+      <h1 class="text-2xl font-bold">Reporte</h1>
+      <p id="today" class="text-sm opacity-90"></p>
+    </div>
+
+    <button id="btn-new"
+      class="bg-white/20 px-4 py-2 rounded-full text-lg">
+      <i class="fa fa-plus"></i>
+    </button>
+  </div>
+</header>
+
+<!-- Agencia más cercana -->
+<section class="px-4 mt-4">
+  <div id="nearest-card"
+       class="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+    <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
+      <i class="fa-solid fa-building"></i>
+    </div>
+
+    <div class="flex-1">
+      <p class="text-xs text-gray-500">Agencia más cercana</p>
+      <p id="nearest-name" class="font-bold text-sm">—</p>
+      <p id="nearest-distance" class="text-xs text-gray-400">— km</p>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<main id="timeline" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+<script type="module" src="./js/reports/reports.page.js"></script>
+</body>
+</html>

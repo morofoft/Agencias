@@ -1,5 +1,5 @@
 const DB_NAME = 'control_agencias_db';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
   upgrade(db) {
@@ -34,6 +34,10 @@ export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
       store.createIndex('fecha', 'fecha');
       store.createIndex('gravedad', 'gravedad');
       store.createIndex('synced', 'synced');
+    }
+
+    if (!db.objectStoreNames.contains('reports')) {
+      const store = db.createObjectStore('reports', { keyPath: 'id' });
     }
   }
 });
