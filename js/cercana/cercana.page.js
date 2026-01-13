@@ -64,10 +64,6 @@ async function loadNearby() {
    Renders
 ===================== */
 
-/* =====================
-   Renderización Profesional
-===================== */
-
 function renderNearest(a) {
     const isNear = a.distance <= 100;
     const colorClass = isNear ? 'from-emerald-500 to-teal-600' : 'from-slate-400 to-slate-500';
@@ -86,10 +82,10 @@ function renderNearest(a) {
                 </div>
             </div>
 
-            <h2 class="text-3xl font-black leading-tight mb-1">${a.nombre}</h2>
+            <h2 class="text-3xl font-black leading-tight mb-1">AG ${a.idReal}</h2>
             <div class="flex items-center gap-2 opacity-90 text-sm mb-8">
                 <i class="fa-solid fa-location-dot"></i>
-                <span>${a.zona || 'Sucursal Principal'}</span>
+                <span>Zona ${a.zona || 'Sucursal Principal'}</span>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -107,7 +103,7 @@ function renderNearest(a) {
       </div>
     `;
 }
-
+console.log("Test")
 function renderList(data) {
     list.innerHTML = '';
     data.slice(1).forEach(a => {
@@ -118,8 +114,8 @@ function renderList(data) {
                         <i class="fa-solid fa-building text-lg"></i>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-800">${a.nombre || a.idreal || 'Agencia'}</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${a.zona || 'Sucursal'}</p>
+                        <h4 class="font-bold text-slate-800">${a.idReal}</h4>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Zona ${a.zona || 'Sucursal'}</p>
                     </div>
                 </div>
                 <div class="text-right">

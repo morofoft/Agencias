@@ -175,7 +175,3 @@ btnAdd.addEventListener('click', async () => {
 ================================ */
 
 loadAgencies();
-
-// Codigo
-// zona
-// Direccion
