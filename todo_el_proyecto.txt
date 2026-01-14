@@ -1,0 +1,4163 @@
+
+
+================================================================================
+ARCHIVO: .\agencies.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Agencias</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/icons/icon-192.ico" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+
+<body class="bg-slate-50 h-screen flex flex-col text-slate-800 overflow-hidden">
+
+    <header class="bg-gradient-to-br from-indigo-700 to-blue-600 text-white px-6 py-8 shadow-xl rounded-b-[2.5rem] shrink-0">
+        <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full flex items-center justify-center transition-all">
+                    <i class="fa fa-arrow-left"></i>
+                </a>
+                <div>
+                    <p class="text-indigo-100 text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Administración</p>
+                    <h1 class="font-extrabold text-2xl tracking-tight">Agencias</h1>
+                </div>
+            </div>
+
+            <button id="btn-add-current"
+                class="bg-emerald-500 hover:bg-emerald-400 text-white px-5 py-2.5 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 flex items-center gap-2">
+                <i class="fa fa-plus-circle"></i>
+                <span>Nueva</span>
+            </button>
+        </div>
+
+        <div class="relative group">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-indigo-300 group-focus-within:text-white transition-colors">
+                <i class="fa fa-search"></i>
+            </span>
+            <input id="search" type="text" placeholder="Buscar por nombre, código o zona..."
+                class="w-full bg-white/10 border border-white/20 text-white placeholder-indigo-200 pl-11 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 transition-all backdrop-blur-md" />
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto px-6 py-6 custom-scroll">
+        <div class="flex justify-between items-center mb-6 px-1">
+            <h2 class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Base de datos de agencias</h2>
+            <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100">
+                <span class="text-slate-400 text-[10px] font-bold uppercase">Total:</span>
+                <span class="text-indigo-600 text-xs font-black" id="count-badge">0</span>
+            </div>
+        </div>
+
+        <div id="agencies-list" class="grid gap-4 pb-10">
+            </div>
+    </main>
+
+    <footer class="h-12 bg-white border-t border-slate-200 text-slate-400 flex items-center justify-between px-8 text-[10px] shrink-0 font-bold uppercase tracking-widest">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-2" id="networkStatus">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            Sincronizado
+          </span>
+        </div>
+        <div>&copy; 2026 Dashboard</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/sw-register.js"></script>
+    <script type="module" src="js/agencies/agencies.page.js"></script>
+</body>
+</html>
+
+================================================================================
+ARCHIVO: .\cercana.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agencia Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+    .timeline-line::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e2e8f0;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafc] min-h-screen flex flex-col text-slate-900">
+
+<header class="bg-gradient-to-r from-indigo-700 to-violet-800 text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-2xl shadow-indigo-200">
+  <div class="flex justify-between items-center mb-4">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2">
+        <span class="flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <p id="estadoGPS" class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Rastreo Activo</p>
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-tight">Cercanía</h1>
+    </div>
+    <div class="flex gap-2">
+      <button id="btnAddAgency" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+        <i class="fa fa-plus"></i>
+      </button>
+      <a href="index.html" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+        <i class="fa fa-home"></i>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="flex-1 -mt-8 px-4 space-y-8">
+  
+  <div id="closestAgency" class="hidden transform transition-all duration-500"></div>
+
+  <section>
+    <div class="flex items-center justify-between mb-4 px-2">
+      <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Otras sucursales</h3>
+      <div class="h-[1px] flex-1 bg-slate-200 ml-4"></div>
+    </div>
+    <div id="agencyList" class="space-y-4"></div>
+  </section>
+
+  <section class="pb-12">
+    <div class="flex items-center gap-3 mb-6 px-2">
+        <div class="p-2 bg-indigo-100 rounded-lg">
+            <i class="fa-solid fa-clipboard-list text-indigo-600"></i>
+        </div>
+        <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest">Actividad Reciente</h3>
+    </div>
+    <div id="observationsPanel" class="relative space-y-6 timeline-line">
+      </div>
+  </section>
+</main>
+
+<script type="module" src="./js/cercana/cercana.page.js"></script>
+</body>
+</html>
+
+================================================================================
+ARCHIVO: .\dashboard.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body class="bg-gray-100 p-4">
+
+  <h1 class="text-2xl font-bold mb-4">
+    <i class="fas fa-chart-line text-red-600"></i>
+    Dashboard de Hallazgos
+  </h1>
+
+  <!-- CARD RESUMEN -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+    <div class="bg-white p-4 rounded shadow border-l-4 border-red-600">
+      <h2 class="text-sm text-gray-500">Críticos Pendientes</h2>
+      <p id="criticalCount" class="text-3xl font-bold text-red-600">0</p>
+    </div>
+
+  </div>
+
+  <!-- LISTADO -->
+  <div class="bg-white rounded shadow p-4">
+    <h2 class="font-semibold mb-3">
+      <i class="fas fa-exclamation-triangle text-red-600"></i>
+      Detalle de Hallazgos Críticos
+    </h2>
+
+    <div id="criticalList" class="space-y-3"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  <script src="js/sw-register.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>
+
+
+================================================================================
+ARCHIVO: .\data.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb" />
+  <title>Gestión de Archivos</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+    
+    <div class="p-5 border-b border-gray-100 bg-gray-50/50">
+        <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-database text-blue-600"></i>
+            Gestión de Agencias
+        </h3>
+        <p class="text-xs text-gray-500 mt-1">Exporta o importa la base de datos en formato JSON.</p>
+        <a href="index.html">Volver</a>
+    </div>
+
+    <div class="p-5 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+            <button 
+                id="btnExport" 
+                class="flex flex-col items-center justify-center gap-2 p-4 bg-white border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-all group active:scale-95"
+            >
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-export"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-700">Exportar</span>
+            </button>
+
+            <button 
+                id="btnImport" 
+                class="flex flex-col items-center justify-center gap-2 p-4 bg-white border border-gray-200 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all group active:scale-95"
+            >
+                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-import"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-700">Importar</span>
+            </button>
+        </div>
+
+        <input type="file" id="fileImport" accept=".json" class="hidden" />
+    </div>
+
+    <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-center">
+        <span class="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Sistema de Control v1.0</span>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  
+  <script type="module">
+    import { exportAgenciesAdvanced, importAgenciesAdvanced } from './js/agencies/agencies.store.js';
+    
+    const btnExport = document.getElementById('btnExport');
+    const btnImport = document.getElementById('btnImport');
+    const fileImport = document.getElementById('fileImport');
+
+    // Función de ayuda para notificaciones tipo Toast
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+
+    // Acción Exportar
+    btnExport.onclick = async () => {
+      try {
+        await exportAgenciesAdvanced();
+        Toast.fire({ icon: 'success', title: 'Archivo exportado correctamente' });
+      } catch (err) {
+        Toast.fire({ icon: 'error', title: 'Error al exportar' });
+      }
+    };
+    
+    // Acción Abrir Selector de Archivos
+    btnImport.onclick = () => fileImport.click();
+    
+    // Acción Importar al cambiar archivo
+    fileImport.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        try {
+          await importAgenciesAdvanced(file);
+          Swal.fire({
+            icon: 'success',
+            title: '¡Importación exitosa!',
+            text: 'Los datos han sido cargados.',
+            confirmButtonColor: '#2563eb'
+          });
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Fallo la carga',
+            text: 'El archivo JSON no es válido.'
+          });
+        }
+        // Limpiar para poder subir el mismo archivo después si se desea
+        fileImport.value = '';
+      }
+    });
+  </script>
+
+</body>
+</html>
+
+================================================================================
+ARCHIVO: .\hallazgos.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hallazgos</title>
+
+  <meta name="theme-color" content="#4f46e5" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-slate-50 h-screen flex flex-col">
+
+<header class="bg-indigo-600 text-white px-5 py-5 rounded-b-3xl shadow-lg">
+  <div class="flex justify-between items-center">
+    <div>
+      <p class="text-xs uppercase tracking-widest opacity-80">Registro de</p>
+      <h1 class="text-2xl font-extrabold">Hallazgos</h1>
+    </div>
+    <span id="criticalBadge"
+  class="hidden bg-red-600 text-white text-[10px] px-2 py-1 rounded-full font-bold">
+  0 críticos
+</span>
+
+
+    <button id="btn-new"
+      class="bg-white/20 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2">
+      <i class="fa fa-plus"></i> Nuevo
+    </button>
+  </div>
+</header>
+<div class="flex gap-2 mb-4">
+  <input type="date" id="fromDate"
+    class="border rounded px-3 py-2 text-sm w-full">
+
+  <input type="date" id="toDate"
+    class="border rounded px-3 py-2 text-sm w-full">
+
+  <button id="btnFilter"
+    class="bg-indigo-600 text-white px-4 rounded text-sm">
+    Filtrar
+  </button>
+</div>
+
+<main class="flex-1 overflow-y-auto p-4 space-y-4" id="findings-list"></main>
+<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+
+
+<script src="js/sw-register.js"></script>
+
+<script type="module" src="js/findings/findings.page.js"></script>
+</body>
+</html>
+
+
+================================================================================
+ARCHIVO: .\index.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Control de Agencias | Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4f46e5" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    
+    body { font-family: 'Inter', sans-serif; }
+
+    /* Scrollbar estético */
+    #agencies-list::-webkit-scrollbar { width: 4px; }
+    #agencies-list::-webkit-scrollbar-track { background: transparent; }
+    #agencies-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+    /* Estilo para el mapa */
+    .map-container {
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    /* Ocultar barra de scroll en botones de ruta */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+
+<body class="h-screen flex flex-col bg-slate-50 text-slate-900 antialiased overflow-hidden">
+
+  <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-50 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-100">
+        <i class="fas fa-map-marked-alt text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base tracking-tight text-slate-800 leading-none">Control de Agencias</h1>
+        <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Dashboard Operativo</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <a href="data.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
+        <i class="fas fa-database text-indigo-500"></i>
+        <span>Data</span>
+      </a>
+      <a href="cercana.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
+        <i class="fas fa-database text-indigo-500"></i>
+        <span>Cercana</span>
+      </a>
+      <a href="agencies.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
+        <i class="fas fa-building text-indigo-500"></i>
+        <span>Agencias</span>
+      </a>
+      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center border border-slate-300">
+        <i class="fa fa-user text-xs text-slate-500"></i>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col overflow-hidden">
+
+    <section class="flex-1 relative map-container">
+      <div id="map" class="absolute inset-0 z-0"></div>
+    </section>
+
+    <section class="h-[45%] bg-white border-t border-slate-200 flex flex-col shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] z-10 rounded-t-[2rem]">
+      
+      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-3 shrink-0"></div>
+
+      <div class="px-6 pb-3">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Rutas del Día</h2>
+          <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold border border-indigo-100">4 RUTAS ACTIVAS</span>
+        </div>
+
+        <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteA" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta A</button>
+            <button data-ruta="A" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta A</button>
+          </div>
+          
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteB" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta B</button>
+            <button data-ruta="B" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta B</button>
+          </div>
+
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteC" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta C</button>
+            <button data-ruta="C" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta C</button>
+          </div>
+
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteD" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta D</button>
+            <button data-ruta="D" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta D</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="agencies-list" class="flex-1 overflow-y-auto px-6 py-2 space-y-3 mb-2">
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200 transition-all">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+              <i class="fas fa-building text-lg"></i>
+            </div>
+            <div>
+              <p class="font-bold text-slate-800 text-sm">Cargando Agencias...</p>
+              <p class="text-[11px] text-slate-400 font-medium italic">Sincronizando ubicación</p>
+            </div>
+          </div>
+          <i class="fas fa-arrow-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="h-10 bg-white border-t border-slate-200 text-slate-500 flex items-center justify-between px-6 text-[10px] shrink-0 font-bold uppercase tracking-widest">
+    <div class="flex items-center gap-4">
+      <span class="flex items-center gap-2" id="networkStatus">
+        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+        Status: Conectado
+      </span>
+      <span class="text-slate-300">|</span>
+      <span>Ing. Pedro Garcia</span>
+    </div>
+    <div class="text-slate-400 font-medium italic normal-case">v2.2 &copy; 2026</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" defer />
+  <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
+  <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
+
+  <script src="js/network.js"></script>
+  <script src="js/sw-register.js"></script>
+  <script type="module" src="js/app.js"></script>
+
+</body>
+
+</html>
+
+================================================================================
+ARCHIVO: .\manifest.json
+================================================================================
+{
+  "name": "Control de Agencias Offline",
+  "short_name": "Agencias",
+  "description": "PWA offline-first para control de agencias y rutas",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+  {
+    "name": "Rutas activas",
+    "short_name": "Rutas",
+    "url": "/index.html#rutas",
+    "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+  },
+  {
+    "name": "Gestión de agencias",
+    "short_name": "Agencias",
+    "url": "/data.html",
+    "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+  }
+]
+
+}
+
+
+================================================================================
+ARCHIVO: .\network.js
+================================================================================
+const statusEl = document.getElementById('networkStatus');
+
+function updateNetworkStatus() {
+  if (navigator.onLine) {
+    statusEl.textContent = '🟢 Online';
+    statusEl.classList.remove('text-red-400');
+    statusEl.classList.add('text-green-300');
+  } else {
+    statusEl.textContent = '🔴 Offline';
+    statusEl.classList.remove('text-green-300');
+    statusEl.classList.add('text-red-400');
+  }
+}
+
+window.addEventListener('online', updateNetworkStatus);
+window.addEventListener('offline', updateNetworkStatus);
+
+updateNetworkStatus();
+
+
+================================================================================
+ARCHIVO: .\offline.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sin conexión</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>📴 Sin conexión</h1>
+    <p>La app sigue funcionando offline.</p>
+  </div>
+</body>
+</html>
+
+
+================================================================================
+ARCHIVO: .\README.md
+================================================================================
+
+
+================================================================================
+ARCHIVO: .\report.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte Diario</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icons/icon-192.ico">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-slate-50 h-screen flex flex-col">
+
+<header class="bg-indigo-600 text-white p-5 rounded-b-3xl shadow">
+  <div class="flex justify-between items-center">
+    <div>
+      <p class="text-xs uppercase opacity-80">Bitácora diaria</p>
+      <h1 class="text-2xl font-bold">Reporte</h1>
+      <p id="today" class="text-sm opacity-90"></p>
+    </div>
+
+    <button id="btn-new"
+      class="bg-white/20 px-4 py-2 rounded-full text-lg">
+      <i class="fa fa-plus"></i>
+    </button>
+  </div>
+</header>
+
+<!-- Agencia más cercana -->
+<section class="px-4 mt-4">
+  <div id="nearest-card"
+       class="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+    <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
+      <i class="fa-solid fa-building"></i>
+    </div>
+
+    <div class="flex-1">
+      <p class="text-xs text-gray-500">Agencia más cercana</p>
+      <p id="nearest-name" class="font-bold text-sm">—</p>
+      <p id="nearest-distance" class="text-xs text-gray-400">— km</p>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<main id="timeline" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+<script type="module" src="./js/reports/reports.page.js"></script>
+</body>
+</html>
+
+
+================================================================================
+ARCHIVO: .\sw.js
+================================================================================
+const CACHE_NAME = 'agencias-pwa-v4';
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/data.html',
+  '/manifest.json',
+  '/css/app.css',
+  '/js/app.js',
+  '/js/network.js',
+  '/js/sw-register.js',
+  '/js/location.service.js',
+  '/js/agencies/agencies.store.js',
+  '/js/map/map.actions.js'
+];
+
+const EXTERNAL_ASSETS = [
+  'https://cdn.tailwindcss.com',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
+  'https://cdn.jsdelivr.net/npm/sweetalert2@11'
+];
+
+// ==========================================
+// INSTALL
+// ==========================================
+self.addEventListener('install', event => {
+  console.log('[SW] Installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll([...STATIC_ASSETS, ...EXTERNAL_ASSETS]))
+  );
+  self.skipWaiting();
+});
+
+// ==========================================
+// ACTIVATE
+// ==========================================
+self.addEventListener('activate', event => {
+  console.log('[SW] Activating...');
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            console.log('[SW] Removing old cache:', key);
+            return caches.delete(key);
+          }
+        })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// ==========================================
+// FETCH – CACHE FIRST para estáticos, NETWORK FIRST para API / JSON
+// ==========================================
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Si es API o JSON (agencias), NETWORK FIRST
+  if (url.pathname.endsWith('.json') || url.pathname.includes('/agencies')) {
+    event.respondWith(networkFirst(req));
+  } else {
+    // Archivos estáticos, cache primero
+    event.respondWith(cacheFirst(req));
+  }
+});
+
+// Estrategias
+async function cacheFirst(req) {
+  const cacheResp = await caches.match(req);
+  if (cacheResp) return cacheResp;
+
+  try {
+    const networkResp = await fetch(req);
+    if (req.method === 'GET' && networkResp.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(req, networkResp.clone());
+    }
+    return networkResp;
+  } catch (err) {
+    return caches.match('/offline.html');
+  }
+}
+
+async function networkFirst(req) {
+  try {
+    const networkResp = await fetch(req);
+    if (req.method === 'GET' && networkResp.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(req, networkResp.clone());
+    }
+    return networkResp;
+  } catch (err) {
+    const cacheResp = await caches.match(req);
+    return cacheResp || caches.match('/offline.html');
+  }
+}
+
+// ==========================================
+// SYNC – Cola de sincronización
+// ==========================================
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-agencies') {
+    event.waitUntil(syncAgencies());
+  }
+});
+
+async function syncAgencies() {
+  console.log('[SW] Syncing agencies...');
+  // Aquí llamarías a tu cola: queueSync
+  // Ejemplo: enviar cambios pendientes al servidor
+  // fetch('/api/sync', { method: 'POST', body: ... })
+}
+
+// ==========================================
+// PUSH NOTIFICATIONS (opcional)
+// ==========================================
+// self.addEventListener('push', event => {...});
+
+
+================================================================================
+ARCHIVO: .\todo_el_proyecto.txt
+================================================================================
+
+
+================================================================================
+ARCHIVO: .\agencies.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Agencias</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="assets/icons/icon-192.ico" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+
+<body class="bg-slate-50 h-screen flex flex-col text-slate-800 overflow-hidden">
+
+    <header class="bg-gradient-to-br from-indigo-700 to-blue-600 text-white px-6 py-8 shadow-xl rounded-b-[2.5rem] shrink-0">
+        <div class="flex justify-between items-start mb-6">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="bg-white/10 hover:bg-white/20 w-10 h-10 rounded-full flex items-center justify-center transition-all">
+                    <i class="fa fa-arrow-left"></i>
+                </a>
+                <div>
+                    <p class="text-indigo-100 text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Administración</p>
+                    <h1 class="font-extrabold text-2xl tracking-tight">Agencias</h1>
+                </div>
+            </div>
+
+            <button id="btn-add-current"
+                class="bg-emerald-500 hover:bg-emerald-400 text-white px-5 py-2.5 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20 active:scale-95 flex items-center gap-2">
+                <i class="fa fa-plus-circle"></i>
+                <span>Nueva</span>
+            </button>
+        </div>
+
+        <div class="relative group">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-indigo-300 group-focus-within:text-white transition-colors">
+                <i class="fa fa-search"></i>
+            </span>
+            <input id="search" type="text" placeholder="Buscar por nombre, código o zona..."
+                class="w-full bg-white/10 border border-white/20 text-white placeholder-indigo-200 pl-11 pr-4 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-white/40 transition-all backdrop-blur-md" />
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto px-6 py-6 custom-scroll">
+        <div class="flex justify-between items-center mb-6 px-1">
+            <h2 class="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Base de datos de agencias</h2>
+            <div class="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100">
+                <span class="text-slate-400 text-[10px] font-bold uppercase">Total:</span>
+                <span class="text-indigo-600 text-xs font-black" id="count-badge">0</span>
+            </div>
+        </div>
+
+        <div id="agencies-list" class="grid gap-4 pb-10">
+            </div>
+    </main>
+
+    <footer class="h-12 bg-white border-t border-slate-200 text-slate-400 flex items-center justify-between px-8 text-[10px] shrink-0 font-bold uppercase tracking-widest">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-2" id="networkStatus">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            Sincronizado
+          </span>
+        </div>
+        <div>&copy; 2026 Dashboard</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="js/network.js"></script>
+    <script src="js/sw-register.js"></script>
+    <script type="module" src="js/agencies/agencies.page.js"></script>
+</body>
+</html>
+
+================================================================================
+ARCHIVO: .\cercana.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agencia Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4f46e5">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+    .timeline-line::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e2e8f0;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafc] min-h-screen flex flex-col text-slate-900">
+
+<header class="bg-gradient-to-r from-indigo-700 to-violet-800 text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-2xl shadow-indigo-200">
+  <div class="flex justify-between items-center mb-4">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2">
+        <span class="flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <p id="estadoGPS" class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Rastreo Activo</p>
+      </div>
+      <h1 class="text-3xl font-extrabold tracking-tight">Cercanía</h1>
+    </div>
+    <div class="flex gap-2">
+      <button id="btnAddAgency" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+        <i class="fa fa-plus"></i>
+      </button>
+      <a href="index.html" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+        <i class="fa fa-home"></i>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="flex-1 -mt-8 px-4 space-y-8">
+  
+  <div id="closestAgency" class="hidden transform transition-all duration-500"></div>
+
+  <section>
+    <div class="flex items-center justify-between mb-4 px-2">
+      <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Otras sucursales</h3>
+      <div class="h-[1px] flex-1 bg-slate-200 ml-4"></div>
+    </div>
+    <div id="agencyList" class="space-y-4"></div>
+  </section>
+
+  <section class="pb-12">
+    <div class="flex items-center gap-3 mb-6 px-2">
+        <div class="p-2 bg-indigo-100 rounded-lg">
+            <i class="fa-solid fa-clipboard-list text-indigo-600"></i>
+        </div>
+        <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest">Actividad Reciente</h3>
+    </div>
+    <div id="observationsPanel" class="relative space-y-6 timeline-line">
+      </div>
+  </section>
+</main>
+
+<script type="module" src="./js/cercana/cercana.page.js"></script>
+</body>
+</html>
+
+================================================================================
+ARCHIVO: .\dashboard.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body class="bg-gray-100 p-4">
+
+  <h1 class="text-2xl font-bold mb-4">
+    <i class="fas fa-chart-line text-red-600"></i>
+    Dashboard de Hallazgos
+  </h1>
+
+  <!-- CARD RESUMEN -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+    <div class="bg-white p-4 rounded shadow border-l-4 border-red-600">
+      <h2 class="text-sm text-gray-500">Críticos Pendientes</h2>
+      <p id="criticalCount" class="text-3xl font-bold text-red-600">0</p>
+    </div>
+
+  </div>
+
+  <!-- LISTADO -->
+  <div class="bg-white rounded shadow p-4">
+    <h2 class="font-semibold mb-3">
+      <i class="fas fa-exclamation-triangle text-red-600"></i>
+      Detalle de Hallazgos Críticos
+    </h2>
+
+    <div id="criticalList" class="space-y-3"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  <script src="js/sw-register.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>
+
+
+================================================================================
+ARCHIVO: .\data.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb" />
+  <title>Gestión de Archivos</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+    
+    <div class="p-5 border-b border-gray-100 bg-gray-50/50">
+        <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+            <i class="fas fa-database text-blue-600"></i>
+            Gestión de Agencias
+        </h3>
+        <p class="text-xs text-gray-500 mt-1">Exporta o importa la base de datos en formato JSON.</p>
+        <a href="index.html">Volver</a>
+    </div>
+
+    <div class="p-5 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+            <button 
+                id="btnExport" 
+                class="flex flex-col items-center justify-center gap-2 p-4 bg-white border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-all group active:scale-95"
+            >
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-export"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-700">Exportar</span>
+            </button>
+
+            <button 
+                id="btnImport" 
+                class="flex flex-col items-center justify-center gap-2 p-4 bg-white border border-gray-200 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all group active:scale-95"
+            >
+                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-file-import"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-700">Importar</span>
+            </button>
+        </div>
+
+        <input type="file" id="fileImport" accept=".json" class="hidden" />
+    </div>
+
+    <div class="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-center">
+        <span class="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Sistema de Control v1.0</span>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  
+  <script type="module">
+    import { exportAgenciesAdvanced, importAgenciesAdvanced } from './js/agencies/agencies.store.js';
+    
+    const btnExport = document.getElementById('btnExport');
+    const btnImport = document.getElementById('btnImport');
+    const fileImport = document.getElementById('fileImport');
+
+    // Función de ayuda para notificaciones tipo Toast
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+
+    // Acción Exportar
+    btnExport.onclick = async () => {
+      try {
+        await exportAgenciesAdvanced();
+        Toast.fire({ icon: 'success', title: 'Archivo exportado correctamente' });
+      } catch (err) {
+        Toast.fire({ icon: 'error', title: 'Error al exportar' });
+      }
+    };
+    
+    // Acción Abrir Selector de Archivos
+    btnImport.onclick = () => fileImport.click();
+    
+    // Acción Importar al cambiar archivo
+    fileImport.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        try {
+          await importAgenciesAdvanced(file);
+          Swal.fire({
+            icon: 'success',
+            title: '¡Importación exitosa!',
+            text: 'Los datos han sido cargados.',
+            confirmButtonColor: '#2563eb'
+          });
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Fallo la carga',
+            text: 'El archivo JSON no es válido.'
+          });
+        }
+        // Limpiar para poder subir el mismo archivo después si se desea
+        fileImport.value = '';
+      }
+    });
+  </script>
+
+</body>
+</html>
+
+================================================================================
+ARCHIVO: .\hallazgos.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hallazgos</title>
+
+  <meta name="theme-color" content="#4f46e5" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-slate-50 h-screen flex flex-col">
+
+<header class="bg-indigo-600 text-white px-5 py-5 rounded-b-3xl shadow-lg">
+  <div class="flex justify-between items-center">
+    <div>
+      <p class="text-xs uppercase tracking-widest opacity-80">Registro de</p>
+      <h1 class="text-2xl font-extrabold">Hallazgos</h1>
+    </div>
+    <span id="criticalBadge"
+  class="hidden bg-red-600 text-white text-[10px] px-2 py-1 rounded-full font-bold">
+  0 críticos
+</span>
+
+
+    <button id="btn-new"
+      class="bg-white/20 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2">
+      <i class="fa fa-plus"></i> Nuevo
+    </button>
+  </div>
+</header>
+<div class="flex gap-2 mb-4">
+  <input type="date" id="fromDate"
+    class="border rounded px-3 py-2 text-sm w-full">
+
+  <input type="date" id="toDate"
+    class="border rounded px-3 py-2 text-sm w-full">
+
+  <button id="btnFilter"
+    class="bg-indigo-600 text-white px-4 rounded text-sm">
+    Filtrar
+  </button>
+</div>
+
+<main class="flex-1 overflow-y-auto p-4 space-y-4" id="findings-list"></main>
+<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+
+
+<script src="js/sw-register.js"></script>
+
+<script type="module" src="js/findings/findings.page.js"></script>
+</body>
+</html>
+
+
+================================================================================
+ARCHIVO: .\index.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Control de Agencias | Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4f46e5" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon-192.ico" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    
+    body { font-family: 'Inter', sans-serif; }
+
+    /* Scrollbar estético */
+    #agencies-list::-webkit-scrollbar { width: 4px; }
+    #agencies-list::-webkit-scrollbar-track { background: transparent; }
+    #agencies-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+    /* Estilo para el mapa */
+    .map-container {
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    /* Ocultar barra de scroll en botones de ruta */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+
+<body class="h-screen flex flex-col bg-slate-50 text-slate-900 antialiased overflow-hidden">
+
+  <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-50 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-100">
+        <i class="fas fa-map-marked-alt text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base tracking-tight text-slate-800 leading-none">Control de Agencias</h1>
+        <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Dashboard Operativo</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <a href="data.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
+        <i class="fas fa-database text-indigo-500"></i>
+        <span>Data</span>
+      </a>
+      <a href="cercana.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
+        <i class="fas fa-database text-indigo-500"></i>
+        <span>Cercana</span>
+      </a>
+      <a href="agencies.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
+        <i class="fas fa-building text-indigo-500"></i>
+        <span>Agencias</span>
+      </a>
+      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center border border-slate-300">
+        <i class="fa fa-user text-xs text-slate-500"></i>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col overflow-hidden">
+
+    <section class="flex-1 relative map-container">
+      <div id="map" class="absolute inset-0 z-0"></div>
+    </section>
+
+    <section class="h-[45%] bg-white border-t border-slate-200 flex flex-col shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] z-10 rounded-t-[2rem]">
+      
+      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-3 shrink-0"></div>
+
+      <div class="px-6 pb-3">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Rutas del Día</h2>
+          <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold border border-indigo-100">4 RUTAS ACTIVAS</span>
+        </div>
+
+        <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteA" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta A</button>
+            <button data-ruta="A" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta A</button>
+          </div>
+          
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteB" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta B</button>
+            <button data-ruta="B" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta B</button>
+          </div>
+
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteC" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta C</button>
+            <button data-ruta="C" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta C</button>
+          </div>
+
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteD" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta D</button>
+            <button data-ruta="D" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta D</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="agencies-list" class="flex-1 overflow-y-auto px-6 py-2 space-y-3 mb-2">
+        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200 transition-all">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+              <i class="fas fa-building text-lg"></i>
+            </div>
+            <div>
+              <p class="font-bold text-slate-800 text-sm">Cargando Agencias...</p>
+              <p class="text-[11px] text-slate-400 font-medium italic">Sincronizando ubicación</p>
+            </div>
+          </div>
+          <i class="fas fa-arrow-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="h-10 bg-white border-t border-slate-200 text-slate-500 flex items-center justify-between px-6 text-[10px] shrink-0 font-bold uppercase tracking-widest">
+    <div class="flex items-center gap-4">
+      <span class="flex items-center gap-2" id="networkStatus">
+        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+        Status: Conectado
+      </span>
+      <span class="text-slate-300">|</span>
+      <span>Ing. Pedro Garcia</span>
+    </div>
+    <div class="text-slate-400 font-medium italic normal-case">v2.2 &copy; 2026</div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" defer />
+  <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
+  <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
+
+  <script src="js/network.js"></script>
+  <script src="js/sw-register.js"></script>
+  <script type="module" src="js/app.js"></script>
+
+</body>
+
+</html>
+
+================================================================================
+ARCHIVO: .\manifest.json
+================================================================================
+{
+  "name": "Control de Agencias Offline",
+  "short_name": "Agencias",
+  "description": "PWA offline-first para control de agencias y rutas",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+  {
+    "name": "Rutas activas",
+    "short_name": "Rutas",
+    "url": "/index.html#rutas",
+    "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+  },
+  {
+    "name": "Gestión de agencias",
+    "short_name": "Agencias",
+    "url": "/data.html",
+    "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+  }
+]
+
+}
+
+
+================================================================================
+ARCHIVO: .\network.js
+================================================================================
+const statusEl = document.getElementById('networkStatus');
+
+function updateNetworkStatus() {
+  if (navigator.onLine) {
+    statusEl.textContent = '🟢 Online';
+    statusEl.classList.remove('text-red-400');
+    statusEl.classList.add('text-green-300');
+  } else {
+    statusEl.textContent = '🔴 Offline';
+    statusEl.classList.remove('text-green-300');
+    statusEl.classList.add('text-red-400');
+  }
+}
+
+window.addEventListener('online', updateNetworkStatus);
+window.addEventListener('offline', updateNetworkStatus);
+
+updateNetworkStatus();
+
+
+================================================================================
+ARCHIVO: .\offline.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sin conexión</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>📴 Sin conexión</h1>
+    <p>La app sigue funcionando offline.</p>
+  </div>
+</body>
+</html>
+
+
+================================================================================
+ARCHIVO: .\README.md
+================================================================================
+
+
+================================================================================
+ARCHIVO: .\report.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte Diario</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="assets/icons/icon-192.ico">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-slate-50 h-screen flex flex-col">
+
+<header class="bg-indigo-600 text-white p-5 rounded-b-3xl shadow">
+  <div class="flex justify-between items-center">
+    <div>
+      <p class="text-xs uppercase opacity-80">Bitácora diaria</p>
+      <h1 class="text-2xl font-bold">Reporte</h1>
+      <p id="today" class="text-sm opacity-90"></p>
+    </div>
+
+    <button id="btn-new"
+      class="bg-white/20 px-4 py-2 rounded-full text-lg">
+      <i class="fa fa-plus"></i>
+    </button>
+  </div>
+</header>
+
+<!-- Agencia más cercana -->
+<section class="px-4 mt-4">
+  <div id="nearest-card"
+       class="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+    <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
+      <i class="fa-solid fa-building"></i>
+    </div>
+
+    <div class="flex-1">
+      <p class="text-xs text-gray-500">Agencia más cercana</p>
+      <p id="nearest-name" class="font-bold text-sm">—</p>
+      <p id="nearest-distance" class="text-xs text-gray-400">— km</p>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<main id="timeline" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+<script type="module" src="./js/reports/reports.page.js"></script>
+</body>
+</html>
+
+
+================================================================================
+ARCHIVO: .\sw.js
+================================================================================
+const CACHE_NAME = 'agencias-pwa-v4';
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/data.html',
+  '/manifest.json',
+  '/css/app.css',
+  '/js/app.js',
+  '/js/network.js',
+  '/js/sw-register.js',
+  '/js/location.service.js',
+  '/js/agencies/agencies.store.js',
+  '/js/map/map.actions.js'
+];
+
+const EXTERNAL_ASSETS = [
+  'https://cdn.tailwindcss.com',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
+  'https://cdn.jsdelivr.net/npm/sweetalert2@11'
+];
+
+// ==========================================
+// INSTALL
+// ==========================================
+self.addEventListener('install', event => {
+  console.log('[SW] Installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll([...STATIC_ASSETS, ...EXTERNAL_ASSETS]))
+  );
+  self.skipWaiting();
+});
+
+// ==========================================
+// ACTIVATE
+// ==========================================
+self.addEventListener('activate', event => {
+  console.log('[SW] Activating...');
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            console.log('[SW] Removing old cache:', key);
+            return caches.delete(key);
+          }
+        })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// ==========================================
+// FETCH – CACHE FIRST para estáticos, NETWORK FIRST para API / JSON
+// ==========================================
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Si es API o JSON (agencias), NETWORK FIRST
+  if (url.pathname.endsWith('.json') || url.pathname.includes('/agencies')) {
+    event.respondWith(networkFirst(req));
+  } else {
+    // Archivos estáticos, cache primero
+    event.respondWith(cacheFirst(req));
+  }
+});
+
+// Estrategias
+async function cacheFirst(req) {
+  const cacheResp = await caches.match(req);
+  if (cacheResp) return cacheResp;
+
+  try {
+    const networkResp = await fetch(req);
+    if (req.method === 'GET' && networkResp.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(req, networkResp.clone());
+    }
+    return networkResp;
+  } catch (err) {
+    return caches.match('/offline.html');
+  }
+}
+
+async function networkFirst(req) {
+  try {
+    const networkResp = await fetch(req);
+    if (req.method === 'GET' && networkResp.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(req, networkResp.clone());
+    }
+    return networkResp;
+  } catch (err) {
+    const cacheResp = await caches.match(req);
+    return cacheResp || caches.match('/offline.html');
+  }
+}
+
+// ==========================================
+// SYNC – Cola de sincronización
+// ==========================================
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-agencies') {
+    event.waitUntil(syncAgencies());
+  }
+});
+
+async function syncAgencies() {
+  console.log('[SW] Syncing agencies...');
+  // Aquí llamarías a tu cola: queueSync
+  // Ejemplo: enviar cambios pendientes al servidor
+  // fetch('/api/sync', { method: 'POST', body: ... })
+}
+
+// ==========================================
+// PUSH NOTIFICATIONS (opcional)
+// ==========================================
+// self.addEventListener('push', event => {...});
+
+
+================================================================================
+ARCHIVO: .\unir.py
+================================================================================
+import os
+
+OUTPUT_FILE = "todo_el_proyecto.txt"
+
+EXCLUDE_DIRS = {
+    ".git",
+    "node_modules",
+    "__pycache__",
+    "venv",
+    "env",
+    "assets",
+    "js/vendor"
+}
+
+with open(OUTPUT_FILE, "w", encoding="utf-8") as out:
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+
+        for file in files:
+            path = os.path.join(root, file)
+
+            try:
+                with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+
+                out.write("\n\n" + "=" * 80 + "\n")
+                out.write(f"ARCHIVO: {path}\n")
+                out.write("=" * 80 + "\n")
+                out.write(content)
+
+            except Exception as e:
+                out.write(f"\n\n[ERROR LEYENDO {path}: {e}]\n")
+
+print("✅ Archivos unidos en:", OUTPUT_FILE)
+
+
+================================================================================
+ARCHIVO: .\css\app.css
+================================================================================
+body {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\app.js
+================================================================================
+
+import { getAgencies } from './agencies/agencies.store.js';
+import { initMap, updateUserPosition } from './map/map.service.js';
+import { agencyMarker } from './map/markers.service.js';
+import { startLocationTracking } from './gps/location.service.js';
+import { checkAgencies } from './gps/geofence.service.js';
+import { onLocationUpdate } from './routes/tracking.service.js';
+import { exportAll } from './export/excel.js';
+import { renderAgenciesList } from './agencies/agencies.list.ui.js';
+import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.routes.js';
+
+let agencies = [];
+let map = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('🚀 Control de Agencias iniciado');
+
+  map = initMap();
+  agencies = await getAgencies();
+  agencies.forEach(agency => {
+    agencyMarker(agency).addTo(map);
+  });
+
+  startLocationTracking(pos => {
+    updateUserPosition(map, pos);
+    checkAgencies(pos, agencies);
+    onLocationUpdate(pos);
+  });
+  await renderAgenciesList();
+
+  document.getElementById('btnRouteA').onclick = () => {
+    generateRouteByZone(map, 'A');
+  };
+  document.getElementById('btnRouteB').onclick = () => {
+    generateRouteByZone(map, 'B');
+  };
+  document.getElementById('btnRouteC').onclick = () => {
+    generateRouteByZone(map, 'C');
+  };
+  document.getElementById('btnRouteD').onclick = () => {
+    generateRouteByZone(map, 'D');
+  };
+
+  const botonesIrRutas = document.querySelectorAll('.btnRouteIr');
+  botonesIrRutas.forEach(boton => {
+    boton.addEventListener('click', (e)=>{
+        console.log('Iniciando ruta ' + e.currentTarget.dataset.ruta)
+        startRouteByZone(map, e.currentTarget.dataset.ruta);
+    })
+  })
+
+
+
+});
+
+// Exportación global (botón HTML)
+window.exportAll = exportAll;
+
+
+
+================================================================================
+ARCHIVO: .\js\dashboard.js
+================================================================================
+import { getCriticalPendingFindings, markFindingResolved } from './findings/findings.store.js';
+
+import { getAgencyByIdReal } from './agencies/agencies.store.js';
+
+const countEl = document.getElementById('criticalCount');
+const listEl = document.getElementById('criticalList');
+
+document.addEventListener('DOMContentLoaded', loadDashboard);
+
+async function loadDashboard() {
+  const findings = await getCriticalPendingFindings();
+
+  countEl.textContent = findings.length;
+  listEl.innerHTML = '';
+
+  if (findings.length === 0) {
+    listEl.innerHTML = `
+      <p class="text-green-600 text-sm">
+        ✔ No hay hallazgos críticos pendientes
+      </p>`;
+    return;
+  }
+
+  for (const f of findings) {
+   
+    const agency = await getAgencyByIdReal(f.agency_id);
+    
+    const div = document.createElement('div');
+    div.className = 'border rounded p-3 bg-red-50';
+
+    div.innerHTML = `
+    <div class="flex justify-between items-start">
+      <strong class="text-red-700">${f.titulo}</strong>
+      <span class="text-xs text-gray-500">${f.fecha}</span>
+    </div>
+  
+    <p class="text-sm text-gray-700">${f.descripcion}</p>
+  
+    <p class="text-xs mt-1">
+      <i class="fas fa-building"></i>
+      ${agency ? agency.nombre : 'Agencia desconocida'}
+    </p>
+  
+    <button class="mt-3 w-full text-xs bg-green-600 text-white py-2 rounded"
+      data-id="${f.id}">
+      ✔ Marcar como resuelto
+    </button>
+  `;
+  const btn = div.querySelector('button');
+
+btn.addEventListener('click', async () => {
+  await markFindingResolved(f.id);
+
+  Swal.fire({
+    icon: 'success',
+    title: 'Resuelto',
+    text: 'El hallazgo fue marcado como resuelto',
+    timer: 1200,
+    showConfirmButton: false
+  });
+
+  loadDashboard(); // refresca
+});
+
+
+    listEl.appendChild(div);
+  }
+
+  console.log('Hallazgos:', findings);
+}
+
+
+
+
+
+================================================================================
+ARCHIVO: .\js\sw-register.js
+================================================================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(() => console.log('✔ Service Worker registrado'))
+        .catch(err => console.error('❌ SW error', err));
+    });
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\agencies\agencies.actions.js
+================================================================================
+import { addAgency } from './agencies.store.js';
+
+export async function createAgencyFromGPS(coords, formValues) {
+  const now = Date.now();
+
+  const agency = {
+    id: crypto.randomUUID(),
+    idReal: formValues.codigo,
+    direccion: formValues.direccion || '',
+    zona: formValues.zona,
+
+    lat: coords.latitude,
+    lng: coords.longitude,
+
+    estado: 'verde',
+    contador_visitas: 0,
+    fecha_ultima_visita: null,
+    visited: false,
+
+    created_at: now,
+    updated_at: now
+  };
+
+
+
+  await addAgency(agency);
+  return agency;
+}
+
+
+
+================================================================================
+ARCHIVO: .\js\agencies\agencies.list.ui.js
+================================================================================
+import { getAllAgencies, updateAgency, deleteAgency } from './agencies.store.js';
+import { goToAgency } from '../map/map.actions.js';
+import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.esm.js';
+
+export async function renderAgenciesList() {
+  const agencies = await getAllAgencies();
+  const container = document.getElementById('agencies-list');
+
+  container.innerHTML = '';
+
+  if (!agencies.length) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-10 opacity-30">
+        <i class="fas fa-folder-open text-4xl mb-2"></i>
+        <p class="text-xs font-bold uppercase tracking-widest">No hay agencias</p>
+      </div>`;
+    return;
+  }
+
+  agencies.forEach(agency => {
+    const item = document.createElement('div');
+    // Clase de tarjeta moderna
+    item.className = 'p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:border-indigo-200 transition-all shadow-sm mb-3';
+
+    item.innerHTML = `
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+          <i class="fas fa-building"></i>
+        </div>
+        <div>
+          <div class="font-bold text-slate-800 text-sm leading-tight">${agency.idReal}</div>
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${agency.zona}</span>
+            <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase 
+              ${agency.estado === 'verde' ? 'bg-emerald-100 text-emerald-600' : 
+                agency.estado === 'amarillo' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'}">
+              ${agency.estado}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button title="Ir a ubicación" class="btn-go w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center shadow-sm">
+          <i class="fas fa-location-dot text-xs"></i>
+        </button>
+        <button title="Editar" class="btn-edit w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center shadow-sm">
+          <i class="fas fa-pen text-xs"></i>
+        </button>
+        <button title="Eliminar" class="btn-delete w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center shadow-sm">
+          <i class="fas fa-trash text-xs"></i>
+        </button>
+      </div>
+    `;
+
+    // Asignación de eventos optimizada
+    item.querySelector('.btn-go').onclick = () => goToAgency(agency);
+
+    item.querySelector('.btn-edit').onclick = async () => {
+      const { value: formValues } = await Swal.fire({
+        title: 'Editar Agencia',
+        customClass: {
+          popup: 'rounded-3xl',
+          confirmButton: 'rounded-xl px-6',
+          cancelButton: 'rounded-xl'
+        },
+        html: `
+          <div class="flex flex-col gap-3 mt-4 text-left">
+            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Agencia</label>
+            <input id="codigo" class="swal2-input !m-0 w-full rounded-xl border-slate-200" placeholder="Ej. Agencia Central" value="${agency.idReal}">
+            
+            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Dirección Exacta</label>
+            <input id="direccion" class="swal2-input !m-0 w-full rounded-xl border-slate-200" placeholder="Calle, número..." value="${agency.direccion}">
+            
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Zona / Ruta</label>
+                <select id="zona" class="swal2-select !m-0 !w-full rounded-xl border-slate-200">
+                  ${['A', 'B', 'C', 'D', 'E', 'F', 'G', 'OTRA'].map(z => 
+                    `<option value="${z}" ${agency.zona === z ? 'selected' : ''}>Ruta ${z}</option>`
+                  ).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Estado Operativo</label>
+                <select id="estado" class="swal2-select !m-0 !w-full rounded-xl border-slate-200">
+                  <option value="verde" ${agency.estado === 'verde' ? 'selected' : ''}>🟢 Verde</option>
+                  <option value="amarillo" ${agency.estado === 'amarillo' ? 'selected' : ''}>🟡 Amarillo</option>
+                  <option value="rojo" ${agency.estado === 'rojo' ? 'selected' : ''}>🔴 Rojo</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar Cambios',
+        confirmButtonColor: '#4f46e5',
+        preConfirm: () => {
+          const idReal = document.getElementById('codigo').value.trim();
+          const direccion = document.getElementById('direccion').value.trim();
+          const zona = document.getElementById('zona').value;
+          const estado = document.getElementById('estado').value;
+
+          if (!idReal || !direccion) {
+            Swal.showValidationMessage('Por favor completa los campos');
+            return false;
+          }
+          return { idReal, direccion, zona, estado };
+        }
+      });
+
+      if (formValues) {
+        Object.assign(agency, formValues, { updated_at: Date.now() });
+        await updateAgency(agency);
+        renderAgenciesList();
+      }
+    };
+
+    item.querySelector('.btn-delete').onclick = async () => {
+      const result = await Swal.fire({
+        title: '¿Confirmar eliminación?',
+        text: `La agencia "${agency.idReal}" no podrá ser recuperada.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#e11d48',
+        customClass: { popup: 'rounded-3xl' }
+      });
+
+      if (result.isConfirmed) {
+        await deleteAgency(agency.id);
+        renderAgenciesList();
+        Swal.fire({ icon: 'success', title: 'Eliminado', timer: 1000, showConfirmButton: false, customClass: { popup: 'rounded-3xl' } });
+      }
+    };
+
+    container.appendChild(item);
+  });
+}
+
+================================================================================
+ARCHIVO: .\js\agencies\agencies.page.js
+================================================================================
+import { createAgencyFromGPS } from './agencies.actions.js';
+import { getAllAgencies } from './agencies.store.js';
+
+const list = document.getElementById('agencies-list');
+const search = document.getElementById('search');
+const btnAdd = document.getElementById('btn-add-current');
+const countBadge = document.getElementById('count-badge');
+
+let agencies = [];
+
+/* ===============================
+   CARGAR Y RENDERIZAR AGENCIAS
+================================ */
+
+async function loadAgencies() {
+  agencies = await getAllAgencies();
+  renderList(agencies);
+}
+
+function renderList(data) {
+  list.innerHTML = '';
+
+  if (countBadge) countBadge.textContent = data.length;
+
+  if (!data.length) {
+    list.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-12 opacity-40">
+        <i class="fa fa-folder-open text-4xl mb-2"></i>
+        <p class="text-sm font-medium">No hay agencias registradas</p>
+      </div>`;
+    return;
+  }
+
+  data.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-2xl shadow-md p-4 space-y-3';
+
+    card.innerHTML = `
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="font-bold text-lg">AG ${a.idReal}</h3>
+          <p class="text-xs text-slate-400">Zona ${a.zona}</p>
+        </div>
+
+        <span class="px-2 py-1 text-xs rounded-full font-bold
+          ${a.estado === 'verde'
+            ? 'bg-emerald-100 text-emerald-600'
+            : a.estado === 'amarillo'
+            ? 'bg-amber-100 text-amber-600'
+            : 'bg-red-100 text-red-600'}">
+          ${a.estado.toUpperCase()}
+        </span>
+      </div>
+
+      <div class="text-sm text-slate-600 space-y-1">
+        <div class="flex items-center gap-2">
+          <i class="fa fa-location-dot"></i>
+          <span>${a.direccion || 'Sin dirección'}</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <i class="fa fa-map"></i>
+          <span>${a.lat.toFixed(5)}, ${a.lng.toFixed(5)}</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <i class="fa fa-repeat"></i>
+          <span>Visitas: ${a.contador_visitas || 0}</span>
+        </div>
+      </div>
+
+      <div class="flex justify-between pt-2 border-t text-xs font-bold">
+        <button class="text-blue-600 btn-go" data-id="${a.id}">📍 IR</button>
+        <button class="text-amber-600 btn-edit" data-id="${a.id}">✏️ EDITAR</button>
+        <button class="text-emerald-600 btn-visit" data-id="${a.id}">✔ VISITAR</button>
+      </div>
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+/* ===============================
+   BUSCADOR
+================================ */
+
+search.addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+console.log(agencies)
+  const filtered = agencies.filter(a =>
+    a.zona.toLowerCase().includes(q) ||
+    (a.idReal && a.idReal.toLowerCase().includes(q))
+  );
+
+  renderList(filtered);
+});
+
+/* ===============================
+   CREAR AGENCIA DESDE GPS
+================================ */
+
+btnAdd.addEventListener('click', async () => {
+
+  if (!navigator.geolocation) {
+    Swal.fire('Error', 'Tu dispositivo no soporta GPS', 'error');
+    return;
+  }
+
+  Swal.fire({
+    title: 'Obteniendo ubicación…',
+    didOpen: () => Swal.showLoading(),
+    allowOutsideClick: false
+  });
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+
+    Swal.close();
+
+    const { value: form } = await Swal.fire({
+      title: 'Nueva Agencia',
+      html: `
+        <input id="codigo" class="swal2-input" placeholder="Código">
+        <select id="zona" class="swal2-select">
+          <option value="">Seleccione zona</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="OTRA">OTRA</option>
+        </select>
+        <input id="direccion" class="swal2-input" placeholder="Dirección">
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      preConfirm: () => {
+        const codigo = document.getElementById('codigo').value;
+        const zona = document.getElementById('zona').value;
+
+        if (!codigo || !zona) {
+          Swal.showValidationMessage('Código y zona son obligatorios');
+          return false;
+        }
+
+        return {
+          codigo: document.getElementById('codigo').value,
+          zona: document.getElementById('zona').value,
+          direccion: document.getElementById('direccion').value
+        };
+      }
+    });
+
+    if (!form) return;
+
+    await createAgencyFromGPS(pos.coords, form);
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Agencia creada',
+      timer: 1500,
+      showConfirmButton: false
+    });
+
+    await loadAgencies();
+
+  }, () => {
+    Swal.fire('Error', 'No se pudo obtener tu ubicación', 'error');
+  }, {
+    enableHighAccuracy: true,
+    timeout: 10000
+  });
+});
+
+/* ===============================
+   INIT
+================================ */
+
+loadAgencies();
+
+================================================================================
+ARCHIVO: .\js\agencies\agencies.store.js
+================================================================================
+import { dbPromise } from '../db/db.js';
+import { uuid } from '../utils/uuid.js';
+import { now } from '../utils/time.js';
+import { queueSync } from '../db/sync.queue.js';
+
+
+export async function addAgency(agency) {
+    const database = await dbPromise;
+    await database.put('agencies', agency);
+}
+
+export async function getAllAgencies() {
+    const database = await dbPromise;
+    return database.getAll('agencies');
+}
+export async function updateAgency(agency) {
+    agency.updated_at = now();
+
+    const dbConn = await dbPromise;
+    await dbConn.put('agencies', agency);
+
+    await queueSync('UPDATE', 'agencies', agency);
+}
+
+export async function getAgencies() {
+    const dbConn = await dbPromise;
+    return dbConn.getAll('agencies');
+}
+
+export async function createAgency(data) {
+    const agency = {
+        id: uuid(),
+        nombre: data.nombre,
+        direccion: data.direccion,
+        zona: data.zona,
+        lat: data.lat,
+        lng: data.lng,
+        estado: 'verde',
+        contador_visitas: 0,
+        fecha_ultima_visita: null,
+        created_at: now(),
+        updated_at: now()
+    };
+
+    const dbConn = await dbPromise;
+    await dbConn.put('agencies', agency);
+
+    await queueSync('CREATE', 'agencies', agency);
+
+    return agency;
+}
+
+// --- EXPORTAR ---
+export async function exportAgenciesAdvanced() {
+    const agencies = await getAllAgencies();
+    const dataStr = JSON.stringify(agencies, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+  
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `agencias_${new Date().toISOString()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  
+  // --- IMPORTAR ---
+  export async function importAgenciesAdvanced(file) {
+    if (!file) return;
+  
+    const text = await file.text();
+    let imported;
+    try {
+      imported = JSON.parse(text);
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Archivo inválido', text: 'No se pudo leer el JSON.' });
+      return;
+    }
+  
+    if (!Array.isArray(imported)) {
+      Swal.fire({ icon: 'error', title: 'Formato incorrecto', text: 'El JSON debe ser un arreglo de agencias.' });
+      return;
+    }
+  
+    const db = await dbPromise;
+    let count = 0;
+  
+    for (const agency of imported) {
+      if (!agency.id) agency.id = uuid();
+  
+      const existing = await db.get('agencies', agency.id);
+  
+      if (existing) {
+        // Preguntar si se quiere sobrescribir
+        const result = await Swal.fire({
+          title: `Agencia ${agency.idReal} ya existe`,
+          text: '¿Deseas sobrescribirla?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, sobrescribir',
+          cancelButtonText: 'No, mantener original'
+        });
+  
+        if (result.isConfirmed) {
+          agency.updated_at = now();
+          await db.put('agencies', agency);
+          await queueSync('UPDATE', 'agencies', agency);
+          count++;
+        }
+      } else {
+        // Crear nueva
+        agency.created_at = now();
+        agency.updated_at = now();
+        await db.put('agencies', agency);
+        await queueSync('CREATE', 'agencies', agency);
+        count++;
+      }
+    }
+  
+    Swal.fire({ icon: 'success', title: 'Importación completa', text: `${count} agencias importadas o actualizadas.` });
+    return count;
+  }
+
+  export async function deleteAgency(agencyId) {
+    const db = await dbPromise;
+    const agency = await db.get('agencies', agencyId);
+  
+    if (!agency) return;
+  
+    await db.delete('agencies', agencyId);
+    await queueSync('DELETE', 'agencies', { id: agencyId });
+  }
+  
+  export async function getAgencyByIdReal(idReal) {
+    const db = await dbPromise;
+    const agencies = await db.getAll('agencies');
+  
+    return agencies.find(a => a.idReal === idReal);
+  }
+
+================================================================================
+ARCHIVO: .\js\agencies\agencies.ui.js
+================================================================================
+import { addAgency, getAllAgencies } from './agencies.store.js';
+import { ZONE_COLORS } from '../utils/zoneColors.js';
+import { renderAgenciesList } from './agencies.list.ui.js';
+const markers = new Map();
+
+function colorByState(state) {
+  if (state === 'verde') return 'green';
+  if (state === 'amarillo') return 'orange';
+  return 'red';
+}
+
+export async function renderAgencies(map) {
+  const agencies = await getAllAgencies();
+
+  agencies.forEach(agency => {
+
+    if (markers.has(agency.id)) {
+      const marker = markers.get(agency.id);
+      marker.setStyle({ color: colorByState(agency.estado) });
+      return;
+    }
+  
+    const marker = L.circleMarker(
+      [agency.lat, agency.lng],
+      {
+        radius: 8,
+        color: colorByState(agency.estado),
+        fillOpacity: 0.8
+      }
+    ).addTo(map);
+  
+    marker.bindPopup(`
+      <b>${agency.idReal}</b><br>
+      Zona: ${agency.zona}<br>
+      Estado: ${agency.estado}
+    `);
+  
+    markers.set(agency.id, marker);
+  });
+  
+}
+
+export async function createAgencyFromMap(latlng, map, formValues) {
+    const now = Date.now();
+  
+    const agency = {
+      id: crypto.randomUUID(),          // id local
+      idReal: formValues.codigo,        // AG00001      // luego editable
+      direccion: formValues.direccion || '',
+      zona: formValues.zona,
+  
+      lat: latlng.lat,
+      lng: latlng.lng,
+      estado: 'verde',
+  
+      contador_visitas: 0,
+      fecha_ultima_visita: null,
+      visited: false,
+  
+      created_at: now,
+      updated_at: now
+    };
+  
+    await addAgency(agency);
+    await renderAgencies(map);
+    await renderAgenciesList();
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\cercana\cercana.page.js
+================================================================================
+import { getAllAgencies, updateAgency } from '../agencies/agencies.store.js';
+import { createAgencyFromGPS } from '../agencies/agencies.actions.js';
+
+const nearestBox = document.getElementById('closestAgency');
+const list = document.getElementById('agencyList');
+const btnAdd = document.getElementById('btnAddAgency');
+
+let currentPos = null;
+
+function distanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ / 2) ** 2 +
+    Math.cos(φ1) * Math.cos(φ2) *
+    Math.sin(Δλ / 2) ** 2;
+
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function isVisitedToday(a) {
+  if (!a.fecha_ultima_visita) return false;
+  const today = new Date().toISOString().split('T')[0];
+  return a.fecha_ultima_visita.startsWith(today);
+}
+
+async function loadNearby() {
+  if (!currentPos) return;
+
+  const agencies = await getAllAgencies();
+
+  const enriched = agencies.map(a => ({
+    ...a,
+    distance: distanceMeters(
+      currentPos.latitude,
+      currentPos.longitude,
+      a.lat,
+      a.lng
+    )
+  }))
+    .sort((a, b) => a.distance - b.distance);
+
+  if (!enriched.length) {
+    nearestBox.innerHTML = `
+      <div class="bg-white rounded-3xl p-6 shadow text-center opacity-60">
+        <i class="fa fa-location-dot text-4xl mb-2"></i>
+        <p>No hay agencias registradas</p>
+      </div>`;
+    return;
+  }
+
+  renderNearest(enriched[0]);
+  renderList(enriched);
+  renderObservations(enriched);
+}
+
+function renderNearest(a) {
+  const isNear = a.distance <= 100;
+  const colorClass = isNear ? 'from-emerald-500 to-teal-600' : 'from-slate-400 to-slate-500';
+
+  nearestBox.classList.remove('hidden');
+  nearestBox.innerHTML = `
+      <div class="bg-gradient-to-br ${colorClass} text-white rounded-[2rem] p-6 shadow-xl shadow-emerald-200/50 relative overflow-hidden group">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+        
+        <div class="relative z-10">
+            <div class="flex justify-between items-start mb-6">
+                <span class="bg-white/20 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Destacada</span>
+                <div class="text-right">
+                    <p class="text-2xl font-black">${Math.round(a.distance)}m</p>
+                    <p class="text-[10px] opacity-70 uppercase font-bold leading-none">de distancia</p>
+                </div>
+            </div>
+
+            <h2 class="text-3xl font-black leading-tight mb-1">AG ${a.idReal}</h2>
+            <div class="flex items-center gap-2 opacity-90 text-sm mb-8">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>Zona ${a.zona || 'Sucursal Principal'}</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="goTo(${a.lat}, ${a.lng})" 
+                    class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
+                    <i class="fa fa-map-location-dot mr-2"></i> MAPA
+                </button>
+                <button onclick="registrarVisita('${a.id}')" 
+                    ${!isNear ? 'disabled' : ''}
+                    class="bg-white text-emerald-600 py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
+                    ${isNear ? '<i class="fa fa-check-circle"></i> VISITAR' : '<i class="fa fa-lock"></i> BLOQUEDO'}
+                </button>
+            </div>
+        </div>
+      </div>`;
+}
+console.log("Test")
+function renderList(data) {
+  list.innerHTML = '';
+  data.slice(1).forEach(a => {
+    list.innerHTML += `
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex justify-between items-center active:scale-[0.97] transition-transform">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-indigo-500">
+                        <i class="fa-solid fa-building text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800">${a.idReal}</h4>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Zona ${a.zona || 'Sucursal'}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-black text-indigo-600">${Math.round(a.distance)}m</p>
+                    <button onclick="goTo(${a.lat}, ${a.lng})" class="text-[10px] font-black text-slate-300 hover:text-indigo-400 uppercase">Ver ruta</button>
+                </div>
+            </div>
+        `;
+  });
+}
+
+function renderObservations(agencies) {
+  const panel = document.getElementById('observationsPanel');
+  const today = new Date().toISOString().split('T')[0];
+  const withNotes = agencies.filter(a => a.ultima_nota && a.fecha_ultima_visita?.startsWith(today));
+
+  if (withNotes.length === 0) {
+    panel.innerHTML = `<div class="text-center py-10"><p class="text-xs text-slate-400 font-bold uppercase tracking-widest italic">Sin reportes hoy</p></div>`;
+    return;
+  }
+
+  panel.innerHTML = withNotes.map(a => {
+    const color = a.ultimo_estado === 'Excelente' ? 'emerald' : a.ultimo_estado === 'Regular' ? 'amber' : 'rose';
+    const hora = new Date(a.fecha_ultima_visita).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    return `
+            <div class="relative pl-10">
+                <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-4 border-${color}-500 z-10 shadow-sm"></div>
+                <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <h4 class="font-black text-slate-800 text-sm leading-none">AG ${a.idReal}</h4>
+                            <span class="text-[9px] text-slate-400 font-bold uppercase">Hora ${hora}</span>
+                        </div>
+                        <span class="text-[9px] font-black px-2 py-1 rounded-lg bg-${color}-50 text-${color}-600 uppercase border border-${color}-100">
+                            ${a.ultimo_estado}
+                        </span>
+                    </div>
+                    <p class="text-slate-500 text-xs italic leading-relaxed border-l-2 border-slate-100 pl-3">
+                        "${a.ultima_nota}"
+                    </p>
+                </div>
+            </div>
+        `;
+  }).join('');
+}
+
+window.goTo = function (lat, lng) {
+  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+};
+
+
+btnAdd?.addEventListener('click', async () => {
+
+  Swal.fire({
+    title: 'Obteniendo ubicación...',
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading()
+  });
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    Swal.close();
+
+    const { value: form } = await Swal.fire({
+      title: '<span class="text-indigo-600">Nueva Agencia</span>',
+      html: `
+          <div class="p-1">
+            <input id="codigo" class="swal2-input !m-2 !w-full" placeholder="Código de Agencia">
+            <select id="zona" class="swal2-select !m-2 !w-full">
+              <option value="">Seleccione zona</option>
+              <option value="A">Zona A</option>
+              <option value="B">Zona B</option>
+              <option value="C">Zona C</option>
+              <option value="D">Zona D</option>
+              <option value="OTRA">OTRA</option>
+            </select>
+            <input id="direccion" class="swal2-input !m-2 !w-full" placeholder="Dirección (Opcional)">
+          </div>
+        `,
+      showCancelButton: true,
+      confirmButtonText: 'Guardar Agencia',
+      confirmButtonColor: '#4f46e5',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const codigo = document.getElementById('codigo').value;
+        const zona = document.getElementById('zona').value;
+
+        if (!codigo || !zona) {
+          Swal.showValidationMessage('Código y zona son obligatorios');
+          return false;
+        }
+
+        return {
+          codigo: codigo,
+          zona: zona,
+          direccion: document.getElementById('direccion').value
+        };
+      }
+    });
+
+    if (!form) return;
+
+    try {
+      await createAgencyFromGPS(pos.coords, form);
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Agencia Guardada!',
+        text: 'Se registró en tu ubicación actual.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+
+      await loadNearby();
+
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'No se pudo guardar la agencia', 'error');
+    }
+
+  }, () => {
+    Swal.fire('Error', 'No se pudo obtener tu ubicación precisa', 'error');
+  }, {
+    enableHighAccuracy: true,
+    timeout: 10000
+  });
+});
+
+
+navigator.geolocation.watchPosition(
+  pos => {
+    currentPos = pos.coords;
+    loadNearby();
+  },
+  err => {
+    Swal.fire('Error', 'No se pudo acceder al GPS', 'error');
+  },
+  { enableHighAccuracy: true }
+);
+
+
+window.registrarVisita = async function (id) {
+  const agencies = await getAllAgencies();
+  const agency = agencies.find(a => a.id === id);
+
+  if (!agency) return;
+
+  const { value: formValues } = await Swal.fire({
+    title: `Visita: ${agency.nombre}`,
+    html: `
+        <div class="text-left">
+          <label class="block text-xs font-bold mb-1">ESTADO DE AGENCIA</label>
+          <select id="swal-estado" class="swal2-input w-full m-0 mb-4">
+            <option value="Excelente">Excelente ✅</option>
+            <option value="Regular">Regular ⚠️</option>
+            <option value="Crítico">Crítico ❌</option>
+          </select>
+          
+          <label class="block text-xs font-bold mb-1">OBSERVACIONES</label>
+          <textarea id="swal-notas" class="swal2-textarea w-full m-0" placeholder="Escribe aquí..."></textarea>
+        </div>
+      `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Guardar Visita',
+    confirmButtonColor: '#10b981',
+    preConfirm: () => {
+      return {
+        estado_visita: document.getElementById('swal-estado').value,
+        notas: document.getElementById('swal-notas').value,
+        fecha: new Date().toISOString()
+      }
+    }
+  });
+
+  if (formValues) {
+
+    const updatedAgency = {
+      ...agency,
+      fecha_ultima_visita: formValues.fecha,
+      ultimo_estado: formValues.estado_visita,
+      ultima_nota: formValues.notas,
+      contador_visitas: (agency.contador_visitas || 0) + 1
+    };
+
+    await updateAgency(updatedAgency);
+
+    await Swal.fire({
+      icon: 'success',
+      title: '¡Visita Registrada!',
+      text: 'Se ha guardado en el historial local.',
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    loadNearby();
+  }
+};
+
+================================================================================
+ARCHIVO: .\js\db\db.js
+================================================================================
+const DB_NAME = 'control_agencias_db';
+const DB_VERSION = 3;
+
+export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
+  upgrade(db) {
+
+    if (!db.objectStoreNames.contains('agencies')) {
+      const store = db.createObjectStore('agencies', { keyPath: 'id' });
+      store.createIndex('estado', 'estado');
+      store.createIndex('zona', 'zona');
+    }
+
+    if (!db.objectStoreNames.contains('visits')) {
+      const store = db.createObjectStore('visits', { keyPath: 'id' });
+      store.createIndex('agencia_id', 'agencia_id');
+      store.createIndex('timestamp', 'timestamp');
+    }
+
+    if (!db.objectStoreNames.contains('observations')) {
+      const store = db.createObjectStore('observations', { keyPath: 'id' });
+      store.createIndex('visit_id', 'visit_id');
+    }
+
+    if (!db.objectStoreNames.contains('sync_queue')) {
+      db.createObjectStore('sync_queue', {
+        keyPath: 'id',
+        autoIncrement: true
+      });
+    }
+
+    if (!db.objectStoreNames.contains('findings')) {
+      const store = db.createObjectStore('findings', { keyPath: 'id' });
+      store.createIndex('agency_id', 'agency_id');
+      store.createIndex('fecha', 'fecha');
+      store.createIndex('gravedad', 'gravedad');
+      store.createIndex('synced', 'synced');
+    }
+
+    if (!db.objectStoreNames.contains('reports')) {
+      const store = db.createObjectStore('reports', { keyPath: 'id' });
+    }
+  }
+});
+
+================================================================================
+ARCHIVO: .\js\db\observations.store.js
+================================================================================
+
+import { uuid } from '../utils/uuid.js';
+import { now } from '../utils/time.js';
+import { dbPromise } from './db.js';
+
+export async function addObservation(visitId, text) {
+  const obs = {
+    id: uuid(),
+    visit_id: visitId,
+    text,
+    timestamp: now()
+  };
+
+  const dbConn = await dbPromise;
+  await dbConn.put('observations', obs);
+
+  await queueSync('CREATE', 'observations', obs);
+}
+
+
+================================================================================
+ARCHIVO: .\js\db\sync.queue.js
+================================================================================
+// js/db/sync.queue.js
+import { dbPromise } from './db.js';
+
+const SYNC_STORE = 'sync_queue';
+
+/**
+ * Añade una operación a la cola de sincronización
+ * @param {'CREATE'|'UPDATE'|'DELETE'} action 
+ * @param {string} storeName 
+ * @param {object} data 
+ */
+export async function queueSync(action, storeName, data) {
+  const db = await dbPromise;
+
+  const item = {
+    id: crypto.randomUUID(),
+    action,
+    storeName,
+    data,
+    timestamp: Date.now()
+  };
+
+  await db.put(SYNC_STORE, item);
+  console.log('Queued sync:', item);
+}
+
+/**
+ * Obtiene todos los items pendientes de sincronización
+ */
+export async function getSyncQueue() {
+  const db = await dbPromise;
+  return await db.getAll(SYNC_STORE);
+}
+
+/**
+ * Marca un item como sincronizado (lo elimina de la cola)
+ * @param {string} id 
+ */
+export async function removeFromQueue(id) {
+  const db = await dbPromise;
+  await db.delete(SYNC_STORE, id);
+}
+
+/**
+ * Limpia toda la cola (opcional)
+ */
+export async function clearSyncQueue() {
+  const db = await dbPromise;
+  await db.clear(SYNC_STORE);
+}
+
+/**
+ * Procesa la cola de sincronización y hace merge con el backend
+ * @param {function} syncHandler function que recibe cada item y hace sync con Firebase
+ */
+export async function processSyncQueue(syncHandler) {
+  const queue = await getSyncQueue();
+
+  for (const item of queue) {
+    try {
+      await syncHandler(item);
+      await removeFromQueue(item.id);
+    } catch (err) {
+      console.error('Error syncing item', item, err);
+      // lo dejamos en la cola para intentar luego
+    }
+  }
+}
+
+
+================================================================================
+ARCHIVO: .\js\db\sync.store.js
+================================================================================
+
+import { dbPromise } from './db.js';
+export async function queueSync(action, entity, payload) {
+  const dbConn = await dbPromise;
+
+  await dbConn.add('sync_queue', {
+    action,
+    entity,
+    payload,
+    timestamp: Date.now()
+  });
+}
+
+
+================================================================================
+ARCHIVO: .\js\db\visits.store.js
+================================================================================
+
+import { dbPromise } from './db.js';
+import { uuid } from '../utils/uuid.js';
+import { now } from '../utils/time.js';
+import { queueSync } from './sync.store.js';
+
+const MIN_INTERVAL = 5 * 60 * 1000; // 5 minutos
+
+export async function registerVisit(agencyId) {
+  const dbConn = await dbPromise;
+  const agency = await dbConn.get('agencies', agencyId);
+
+  if (!agency) {
+    console.warn('Agencia no encontrada:', agencyId);
+    return null;
+  }
+
+  const currentTime = now();
+
+  // 🛑 evitar duplicados por tiempo
+  if (
+    agency.fecha_ultima_visita &&
+    currentTime - agency.fecha_ultima_visita < MIN_INTERVAL
+  ) {
+    return null;
+  }
+
+  const visit = {
+    id: uuid(),
+    agencia_id: agencyId,
+    timestamp: currentTime
+  };
+
+  // guardar visita
+  await dbConn.put('visits', visit);
+
+  // actualizar agencia
+  agency.contador_visitas = (agency.contador_visitas || 0) + 1;
+  agency.fecha_ultima_visita = currentTime;
+  agency.visited = true;
+  agency.updated_at = currentTime;
+
+  await dbConn.put('agencies', agency);
+
+  // cola de sincronización
+  await queueSync('CREATE', 'visits', visit);
+  await queueSync('UPDATE', 'agencies', agency);
+
+  return visit;
+}
+
+
+================================================================================
+ARCHIVO: .\js\export\excel.js
+================================================================================
+import { dbPromise } from '../db/db.js';
+
+export async function exportAll() {
+  const dbConn = await dbPromise;
+
+  const agencies = await dbConn.getAll('agencies');
+  const visits = await dbConn.getAll('visits');
+  const observations = await dbConn.getAll('observations');
+  const routes = await dbConn.getAll('routes');
+
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(agencies), 'Agencias');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(visits), 'Visitas');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(observations), 'Observaciones');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(routes), 'Rutas');
+
+  XLSX.writeFile(wb, 'control_agencias.xlsx');
+}
+
+
+================================================================================
+ARCHIVO: .\js\feedback\sound.js
+================================================================================
+export function playSound() {
+    const audio = new Audio('assets/sounds/check.mp3');
+    audio.play().catch(() => {});
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\feedback\vibration.js
+================================================================================
+export function vibrate() {
+    if (navigator.vibrate) {
+      navigator.vibrate([200, 100, 200]);
+    }
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\findings\findings.page.js
+================================================================================
+import { addFinding, getFindings, updateFinding  } from './findings.store.js';
+import { getAllAgencies } from '../agencies/agencies.store.js';
+
+const list = document.getElementById('findings-list');
+const btnNew = document.getElementById('btn-new');
+
+const fromDate = document.getElementById('fromDate');
+const toDate = document.getElementById('toDate');
+const btnFilter = document.getElementById('btnFilter');
+const criticalBadge = document.getElementById('criticalBadge');
+
+let agencies = [];
+
+/* ===============================
+   CARGAR HALLAZGOS
+================================ */
+async function loadFindings() {
+  const data = await getFindings();
+  render(data);
+  updateCriticalBadge();
+}
+
+/* ===============================
+   RENDER
+================================ */
+function render(data) {
+  list.innerHTML = '';
+
+  if (!data.length) {
+    list.innerHTML = `
+      <div class="text-center opacity-40 mt-20">
+        <i class="fa fa-clipboard-list text-4xl mb-2"></i>
+        <p>No hay hallazgos registrados</p>
+      </div>`;
+    return;
+  }
+
+  data.sort((a, b) => b.created_at - a.created_at);
+
+  data.forEach(f => {
+    const isPending = f.estado === 'Pendiente';
+
+    list.innerHTML += `
+      <div class="bg-white rounded-2xl shadow p-4 space-y-3">
+        
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold">${f.titulo}</h3>
+
+          <span class="text-xs px-2 py-1 rounded-full font-bold
+            ${f.gravedad === 'alta' || f.gravedad === 'critica'
+              ? 'bg-red-100 text-red-600'
+              : f.gravedad === 'media'
+              ? 'bg-amber-100 text-amber-600'
+              : 'bg-emerald-100 text-emerald-600'}">
+            ${f.gravedad.toUpperCase()}
+          </span>
+        </div>
+
+        <p class="text-sm text-slate-600">${f.descripcion || ''}</p>
+
+        <div class="text-xs text-slate-400 flex justify-between">
+          
+          <span>${f.fecha} ${f.hora}</span>
+        </div>
+
+        <div class="flex justify-between items-center text-xs font-bold">
+          <span class="${isPending ? 'text-red-600' : 'text-emerald-600'}">
+            ${f.estado}
+          </span>
+
+          ${isPending ? `
+            <button 
+              class="text-emerald-600 underline"
+              data-id="${f.id}">
+              ✔ Marcar como resuelto
+            </button>` : `
+            <span class="text-slate-400">
+              Resuelto
+            </span>`}
+        </div>
+      </div>
+    `;
+  });
+
+  bindResolveButtons(data);
+}
+async function updateCriticalBadge() {
+  const all = await getFindings();
+
+  const critical = all.filter(f =>
+    f.gravedad === 'critica' &&
+    f.estado === 'Pendiente'
+  );
+
+  if (!critical.length) {
+    criticalBadge.classList.add('hidden');
+    return;
+  }
+
+  criticalBadge.textContent = `${critical.length} críticos`;
+  criticalBadge.classList.remove('hidden');
+
+}
+
+function bindResolveButtons(data) {
+  document.querySelectorAll('[data-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const finding = data.find(f => f.id === id);
+    
+      if (!finding) return;
+    
+      const confirm = await Swal.fire({
+        title: '¿Marcar como resuelto?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, resolver'
+      });
+    
+      if (!confirm.isConfirmed) return;
+    
+      finding.estado = 'Resuelto';
+      finding.resolved_at = Date.now();
+    
+      await updateFinding(finding);
+      loadFindings();
+    });
+    
+  });
+}
+
+/* ===============================
+   NUEVO HALLAZGO
+================================ */
+btnNew.addEventListener('click', async () => {
+
+  if (!agencies.length) agencies = await getAllAgencies();
+
+  const agencyOptions = agencies
+    .map(a => `<option value="${a.idReal}">${a.idReal}</option>`)
+    .join('');
+
+  const { value: form } = await Swal.fire({
+    title: 'Nuevo Hallazgo',
+    html: `
+      <select id="agency" class="swal2-input">${agencyOptions}</select>
+      <input id="titulo" class="swal2-input" placeholder="Título">
+      <textarea id="desc" class="swal2-textarea" placeholder="Descripción"></textarea>
+      <select id="tipo" class="swal2-input">
+        <option>Operativo</option>
+        <option>Administrativo</option>
+        <option>Seguridad</option>
+        <option>Limpieza</option>
+        <option>Otro</option>
+      </select>
+      <select id="gravedad" class="swal2-input">
+        <option value="baja">Baja</option>
+        <option value="media">Media</option>
+        <option value="alta">Alta</option>
+        <option value="critica">Crítica</option>
+      </select>
+    `,
+    showCancelButton: true,
+    preConfirm: () => {
+      const titulo = document.getElementById('titulo').value;
+      if (!titulo) {
+        Swal.showValidationMessage('El título es obligatorio');
+        return false;
+      }
+
+      const now = new Date();
+      const agencyId = document.getElementById('agency').value;
+      const agencyData = agencies.find(a => a.idReal === agencyId);
+
+
+      return {
+        id: crypto.randomUUID(),
+        agency_id: agencyId,
+
+        titulo,
+        descripcion: document.getElementById('desc').value,
+        tipo: document.getElementById('tipo').value,
+        gravedad: document.getElementById('gravedad').value,
+
+        estado: 'Pendiente',
+        resolved_at: null,
+
+        fecha: now.toISOString().split('T')[0],
+        hora: now.toTimeString().slice(0, 5),
+
+        creado_por: 'Pedro Garcia',
+        synced: false,
+        created_at: Date.now()
+      };
+    }
+  });
+
+  if (!form) return;
+
+  await addFinding(form);
+  loadFindings();
+});
+
+/* ===============================
+   FILTRO POR FECHA
+================================ */
+btnFilter.addEventListener('click', async () => {
+  const all = await getFindings();
+
+  const from = fromDate.value
+    ? new Date(fromDate.value).getTime()
+    : 0;
+
+  const to = toDate.value
+    ? new Date(toDate.value).getTime() + 86400000
+    : Date.now();
+
+  const filtered = all.filter(f =>
+    f.created_at >= from && f.created_at <= to
+  );
+
+  render(filtered);
+});
+
+/* ===============================
+   INIT
+================================ */
+loadFindings();
+
+
+================================================================================
+ARCHIVO: .\js\findings\findings.store.js
+================================================================================
+import { dbPromise } from '../db/db.js';
+
+export async function addFinding(data) {
+  const db = await dbPromise;
+  await db.add('findings', data);
+}
+
+export async function getFindings() {
+  const db = await dbPromise;
+  return db.getAll('findings');
+}
+
+export async function getCriticalPendingFindings() {
+    const db = await dbPromise;
+    const all = await db.getAll('findings');
+  
+    console.log('DEBUG findings:', all);
+  
+    return all.filter(f =>
+        f.gravedad === 'critica' &&
+        f.estado === 'Pendiente'
+      );
+  }
+  
+  export async function markFindingResolved(id) {
+    const db = await dbPromise;
+  
+    const finding = await db.get('findings', id);
+    if (!finding) return;
+  
+    finding.estado = 'Resuelto';
+    finding.resolved_at = Date.now();
+    finding.synced = false;
+  
+    await db.put('findings', finding);
+  }
+
+  export async function updateFinding(finding) {
+    const db = dbPromise;
+    await db.put('findings', finding)
+  }
+
+================================================================================
+ARCHIVO: .\js\gps\geofence.service.js
+================================================================================
+import { registerVisit } from '../db/visits.store.js';
+import { vibrate } from '../feedback/vibration.js';
+import { playSound } from '../feedback/sound.js';
+
+const ENTER_RADIUS = 20;
+const EXIT_RADIUS = 25;
+const COOLDOWN = 30 * 60 * 1000; // 30 minutos
+
+const state = new Map();
+
+function distance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const toRad = x => x * Math.PI / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) ** 2;
+
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+export async function checkAgencies(position, agencies) {
+  for (const agency of agencies) {
+    const dist = distance(
+      position.lat,
+      position.lng,
+      agency.lat,
+      agency.lng
+    );
+
+    const info = state.get(agency.id) || {
+      inside: false,
+      lastVisit: 0
+    };
+
+    // 🟢 ENTRADA
+    if (!info.inside && dist <= ENTER_RADIUS) {
+      const now = Date.now();
+
+      if (now - info.lastVisit < COOLDOWN) continue;
+
+      info.inside = true;
+      info.lastVisit = now;
+
+      agency.visited = true;
+      agency.visits = (agency.visits || 0) + 1;
+      agency.lastVisit = now;
+
+      await registerVisit(agency.id, now);
+
+      vibrate();
+      playSound();
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Agencia visitada',
+        text: agency.idReal,
+        timer: 1800,
+        showConfirmButton: false
+      });
+    }
+
+    // 🔴 SALIDA
+    if (info.inside && dist > EXIT_RADIUS) {
+      info.inside = false;
+    }
+
+    state.set(agency.id, info);
+  }
+}
+
+
+================================================================================
+ARCHIVO: .\js\gps\location.service.js
+================================================================================
+let watchId = null;
+let retryTimeout = null;
+
+export function startLocationTracking(onUpdate) {
+  if (!navigator.geolocation) {
+    Swal.fire({
+      icon: 'error',
+      title: 'GPS no disponible',
+      text: 'Tu navegador no soporta geolocalización.',
+      timer: 2500,
+      showConfirmButton: false
+    });
+    return;
+  }
+
+  function startWatch() {
+    watchId = navigator.geolocation.watchPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+
+        if (typeof lat !== 'number' || typeof lng !== 'number') return;
+
+        // Actualiza la posición
+        onUpdate({ lat, lng, accuracy: pos.coords.accuracy });
+      },
+      err => {
+        console.error('GPS error', err);
+
+        // Mostrar alerta según tipo de error
+        if (err.code === 1) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Permiso denegado',
+            text: 'Activa el acceso a tu ubicación para usar el GPS.',
+            timer: 2500,
+            showConfirmButton: false
+          });
+        } else if (err.code === 2) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Ubicación no disponible',
+            text: 'No se pudo determinar tu posición. Revisa tu señal.',
+            timer: 2500,
+            showConfirmButton: false
+          });
+        } else if (err.code === 3) {
+          Swal.fire({
+            icon: 'info',
+            title: 'GPS lento',
+            text: 'Intentando obtener tu ubicación nuevamente...',
+            timer: 2500,
+            showConfirmButton: false
+          });
+
+          // Reintentar automáticamente después de 3s
+          if (retryTimeout) clearTimeout(retryTimeout);
+          retryTimeout = setTimeout(() => {
+            startWatch();
+          }, 3000);
+        }
+      },
+      {
+        enableHighAccuracy: true,  // ⚡ alta precisión
+        maximumAge: 5000,          // usar posición reciente hasta 5s
+        timeout: 30000             // esperar hasta 30s
+      }
+    );
+  }
+
+  startWatch();
+}
+
+export function stopLocationTracking() {
+  if (watchId) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  if (retryTimeout) {
+    clearTimeout(retryTimeout);
+    retryTimeout = null;
+  }
+}
+
+
+================================================================================
+ARCHIVO: .\js\map\map.actions.js
+================================================================================
+import { getMapInstance } from './map.instance.js';
+
+export function goToAgency(agency) {
+  const map = getMapInstance();
+  if (!map) return;
+
+  map.setView([agency.lat, agency.lng], 17);
+
+  L.popup()
+    .setLatLng([agency.lat, agency.lng])
+    .setContent(`
+      <b>${agency.idReal}</b><br>
+      ${agency.direccion}
+    `)
+    .openOn(map);
+  
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${agency.lat},${agency.lng}&travelmode=driving`;
+  window.open(url, '_blank');
+}
+
+
+================================================================================
+ARCHIVO: .\js\map\map.instance.js
+================================================================================
+let mapInstance = null;
+
+export function setMapInstance(map) {
+  mapInstance = map;
+}
+
+export function getMapInstance() {
+  return mapInstance;
+}
+
+
+================================================================================
+ARCHIVO: .\js\map\map.routes.js
+================================================================================
+import { getAllAgencies } from '../agencies/agencies.store.js';
+import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.esm.js';
+import { startLocationTracking, stopLocationTracking } from '../gps/location.service.js';
+
+
+// Variable para la ruta
+let currentRouteControl = null;
+let points = [];
+let currentIndex = 0;
+let myMarker = null;
+let traveledLine = null;
+
+export async function generateRouteByZone(map, zone) {
+  const agencies = await getAllAgencies();
+
+  // Filtrar puntos de la zona
+  const points = agencies
+    .filter(a => a.zona === zone)
+    .map(a => L.latLng(a.lat, a.lng))
+    .filter(p => p.lat && p.lng);
+
+    console.log(points.length)
+  if (points.length < 2) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Pocas agencias!',
+      text: `La zona ${zone} no cuenta con los suficientes puntos!`,
+      timer: 1800,
+      showConfirmButton: false
+    });
+    return;
+  }
+
+  // ❌ Eliminar ruta anterior si existe
+  if (currentRouteControl) {
+    map.removeControl(currentRouteControl);
+    currentRouteControl = null;
+  }
+
+  // ⚡ Recalcular tamaño del mapa (importante para móvil)
+  map.invalidateSize();
+
+  // ✅ Crear nueva ruta
+  currentRouteControl = L.Routing.control({
+    waypoints: points,
+    lineOptions: { styles: [{ color: '#f59e0b', weight: 4 }] },
+    router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+    routeWhileDragging: false,
+    draggableWaypoints: false,
+    addWaypoints: false,
+    createMarker: () => null, // ❌ ocultar marcadores extra
+    show: false,              // ❌ ocultar panel de ruta
+    fitSelectedRoutes: false  // ❌ evitar zoom automático incorrecto
+  }).addTo(map);
+
+  // Centrar el mapa manualmente en la ruta
+  const bounds = L.latLngBounds(points);
+  map.fitBounds(bounds, { padding: [50, 50] });
+}
+
+// Función principal para generar la ruta y hacer seguimiento
+export async function startRouteByZone(map, zone) {
+    stopRoute()
+    const agencies = await getAllAgencies();
+  
+    // Filtrar puntos de la zona
+    const points = agencies
+      .filter(a => a.zona === zone)
+      .map(a => L.latLng(a.lat, a.lng))
+      .filter(p => p.lat && p.lng);
+
+      console.log(points.length)
+    if (points.length < 2) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Pocas agencias!',
+        text: `La zona ${zone} no cuenta con suficientes puntos!`,
+        timer: 1800,
+        showConfirmButton: false
+      });
+      return;
+    }
+  
+    // ❌ Eliminar ruta anterior si existe
+    if (currentRouteControl) {
+      map.removeControl(currentRouteControl);
+      currentRouteControl = null;
+    }
+  
+    map.invalidateSize();
+  
+    // Dibujar ruta completa
+    currentRouteControl = L.Routing.control({
+      waypoints: points,
+      lineOptions: { styles: [{ color: '#f59e0b', weight: 4 }] },
+      router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+      routeWhileDragging: false,
+      draggableWaypoints: false,
+      addWaypoints: false,
+      createMarker: () => null,
+      show: false,
+      fitSelectedRoutes: false
+    }).addTo(map);
+  
+    const bounds = L.latLngBounds(points);
+    map.fitBounds(bounds, { padding: [50, 50] });
+  
+    // Línea de progreso
+    if (traveledLine) traveledLine.remove();
+    traveledLine = L.polyline([], { color: 'blue', weight: 4 }).addTo(map);
+  
+    currentIndex = 0;
+  
+    // Iniciar seguimiento GPS
+    startLocationTracking(({ lat, lng }) => {
+      if (!myMarker) {
+        myMarker = L.marker([lat, lng], {
+          icon: L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/64/64113.png',
+            iconSize: [30, 30],
+            iconAnchor: [15, 30]
+          })
+        }).addTo(map);
+        map.setView([lat, lng], 16);
+      } else {
+        myMarker.setLatLng([lat, lng]);
+      }
+  
+      // Actualizar línea de progreso
+      traveledLine.addLatLng([lat, lng]);
+  
+      // Revisar si llegamos al siguiente punto
+      if (currentIndex < points.length) {
+        const next = points[currentIndex];
+        const distance = map.distance([lat, lng], next);
+  
+        if (distance < 20) { // 20 metros de tolerancia
+          Swal.fire({
+            icon: 'success',
+            title: `Llegaste al punto ${currentIndex + 1}`,
+            timer: 1000,
+            showConfirmButton: false
+          });
+          currentIndex++;
+        }
+      }
+    });
+  }
+  
+  // Función para detener el recorrido y el seguimiento GPS
+  export function stopRoute() {
+    stopLocationTracking();
+    if (myMarker) myMarker.remove();
+    if (traveledLine) traveledLine.remove();
+    if (currentRouteControl) {
+      currentRouteControl.remove();
+      currentRouteControl = null;
+    }
+    points = [];
+    currentIndex = 0;
+    myMarker = null;
+    traveledLine = null;
+  }
+
+================================================================================
+ARCHIVO: .\js\map\map.service.js
+================================================================================
+let map;
+let userMarker = null;
+let firstFix = true;
+const SAN_JUAN = [18.8059, -71.2299];
+import { setMapInstance } from './map.instance.js';
+
+
+export function initMap() {
+  map = L.map('map').setView(SAN_JUAN, 17);
+
+  L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { maxZoom: 19 }
+  ).addTo(map);
+
+  
+  renderAgencies(map);
+  setupCreateAgency(map);
+  setMapInstance(map)
+  
+  return map;
+}
+
+export function updateUserPosition(map, position) {
+  if (!map || !position?.lat || !position?.lng) return;
+
+  if (!userMarker) {
+    userMarker = L.circleMarker([position.lat, position.lng], {
+      radius: 10,
+    //   color: '#2563eb',
+    //   fillColor: '#3b82f6',
+      fillOpacity: 0.9
+    }).addTo(map);
+
+    userMarker.bindPopup('Mi ubicación');
+
+    
+    if (firstFix) {
+      map.setView([position.lat, position.lng], 17);
+      firstFix = false;
+    }
+
+    return;
+  }
+
+  userMarker.setLatLng([position.lat, position.lng]);
+}
+
+/* ============================= */
+/* Helpers */
+/* ============================= */
+
+import { renderAgencies, createAgencyFromMap } from '../agencies/agencies.ui.js';
+
+function setupCreateAgency(map) {
+  map.on('click', async (e) => {
+    const confirm = await Swal.fire({
+      title: 'Crear agencia',
+      text: '¿Agregar agencia en este punto?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    const { value: formValues } = await Swal.fire({
+      title: 'Datos de la agencia',
+      html: `
+        <input id="codigo" class="swal2-input" placeholder="Código">
+        <select id="zona" class="swal2-select">
+          <option value="">Seleccione zona</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="OTRA">OTRA</option>
+        </select>
+        <input id="direccion" class="swal2-input" placeholder="Dirección">
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      preConfirm: () => {
+        const codigo = document.getElementById('codigo').value.trim();
+        const zona = document.getElementById('zona').value;
+        const direccion = document.getElementById('direccion').value.trim();
+
+        if (!codigo || !zona || !direccion) {
+          Swal.showValidationMessage('Todos los campos son obligatorios');
+          return false;
+        }
+
+        return { codigo, zona, direccion };
+      }
+    });
+
+    if (formValues) {
+      await createAgencyFromMap(e.latlng, map, formValues);
+    }
+  });
+}
+
+
+================================================================================
+ARCHIVO: .\js\map\markers.service.js
+================================================================================
+export function agencyMarker(agency) {
+    const colors = {
+      verde: 'green',
+      amarillo: 'orange',
+      rojo: 'red'
+    };
+  
+    return L.circleMarker([agency.lat, agency.lng], {
+      radius: 7,
+      color: colors[agency.estado] || 'gray'
+    }).bindPopup(`
+      <strong>${agency.idReal}</strong><br>
+      Visitas: ${agency.contador_visitas}
+    `);
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\reports\reports.page.js
+================================================================================
+import { getAllAgencies } from '../agencies/agencies.store.js';
+
+const todayEl = document.getElementById('today');
+const nameEl = document.getElementById('nearest-name');
+const distEl = document.getElementById('nearest-distance');
+const timeline = document.getElementById('timeline');
+
+todayEl.textContent = new Date().toLocaleDateString('es-DO', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+// 📍 GPS + agencia cercana
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const agencies = await getAllAgencies();
+    if (!agencies.length) return;
+
+    const nearest = findNearest(
+      pos.coords.latitude,
+      pos.coords.longitude,
+      agencies
+    );
+
+    nameEl.textContent = nearest.nombre || nearest.idReal;
+    distEl.textContent = `${nearest.distance.toFixed(2)} km`;
+
+  }, () => {
+    nameEl.textContent = 'GPS no disponible';
+  }, { enableHighAccuracy: true });
+}
+
+// 🧮 Distancia Haversine
+function calcDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function findNearest(lat, lng, agencies) {
+  let nearest = null;
+  let min = Infinity;
+
+  for (const a of agencies) {
+    const d = calcDistance(lat, lng, a.lat, a.lng);
+    if (d < min) {
+      min = d;
+      nearest = { ...a, distance: d };
+    }
+  }
+  return nearest;
+}
+
+// 🕒 Timeline demo (placeholder)
+timeline.innerHTML = `
+  <div class="bg-white rounded-xl p-3 flex items-center gap-3 shadow-sm">
+    <div class="text-indigo-600">
+      <i class="fa-solid fa-route"></i>
+    </div>
+    <div class="flex-1">
+      <p class="font-semibold text-sm">Ruta diaria</p>
+      <p class="text-xs text-gray-500">08:30 AM</p>
+    </div>
+    <input type="checkbox" class="w-5 h-5 accent-indigo-600">
+  </div>
+`;
+
+
+================================================================================
+ARCHIVO: .\js\reports\reports.store.js
+================================================================================
+import { dbPromise } from '../db/db.js';
+
+export async function addReport(report) {
+  const db = await dbPromise;
+  await db.put('reports', report);
+}
+
+export async function getReportsByDate(date) {
+  const db = await dbPromise;
+  const all = await db.getAll('reports');
+  return all.filter(r => r.fecha === date);
+}
+
+export async function toggleReportCompleted(id) {
+  const db = await dbPromise;
+  const report = await db.get('reports', id);
+  report.completed = !report.completed;
+  report.updated_at = Date.now();
+  await db.put('reports', report);
+}
+
+
+================================================================================
+ARCHIVO: .\js\reports\reports.ui.js
+================================================================================
+export function renderTimeline(list, data) {
+    list.innerHTML = '';
+  
+    if (!data.length) {
+      list.innerHTML = `
+        <div class="text-center opacity-40 mt-20">
+          <i class="fa fa-clock text-4xl mb-2"></i>
+          <p>No hay registros hoy</p>
+        </div>`;
+      return;
+    }
+  
+    data.sort((a,b) => a.timestamp - b.timestamp);
+  
+    data.forEach(r => {
+      list.innerHTML += `
+        <div class="bg-white rounded-2xl shadow p-4 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-indigo-600">${r.hora}</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-slate-100 font-bold">
+              ${r.tipo.toUpperCase()}
+            </span>
+          </div>
+  
+          <p class="text-sm text-slate-700">${r.descripcion}</p>
+  
+          <div class="text-xs text-slate-400 flex justify-between">
+            <span>${r.agencia_nombre || r.zona}</span>
+            <span>${r.tarea_completada ? '✔ Completada' : ''}</span>
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\routes\routes.store.js
+================================================================================
+
+import { uuid } from '../utils/uuid.js';
+import { now } from '../utils/time.js';
+import { queueSync } from '../db/sync.store.js';
+import { dbPromise } from '../db/db.js';
+
+export async function createRoute(name) {
+  const route = {
+    id: uuid(),
+    name,
+    points: [],
+    started_at: now(),
+    ended_at: null,
+    updated_at: now()
+  };
+
+  const dbConn = await dbPromise;
+  await dbConn.put('routes', route);
+  await queueSync('CREATE', 'routes', route);
+  return route;
+}
+
+export async function addPointToRoute(routeId, point) {
+  const dbConn = await dbPromise;
+  const route = await dbConn.get('routes', routeId);
+
+  route.points.push(point);
+  route.updated_at = now();
+
+  await dbConn.put('routes', route);
+  await queueSync('UPDATE', 'routes', route);
+}
+
+export async function endRoute(routeId) {
+  const dbConn = await dbPromise;
+  const route = await dbConn.get('routes', routeId);
+  route.ended_at = now();
+  route.updated_at = now();
+
+  await dbConn.put('routes', route);
+  await queueSync('UPDATE', 'routes', route);
+}
+
+
+================================================================================
+ARCHIVO: .\js\routes\tracking.service.js
+================================================================================
+import { addPointToRoute } from './routes.store.js';
+
+let tracking = false;
+let currentRouteId = null;
+
+export function startTracking(routeId) {
+  tracking = true;
+  currentRouteId = routeId;
+}
+
+export function stopTracking() {
+  tracking = false;
+  currentRouteId = null;
+}
+
+export function onLocationUpdate(pos) {
+  if (!tracking || !currentRouteId) return;
+
+  addPointToRoute(currentRouteId, {
+    lat: pos.lat,
+    lng: pos.lng,
+    timestamp: Date.now()
+  });
+
+
+}
+
+
+================================================================================
+ARCHIVO: .\js\sync\firebase.js
+================================================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_PROYECTO.firebaseapp.com",
+  projectId: "TU_PROYECTO",
+};
+
+const app = initializeApp(firebaseConfig);
+export const firestore = getFirestore(app);
+
+
+================================================================================
+ARCHIVO: .\js\sync\sync.service.js
+================================================================================
+import db from '../db/db.js';
+import { firestore } from './firebase.js';
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+export async function syncNow() {
+  if (!navigator.onLine) return;
+
+  const dbConn = await db;
+  const queue = await dbConn.getAll('sync_queue');
+
+  for (const item of queue) {
+    const ref = doc(firestore, item.entity, item.payload.id);
+    await setDoc(ref, item.payload, { merge: true });
+
+    await dbConn.delete('sync_queue', item.id);
+  }
+}
+
+
+================================================================================
+ARCHIVO: .\js\ui\observation.modal.js
+================================================================================
+export function openObservation(agency) {
+    const obs = prompt(`Observación para ${agency.name}`);
+    if (!obs) return;
+  
+    agency.observation = obs;
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\utils\geo.js
+================================================================================
+export function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371000; // metros
+    const toRad = v => v * Math.PI / 180;
+  
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+  
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) ** 2;
+  
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\utils\notify.js
+================================================================================
+export function notifyVisit() {
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    new Audio('/sounds/check.mp3').play();
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\utils\time.js
+================================================================================
+export function now() {
+    return Date.now();
+  }
+  
+  export function formatDate(ts) {
+    return new Date(ts).toLocaleString();
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\utils\uuid.js
+================================================================================
+export function uuid() {
+    return crypto.randomUUID();
+  }
+  
+
+================================================================================
+ARCHIVO: .\js\utils\zoneColors.js
+================================================================================
+export const ZONE_COLORS = {
+    A: '#16a34a',    // verde
+    B: '#2563eb',    // azul
+    C: '#f59e0b',    // amarillo
+    D: '#dc2626',    // rojo
+    E: '#7c3aed',    // morado
+    F: '#0d9488',    // teal
+    G: '#475569',    // gris oscuro
+    OTRA: '#000000'  // negro
+  };
