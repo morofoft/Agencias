@@ -120,8 +120,8 @@ function renderAgencies(agencies) {
       card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow group';
   
       const statusBadge = a.lat 
-        ? '<span class="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide leading-none">📍 Localizada</span>'
-        : '<span class="flex items-center gap-1.5 bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide leading-none">⚠️ Sin GPS</span>';
+        ? '<span class="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide leading-none">Localizada</span>'
+        : '<span class="flex items-center gap-1.5 bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide leading-none">Sin GPS</span>';
   
       card.innerHTML = `
         <div class="flex items-start gap-4">

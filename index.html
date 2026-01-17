@@ -16,57 +16,117 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-    
-    body { font-family: 'Inter', sans-serif; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
 
     /* Scrollbar estético */
-    #agencies-list::-webkit-scrollbar { width: 4px; }
-    #agencies-list::-webkit-scrollbar-track { background: transparent; }
-    #agencies-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    #agencies-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #agencies-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #agencies-list::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 10px;
+    }
 
     /* Estilo para el mapa */
     .map-container {
-      box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
     }
 
     /* Ocultar barra de scroll en botones de ruta */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
 
 <body class="h-screen flex flex-col bg-slate-50 text-slate-900 antialiased overflow-hidden">
 
-  <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-50 shadow-sm">
+  <header
+    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
     <div class="flex items-center gap-3">
-      <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-100">
-        <i class="fas fa-map-marked-alt text-white text-lg"></i>
+      <div class="bg-indigo-600 p-2 rounded-lg md:rounded-xl shadow-lg shadow-indigo-100 shrink-0">
+        <i class="fas fa-map-marked-alt text-white text-sm md:text-lg"></i>
       </div>
-      <div>
-        <h1 class="font-bold text-base tracking-tight text-slate-800 leading-none">Control de Agencias</h1>
-        <p class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Dashboard Operativo</p>
+      <div class="min-w-0">
+        <h1 class="font-bold text-sm md:text-base tracking-tight text-slate-800 leading-none truncate">Control de
+          Agencias</h1>
+        <p class="hidden sm:block text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Dashboard
+          Operativo</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-4">
-      <a href="dataAgencias.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
-        <i class="fas fa-database text-indigo-500"></i>
+    <nav class="hidden lg:flex items-center gap-2">
+      <a href="dataAgencias.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-database opacity-70"></i>
         <span>Data Agencias</span>
       </a>
-      <a href="data.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
-        <i class="fas fa-database text-indigo-500"></i>
+      <a href="data.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-database opacity-70"></i>
         <span>Data</span>
       </a>
-      <a href="cercana.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
-        <i class="fas fa-database text-indigo-500"></i>
+      <a href="cercana.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-street-view opacity-70"></i>
         <span>Cercana</span>
       </a>
-      <a href="agencies.html" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 transition-all text-sm font-medium">
-        <i class="fas fa-building text-indigo-500"></i>
+      <a href="agencies.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-building opacity-70"></i>
         <span>Agencias</span>
       </a>
-      <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center border border-slate-300">
+    </nav>
+
+    <div class="flex items-center gap-2 md:gap-4">
+      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0">
         <i class="fa fa-user text-xs text-slate-500"></i>
+      </div>
+
+      <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+    </div>
+
+    <div id="mobileMenu" class="fixed inset-0 bg-slate-900/50 z-[60] hidden backdrop-blur-sm">
+      <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-2xl p-6 flex flex-col gap-4">
+        <div class="flex justify-between items-center mb-4">
+          <span class="font-bold text-slate-800">Menú</span>
+          <button id="closeMenuBtn" class="p-2 text-slate-400 hover:text-slate-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        <nav class="flex flex-col gap-2">
+          <a href="dataAgencias.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
+            <i class="fas fa-database text-indigo-500 w-5"></i> Agencias
+          </a>
+          <a href="data.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
+            <i class="fas fa-database text-indigo-500 w-5"></i> Data
+          </a>
+          <a href="cercana.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
+            <i class="fas fa-street-view text-indigo-500 w-5"></i> Cercana
+          </a>
+          <a href="agencies.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
+            <i class="fas fa-building text-indigo-500 w-5"></i> Agencias
+          </a>
+        </nav>
       </div>
     </div>
   </header>
@@ -77,43 +137,64 @@
       <div id="map" class="absolute inset-0 z-0"></div>
     </section>
 
-    <section class="h-[45%] bg-white border-t border-slate-200 flex flex-col shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] z-10 rounded-t-[2rem]">
-      
+    <section
+      class="h-[45%] bg-white border-t border-slate-200 flex flex-col shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] z-10 rounded-t-[2rem]">
+
       <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-3 shrink-0"></div>
 
       <div class="px-6 pb-3">
         <div class="flex items-center justify-between mb-3 px-1">
           <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Rutas del Día</h2>
-          <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold border border-indigo-100">4 RUTAS ACTIVAS</span>
+          <span
+            class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold border border-indigo-100">4
+            RUTAS ACTIVAS</span>
         </div>
 
         <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
           <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteA" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta A</button>
-            <button data-ruta="A" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta A</button>
-          </div>
-          
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteB" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta B</button>
-            <button data-ruta="B" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta B</button>
-          </div>
-
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteC" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta C</button>
-            <button data-ruta="C" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta C</button>
+            <button id="btnRouteA"
+              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
+              A</button>
+            <button data-ruta="A"
+              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
+              a Ruta A</button>
           </div>
 
           <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteD" class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta D</button>
-            <button data-ruta="D" class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir a Ruta D</button>
+            <button id="btnRouteB"
+              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
+              B</button>
+            <button data-ruta="B"
+              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
+              a Ruta B</button>
+          </div>
+
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteC"
+              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
+              C</button>
+            <button data-ruta="C"
+              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
+              a Ruta C</button>
+          </div>
+
+          <div class="flex flex-col gap-1.5 min-w-[110px]">
+            <button id="btnRouteD"
+              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
+              D</button>
+            <button data-ruta="D"
+              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
+              a Ruta D</button>
           </div>
         </div>
       </div>
 
       <div id="agencies-list" class="flex-1 overflow-y-auto px-6 py-2 space-y-3 mb-2">
-        <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200 transition-all">
+        <div
+          class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200 transition-all">
           <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+            <div
+              class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
               <i class="fas fa-building text-lg"></i>
             </div>
             <div>
@@ -128,7 +209,8 @@
 
   </main>
 
-  <footer class="h-10 bg-white border-t border-slate-200 text-slate-500 flex items-center justify-between px-6 text-[10px] shrink-0 font-bold uppercase tracking-widest">
+  <footer
+    class="h-10 bg-white border-t border-slate-200 text-slate-500 flex items-center justify-between px-6 text-[10px] shrink-0 font-bold uppercase tracking-widest">
     <div class="flex items-center gap-4">
       <span class="flex items-center gap-2" id="networkStatus">
         <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
@@ -139,6 +221,24 @@
     </div>
     <div class="text-slate-400 font-medium italic normal-case">v2.2 &copy; 2026</div>
   </footer>
+  <script>
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.remove('hidden');
+    });
+
+    closeMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.add('hidden');
+    });
+
+    // Cerrar al hacer clic fuera del menú
+    mobileMenu.addEventListener('click', (e) => {
+      if (e.target === mobileMenu) mobileMenu.classList.add('hidden');
+    });
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
