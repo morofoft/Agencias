@@ -9,7 +9,12 @@ EXCLUDE_DIRS = {
     "venv",
     "env",
     "assets",
-    "js/vendor"
+    "vendor"
+}
+
+EXCLUDE_FILES = {
+    "tailwindcss.js",
+    "idb.min.js"
 }
 
 with open(OUTPUT_FILE, "w", encoding="utf-8") as out:
@@ -17,6 +22,9 @@ with open(OUTPUT_FILE, "w", encoding="utf-8") as out:
         dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
 
         for file in files:
+            if file in EXCLUDE_FILES:
+                continue
+
             path = os.path.join(root, file)
 
             try:
