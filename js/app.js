@@ -17,7 +17,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   map = initMap();
   agencies = await getAgencies();
-  agencies.forEach(agency => {
+  agencies
+  .filter(a => a.lat != null && a.lng != null)
+  .forEach(agency => {
     agencyMarker(agency).addTo(map);
   });
 

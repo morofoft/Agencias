@@ -23,9 +23,17 @@ function distanceMeters(lat1, lon1, lat2, lon2) {
 
 function isVisitedToday(a) {
   if (!a.fecha_ultima_visita) return false;
-  const today = new Date().toISOString().split('T')[0];
-  return a.fecha_ultima_visita.startsWith(today);
+
+  const visitDate = new Date(a.fecha_ultima_visita);
+  const today = new Date();
+
+  return (
+    visitDate.getFullYear() === today.getFullYear() &&
+    visitDate.getMonth() === today.getMonth() &&
+    visitDate.getDate() === today.getDate()
+  );
 }
+
 
 async function loadNearby() {
   if (!currentPos) return;
@@ -121,39 +129,80 @@ function renderList(data) {
 
 function renderObservations(agencies) {
   const panel = document.getElementById('observationsPanel');
-  const today = new Date().toISOString().split('T')[0];
-  const withNotes = agencies.filter(a => a.ultima_nota && a.fecha_ultima_visita?.startsWith(today));
+  if (!panel) return;
+
+  const today = new Date();
+
+  const withNotes = agencies.filter(a => {
+    if (!a.ultima_nota || !a.fecha_ultima_visita) return false;
+
+    const visitDate = new Date(a.fecha_ultima_visita);
+
+    if (isNaN(visitDate)) return false;
+
+    return (
+      visitDate.getFullYear() === today.getFullYear() &&
+      visitDate.getMonth() === today.getMonth() &&
+      visitDate.getDate() === today.getDate()
+    );
+  });
 
   if (withNotes.length === 0) {
-    panel.innerHTML = `<div class="text-center py-10"><p class="text-xs text-slate-400 font-bold uppercase tracking-widest italic">Sin reportes hoy</p></div>`;
+    panel.innerHTML = `
+      <div class="text-center py-10 opacity-70">
+        <i class="fa-solid fa-clipboard-list text-3xl mb-3"></i>
+        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest italic">
+          Sin reportes hoy
+        </p>
+      </div>`;
     return;
   }
 
   panel.innerHTML = withNotes.map(a => {
-    const color = a.ultimo_estado === 'Excelente' ? 'emerald' : a.ultimo_estado === 'Regular' ? 'amber' : 'rose';
-    const hora = new Date(a.fecha_ultima_visita).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const estado = a.ultimo_estado || 'Regular';
+
+    const color =
+      estado === 'Excelente' ? 'emerald' :
+      estado === 'Regular'   ? 'amber'   :
+      'rose';
+
+    const hora = new Date(a.fecha_ultima_visita).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
 
     return `
-            <div class="relative pl-10">
-                <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-4 border-${color}-500 z-10 shadow-sm"></div>
-                <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <h4 class="font-black text-slate-800 text-sm leading-none">AG ${a.idReal}</h4>
-                            <span class="text-[9px] text-slate-400 font-bold uppercase">Hora ${hora}</span>
-                        </div>
-                        <span class="text-[9px] font-black px-2 py-1 rounded-lg bg-${color}-50 text-${color}-600 uppercase border border-${color}-100">
-                            ${a.ultimo_estado}
-                        </span>
-                    </div>
-                    <p class="text-slate-500 text-xs italic leading-relaxed border-l-2 border-slate-100 pl-3">
-                        "${a.ultima_nota}"
-                    </p>
-                </div>
+      <div class="relative pl-10">
+        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-4 border-${color}-500 z-10 shadow-sm"></div>
+
+        <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <h4 class="font-black text-slate-800 text-sm leading-none">
+                AG ${a.idReal}
+              </h4>
+              <span class="text-[9px] text-slate-400 font-bold uppercase">
+                Hora ${hora}
+              </span>
             </div>
-        `;
+
+            <span class="text-[9px] font-black px-2 py-1 rounded-lg
+              bg-${color}-50 text-${color}-600 uppercase
+              border border-${color}-100">
+              ${estado}
+            </span>
+          </div>
+
+          <p class="text-slate-500 text-xs italic leading-relaxed
+            border-l-2 border-slate-100 pl-3">
+            "${a.ultima_nota}"
+          </p>
+        </div>
+      </div>
+    `;
   }).join('');
 }
+
 
 window.goTo = function (lat, lng) {
   window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
