@@ -1,12 +1,34 @@
-import { getAllAgencies, updateAgency } from '../agencies/agencies.store.js';
+import { saveObservation, getAllAgencies, updateAgency } from '../agencies/agencies.store.js';
 import { createAgencyFromGPS } from '../agencies/agencies.actions.js';
+import { decir } from '../speech/speech.js';
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.addEventListener('mouseenter', Swal.stopTimer)
+    toast.addEventListener('mouseleave', Swal.resumeTimer)
+  }
+});
 
 const nearestBox = document.getElementById('closestAgency');
 const list = document.getElementById('agencyList');
 const btnAdd = document.getElementById('btnAddAgency');
-
+const avisosDados = {};
 let currentPos = null;
-
+let isFirstLoad = true;
+// MOSTRAR LOADING INICIAL
+Swal.fire({
+  title: 'Localizando...',
+  text: 'Esperando señal de GPS para calcular distancias.',
+  allowOutsideClick: false,
+  didOpen: () => {
+      Swal.showLoading();
+  }
+});
 function distanceMeters(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
@@ -38,6 +60,12 @@ function isVisitedToday(a) {
 async function loadNearby() {
   if (!currentPos) return;
 
+  // CERRAMOS EL LOADING cuando recibimos la primera posición válida
+  if (isFirstLoad) {
+    Swal.close();
+    isFirstLoad = false;
+}
+
   const agencies = await getAllAgencies();
 
   const enriched = agencies.map(a => ({
@@ -66,8 +94,43 @@ async function loadNearby() {
 }
 
 function renderNearest(a) {
-  const isNear = a.distance <= 100;
+  const isNear = a.distance <= 75;
   const colorClass = isNear ? 'from-emerald-500 to-teal-600' : 'from-slate-400 to-slate-500';
+
+  const id = a.idReal;
+  
+  // 1. INICIALIZACIÓN: Si no existe la agencia en el registro, la creamos
+  if (!avisosDados[id]) {
+    avisosDados[id] = [];
+  }
+
+  // 2. REINICIO: Si la distancia es > 200m, vaciamos sus avisos previos
+  if (a.distance > 200) {
+    if (avisosDados[id].length > 0) {
+      console.log(`Reseteando avisos para agencia ${id} por distancia (>200m)`);
+      avisosDados[id] = []; 
+    } 
+  }
+
+  // 3. LÓGICA DE AVISOS (Solo si está a menos de 200m)
+  // Usamos una pequeña función para evitar repetir código
+  const dispararAviso = (metros) => {
+    if (a.distance <= metros && !avisosDados[id].includes(metros)) {
+      decir(id, `está a ${metros} metros o menos`);
+      avisosDados[id].push(metros);
+      return true;
+    }
+    return false;
+  };
+
+  // Evaluamos de menor a mayor distancia para que el aviso sea preciso
+  if (!dispararAviso(10)) {
+    if (!dispararAviso(30)) {
+      if (!dispararAviso(50)) {
+        dispararAviso(75);
+      }
+    }
+  }
 
   nearestBox.classList.remove('hidden');
   nearestBox.innerHTML = `
@@ -86,7 +149,7 @@ function renderNearest(a) {
             <h2 class="text-3xl font-black leading-tight mb-1">AG ${a.idReal}</h2>
             <div class="flex items-center gap-2 opacity-90 text-sm mb-8">
                 <i class="fa-solid fa-location-dot"></i>
-                <span>Zona ${a.zona || 'Sucursal Principal'}</span>
+                <span>Zona ${a.zona || 'Zona'} | ${a.direccion || 'Direccion fisica!'}</span>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -103,7 +166,7 @@ function renderNearest(a) {
         </div>
       </div>`;
 }
-console.log("Test")
+
 function renderList(data) {
   list.innerHTML = '';
   data.slice(1).forEach(a => {
@@ -115,7 +178,7 @@ function renderList(data) {
                     </div>
                     <div>
                         <h4 class="font-bold text-slate-800">${a.idReal}</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Zona ${a.zona || 'Sucursal'}</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Zona: <span class="italic font-normal">${a.zona || 'Zona'}</span> | Direccion: <span class="italic font-normal">${a.direccion || 'Direccion'}</span></p>
                     </div>
                 </div>
                 <div class="text-right">
@@ -133,11 +196,10 @@ function renderObservations(agencies) {
 
   const today = new Date();
 
+  // Filtrar solo las agencias con notas de hoy
   const withNotes = agencies.filter(a => {
     if (!a.ultima_nota || !a.fecha_ultima_visita) return false;
-
     const visitDate = new Date(a.fecha_ultima_visita);
-
     if (isNaN(visitDate)) return false;
 
     return (
@@ -147,54 +209,56 @@ function renderObservations(agencies) {
     );
   });
 
+  // CASO: No hay reportes
   if (withNotes.length === 0) {
     panel.innerHTML = `
-      <div class="text-center py-10 opacity-70">
-        <i class="fa-solid fa-clipboard-list text-3xl mb-3"></i>
-        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest italic">
-          Sin reportes hoy
+      <div class="text-center py-10 opacity-70 fade-in">
+        <i class="fa-solid fa-clipboard-check text-3xl mb-3 text-slate-300"></i>
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">
+          Sin reportes registrados hoy
         </p>
       </div>`;
     return;
   }
 
+  // CASO: Renderizar Notas
   panel.innerHTML = withNotes.map(a => {
     const estado = a.ultimo_estado || 'Regular';
+    
+    // Mapeo de colores basado en el estado
+    const config = {
+        'Excelente': { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-500' },
+        'Regular': { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-500' },
+        'Crítico': { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-500' }
+    };
 
-    const color =
-      estado === 'Excelente' ? 'emerald' :
-      estado === 'Regular'   ? 'amber'   :
-      'rose';
-
+    const style = config[estado] || config['Regular'];
     const hora = new Date(a.fecha_ultima_visita).toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit'
     });
 
     return `
-      <div class="relative pl-10">
-        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-4 border-${color}-500 z-10 shadow-sm"></div>
+      <div class="relative pl-10 transition-all duration-700 fade-in">
+        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-4 ${style.border} z-10 shadow-sm"></div>
 
-        <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100">
+        <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
           <div class="flex justify-between items-start mb-3">
-            <div>
-              <h4 class="font-black text-slate-800 text-sm leading-none">
+            <div class="flex-1">
+              <h4 class="font-black text-slate-800 text-sm leading-tight">
                 AG ${a.idReal}
               </h4>
-              <span class="text-[9px] text-slate-400 font-bold uppercase">
-                Hora ${hora}
-              </span>
+              <p class="text-[9px] text-slate-400 font-bold uppercase">
+                <i class="fa fa-clock mr-1"></i> ${hora} | ${a.zona}
+              </p>
             </div>
 
-            <span class="text-[9px] font-black px-2 py-1 rounded-lg
-              bg-${color}-50 text-${color}-600 uppercase
-              border border-${color}-100">
+            <span class="text-[9px] font-black px-2 py-1 rounded-lg ${style.bg} ${style.text} uppercase border">
               ${estado}
             </span>
           </div>
 
-          <p class="text-slate-500 text-xs italic leading-relaxed
-            border-l-2 border-slate-100 pl-3">
+          <p class="text-slate-600 text-xs leading-relaxed border-l-2 border-slate-100 pl-3 italic">
             "${a.ultima_nota}"
           </p>
         </div>
@@ -288,11 +352,17 @@ btnAdd?.addEventListener('click', async () => {
 
 navigator.geolocation.watchPosition(
   pos => {
-    currentPos = pos.coords;
-    loadNearby();
+      currentPos = pos.coords;
+      loadNearby();
   },
   err => {
-    Swal.fire('Error', 'No se pudo acceder al GPS', 'error');
+      console.error(err);
+      Swal.fire({
+          icon: 'error',
+          title: 'GPS no detectado',
+          text: 'Activa la ubicación para ver las agencias cercanas.',
+          confirmButtonText: 'Reintentar'
+      }).then(() => location.reload());
   },
   { enableHighAccuracy: true }
 );
@@ -310,9 +380,9 @@ window.registrarVisita = async function (id) {
         <div class="text-left">
           <label class="block text-xs font-bold mb-1">ESTADO DE AGENCIA</label>
           <select id="swal-estado" class="swal2-input w-full m-0 mb-4">
-            <option value="Excelente">Excelente ✅</option>
-            <option value="Regular">Regular ⚠️</option>
-            <option value="Crítico">Crítico ❌</option>
+            <option value="Excelente">Excelente</option>
+            <option value="Regular">Regular</option>
+            <option value="Crítico">Crítico</option>
           </select>
           
           <label class="block text-xs font-bold mb-1">OBSERVACIONES</label>
@@ -333,7 +403,20 @@ window.registrarVisita = async function (id) {
   });
 
   if (formValues) {
+    const ahora = new Date();
 
+    
+    const nuevaObservacion = {
+      agenciaId: id, // ID de la agencia
+      idReal: agency.idReal, // El código AG-XXXX
+      descripcion: formValues.notas,
+      fecha: ahora.toLocaleDateString(), // Ejemplo: "18/01/2026"
+      hora: ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), // "12:15 PM"
+      estado: formValues.estado_visita,
+      timestamp: ahora.getTime() // Útil para ordenar por fecha real
+    };
+
+    await saveObservation(nuevaObservacion);
     const updatedAgency = {
       ...agency,
       fecha_ultima_visita: formValues.fecha,
@@ -342,14 +425,13 @@ window.registrarVisita = async function (id) {
       contador_visitas: (agency.contador_visitas || 0) + 1
     };
 
+
     await updateAgency(updatedAgency);
 
-    await Swal.fire({
+    Toast.fire({
       icon: 'success',
       title: '¡Visita Registrada!',
-      text: 'Se ha guardado en el historial local.',
-      timer: 2000,
-      showConfirmButton: false
+      text: `Agencia ${agency.idReal} actualizada`
     });
 
     loadNearby();

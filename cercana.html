@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Agencia Pro</title>
@@ -11,69 +12,127 @@
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+
     .timeline-line::before {
-        content: '';
-        position: absolute;
-        left: 7px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e2e8f0;
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e2e8f0;
+    }
+
+    .timeline-line::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 5px;
+      /* Ajustado para que empiece en el primer círculo */
+      bottom: 20px;
+      /* Ajustado para que no sobrepase el final */
+      width: 2px;
+      background: #e2e8f0;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 
 <body class="bg-[#f8fafc] min-h-screen flex flex-col text-slate-900">
 
-<header class="bg-gradient-to-r from-indigo-700 to-violet-800 text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-2xl shadow-indigo-200">
-  <div class="flex justify-between items-center mb-4">
-    <div class="space-y-1">
-      <div class="flex items-center gap-2">
-        <span class="flex h-2 w-2">
-          <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-        </span>
-        <p id="estadoGPS" class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Rastreo Activo</p>
-      </div>
-      <h1 class="text-3xl font-extrabold tracking-tight">Cercanía</h1>
-    </div>
-    <div class="flex gap-2">
-      <button id="btnAddAgency" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-        <i class="fa fa-plus"></i>
-      </button>
-      <a href="index.html" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-        <i class="fa fa-home"></i>
-      </a>
-    </div>
-  </div>
-</header>
-
-<main class="flex-1 -mt-8 px-4 space-y-8">
-  
-  <div id="closestAgency" class="hidden transform transition-all duration-500"></div>
-
-  <section>
-    <div class="flex items-center justify-between mb-4 px-2">
-      <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Otras sucursales</h3>
-      <div class="h-[1px] flex-1 bg-slate-200 ml-4"></div>
-    </div>
-    <div id="agencyList" class="space-y-4"></div>
-  </section>
-
-  <section class="pb-12">
-    <div class="flex items-center gap-3 mb-6 px-2">
-        <div class="p-2 bg-indigo-100 rounded-lg">
-            <i class="fa-solid fa-clipboard-list text-indigo-600"></i>
+  <header
+    class="bg-gradient-to-r from-indigo-700 to-violet-800 text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-2xl shadow-indigo-200">
+    <div class="flex justify-between items-center mb-4">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <p id="estadoGPS" class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Rastreo Activo</p>
         </div>
-        <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest">Actividad Reciente</h3>
-    </div>
-    <div id="observationsPanel" class="relative space-y-6 timeline-line">
+        <h1 class="text-3xl font-extrabold tracking-tight">Cercanía</h1>
       </div>
-  </section>
-</main>
+      <div class="flex gap-2">
+        <button id="btnAddAgency"
+          class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+          <i class="fa fa-plus"></i>
+        </button>
+        <a href="index.html"
+          class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+          <i class="fa fa-home"></i>
+        </a>
+        <a href="observaciones.html"
+        class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+        <i class="fa fa-book"></i>
+      </a>
+      </div>
+    </div>
+  </header>
 
-<script type="module" src="./js/cercana/cercana.page.js"></script>
+  <main class="flex-1 -mt-8 px-4 space-y-8">
+
+    <div id="closestAgency">
+      <div class="bg-white rounded-[2rem] p-6 shadow animate-pulse">
+        <div class="h-4 bg-slate-200 w-24 rounded mb-4"></div>
+        <div class="h-8 bg-slate-200 w-48 rounded mb-6"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="h-12 bg-slate-100 rounded-2xl"></div>
+          <div class="h-12 bg-slate-100 rounded-2xl"></div>
+        </div>
+      </div>
+    </div>
+
+    <section>
+      <div id="agencyList" class="space-y-4">
+        <div class="bg-white/50 rounded-2xl p-4 flex justify-between animate-pulse">
+          <div class="flex gap-4">
+            <div class="w-12 h-12 bg-slate-200 rounded-xl"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-slate-200 w-20 rounded"></div>
+              <div class="h-3 bg-slate-200 w-32 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="observationsPanel" class="relative space-y-6 timeline-line">
+      <div class="relative pl-10 animate-pulse">
+        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-slate-200"></div>
+        <div class="bg-white rounded-[1.5rem] p-5 border border-slate-100">
+          <div class="h-4 bg-slate-100 w-3/4 rounded mb-3"></div>
+          <div class="h-3 bg-slate-50 w-full rounded"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./js/cercana/cercana.page.js"></script>
 </body>
+
 </html>

@@ -139,3 +139,13 @@ export async function exportAgenciesAdvanced() {
   
     return agencies.find(a => a.idReal === idReal);
   }
+
+  export async function saveObservation(observation) {
+    const db = await dbPromise;
+    return db.add('observaciones', observation);
+  }
+  
+  export async function getAllObservations() {
+    const db = await dbPromise;
+    return db.getAll('observaciones');
+  }

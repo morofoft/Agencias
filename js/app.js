@@ -47,12 +47,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   botonesIrRutas.forEach(boton => {
     boton.addEventListener('click', (e)=>{
         console.log('Iniciando ruta ' + e.currentTarget.dataset.ruta)
+        stopRoute()
         startRouteByZone(map, e.currentTarget.dataset.ruta);
     })
   })
-
-
-
 });
 
 // Exportación global (botón HTML)
