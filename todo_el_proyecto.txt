@@ -10,7 +10,7 @@ ARCHIVO: .\agencies.html
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestión de Agencias</title>
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="assets/icons/icon-192.ico" />
+    <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -177,7 +177,7 @@ ARCHIVO: .\dashboard.html
   <meta charset="UTF-8">
   <title>Dashboard</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -228,7 +228,7 @@ ARCHIVO: .\data.html
   <title>Gestión de Archivos</title>
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -461,7 +461,7 @@ ARCHIVO: .\hallazgos.html
   <meta name="theme-color" content="#4f46e5" />
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -525,7 +525,7 @@ ARCHIVO: .\index.html
   <meta name="theme-color" content="#4f46e5" />
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -885,7 +885,7 @@ ARCHIVO: .\report.html
 
   <meta name="theme-color" content="#4f46e5">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="assets/icons/icon-192.ico">
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet"
@@ -1076,7 +1076,7 @@ ARCHIVO: .\agencies.html
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestión de Agencias</title>
     <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="assets/icons/icon-192.ico" />
+    <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -1243,7 +1243,7 @@ ARCHIVO: .\dashboard.html
   <meta charset="UTF-8">
   <title>Dashboard</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1294,7 +1294,7 @@ ARCHIVO: .\data.html
   <title>Gestión de Archivos</title>
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -1527,7 +1527,7 @@ ARCHIVO: .\hallazgos.html
   <meta name="theme-color" content="#4f46e5" />
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -1591,7 +1591,7 @@ ARCHIVO: .\index.html
   <meta name="theme-color" content="#4f46e5" />
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/icon-192.ico" />
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -1951,7 +1951,7 @@ ARCHIVO: .\report.html
 
   <meta name="theme-color" content="#4f46e5">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="assets/icons/icon-192.ico">
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet"
