@@ -1,5 +1,6 @@
 let watchId = null;
 let retryTimeout = null;
+let goodFixes = [];
 
 export function startLocationTracking(onUpdate) {
   if (!navigator.geolocation) {
@@ -14,56 +15,73 @@ export function startLocationTracking(onUpdate) {
   }
 
   function startWatch() {
+
+    // 🔴 Limpia watch anterior (CRÍTICO)
+    if (watchId) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+
     watchId = navigator.geolocation.watchPosition(
       pos => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+        const { latitude, longitude, accuracy } = pos.coords;
 
-        if (typeof lat !== 'number' || typeof lng !== 'number') return;
+        if (
+          typeof latitude !== 'number' ||
+          typeof longitude !== 'number' ||
+          accuracy > 25
+        ) return;
 
-        // Actualiza la posición
-        onUpdate({ lat, lng, accuracy: pos.coords.accuracy });
+        // 🧠 Ignorar primeras lecturas
+        goodFixes.push({ lat: latitude, lng: longitude, accuracy });
+
+        if (goodFixes.length < 2) return;
+
+        const best = goodFixes.shift();
+
+        onUpdate(best);
       },
       err => {
         console.error('GPS error', err);
 
-        // Mostrar alerta según tipo de error
         if (err.code === 1) {
           Swal.fire({
             icon: 'error',
             title: 'Permiso denegado',
-            text: 'Activa el acceso a tu ubicación para usar el GPS.',
+            text: 'Activa el acceso a tu ubicación.',
             timer: 2500,
             showConfirmButton: false
           });
-        } else if (err.code === 2) {
+        }
+
+        if (err.code === 2) {
           Swal.fire({
             icon: 'warning',
             title: 'Ubicación no disponible',
-            text: 'No se pudo determinar tu posición. Revisa tu señal.',
+            text: 'Revisa señal GPS o WiFi.',
             timer: 2500,
             showConfirmButton: false
           });
-        } else if (err.code === 3) {
+        }
+
+        if (err.code === 3) {
           Swal.fire({
             icon: 'info',
             title: 'GPS lento',
-            text: 'Intentando obtener tu ubicación nuevamente...',
-            timer: 2500,
+            text: 'Reintentando...',
+            timer: 2000,
             showConfirmButton: false
           });
 
-          // Reintentar automáticamente después de 3s
           if (retryTimeout) clearTimeout(retryTimeout);
-          retryTimeout = setTimeout(() => {
-            startWatch();
-          }, 3000);
+
+          retryTimeout = setTimeout(startWatch, 3000);
         }
       },
       {
-        enableHighAccuracy: true,  // ⚡ alta precisión
-        maximumAge: 5000,          // usar posición reciente hasta 5s
-        timeout: 30000             // esperar hasta 30s
+        enableHighAccuracy: true,
+        maximumAge: 0,      // 🔥 clave
+        timeout: 30000
       }
     );
   }

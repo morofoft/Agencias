@@ -90,82 +90,142 @@ ARCHIVO: .\cercana.html
 ================================================================================
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Agencia Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+
     .timeline-line::before {
-        content: '';
-        position: absolute;
-        left: 7px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e2e8f0;
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e2e8f0;
+    }
+
+    .timeline-line::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 5px;
+      /* Ajustado para que empiece en el primer círculo */
+      bottom: 20px;
+      /* Ajustado para que no sobrepase el final */
+      width: 2px;
+      background: #e2e8f0;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 
 <body class="bg-[#f8fafc] min-h-screen flex flex-col text-slate-900">
 
-<header class="bg-gradient-to-r from-indigo-700 to-violet-800 text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-2xl shadow-indigo-200">
-  <div class="flex justify-between items-center mb-4">
-    <div class="space-y-1">
-      <div class="flex items-center gap-2">
-        <span class="flex h-2 w-2">
-          <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-        </span>
-        <p id="estadoGPS" class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Rastreo Activo</p>
-      </div>
-      <h1 class="text-3xl font-extrabold tracking-tight">Cercanía</h1>
-    </div>
-    <div class="flex gap-2">
-      <button id="btnAddAgency" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-        <i class="fa fa-plus"></i>
-      </button>
-      <a href="index.html" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-        <i class="fa fa-home"></i>
-      </a>
-    </div>
-  </div>
-</header>
-
-<main class="flex-1 -mt-8 px-4 space-y-8">
-  
-  <div id="closestAgency" class="hidden transform transition-all duration-500"></div>
-
-  <section>
-    <div class="flex items-center justify-between mb-4 px-2">
-      <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Otras sucursales</h3>
-      <div class="h-[1px] flex-1 bg-slate-200 ml-4"></div>
-    </div>
-    <div id="agencyList" class="space-y-4"></div>
-  </section>
-
-  <section class="pb-12">
-    <div class="flex items-center gap-3 mb-6 px-2">
-        <div class="p-2 bg-indigo-100 rounded-lg">
-            <i class="fa-solid fa-clipboard-list text-indigo-600"></i>
+  <header
+    class="bg-gradient-to-r from-indigo-700 to-violet-800 text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-2xl shadow-indigo-200">
+    <div class="flex justify-between items-center mb-4">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <p id="estadoGPS" class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Rastreo Activo</p>
         </div>
-        <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest">Actividad Reciente</h3>
-    </div>
-    <div id="observationsPanel" class="relative space-y-6 timeline-line">
+        <h1 class="text-3xl font-extrabold tracking-tight">Cercanía</h1>
       </div>
-  </section>
-</main>
+      <div class="flex gap-2">
+        <button id="btnAddAgency"
+          class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+          <i class="fa fa-plus"></i>
+        </button>
+        <a href="index.html"
+          class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+          <i class="fa fa-home"></i>
+        </a>
+        <a href="observaciones.html"
+        class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+        <i class="fa fa-book"></i>
+      </a>
+      </div>
+    </div>
+  </header>
 
-<script type="module" src="./js/cercana/cercana.page.js"></script>
+  <main class="flex-1 -mt-8 px-4 space-y-8">
+
+    <div id="closestAgency">
+      <div class="bg-white rounded-[2rem] p-6 shadow animate-pulse">
+        <div class="h-4 bg-slate-200 w-24 rounded mb-4"></div>
+        <div class="h-8 bg-slate-200 w-48 rounded mb-6"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="h-12 bg-slate-100 rounded-2xl"></div>
+          <div class="h-12 bg-slate-100 rounded-2xl"></div>
+        </div>
+      </div>
+    </div>
+
+    <section>
+      <div id="agencyList" class="space-y-4">
+        <div class="bg-white/50 rounded-2xl p-4 flex justify-between animate-pulse">
+          <div class="flex gap-4">
+            <div class="w-12 h-12 bg-slate-200 rounded-xl"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-slate-200 w-20 rounded"></div>
+              <div class="h-3 bg-slate-200 w-32 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="observationsPanel" class="relative space-y-6 timeline-line">
+      <div class="relative pl-10 animate-pulse">
+        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-slate-200"></div>
+        <div class="bg-white rounded-[1.5rem] p-5 border border-slate-100">
+          <div class="h-4 bg-slate-100 w-3/4 rounded mb-3"></div>
+          <div class="h-3 bg-slate-50 w-full rounded"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./js/cercana/cercana.page.js"></script>
 </body>
+
 </html>
 
 ================================================================================
@@ -346,101 +406,114 @@ ARCHIVO: .\dataAgencias.html
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Gestión de Agencias</title>
+  <title>Sistema de Gestión de Agencias</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
-    /* Estilo para los selects nativos más limpios */
-    select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+    .input-focus { transition: all 0.2s ease; border: 1px solid #e2e8f0; }
+    .input-focus:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); outline: none; }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.25em; }
   </style>
 </head>
 
-<body class="bg-slate-50 min-h-screen pb-20 text-slate-900">
+<body class="text-slate-900">
 
-  <header class="sticky top-0 z-20 glass border-b border-slate-200 px-4 md:px-6 py-4">
-    <div class="max-w-4xl mx-auto flex justify-between items-center">
-      <div class="flex items-center gap-4">
-        <a href="index.html" class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500" title="Volver">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  <header class="sticky top-0 z-50 glass border-b border-slate-200/60 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="group p-2.5 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </a>
         <div>
-          <h1 class="text-xl font-extrabold tracking-tight">Gestión de Agencias</h1>
-          <p id="counter" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full inline-block uppercase tracking-wider"></p>
+          <h1 class="text-lg font-bold tracking-tight text-slate-800">Panel de Agencias</h1>
+          <div id="counter" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block uppercase border border-indigo-100"></div>
         </div>
       </div>
-      <div class="h-10 w-10 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200 flex items-center justify-center text-white font-bold tracking-tighter">GA</div>
+      <div class="flex items-center gap-3">
+          <div class="hidden sm:block text-right">
+              <p class="text-[10px] font-bold text-slate-400 uppercase leading-none">Usuario Administrador</p>
+              <p class="text-xs font-semibold text-slate-700">Pedro Garcia</p>
+          </div>
+          <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-200 flex items-center justify-center text-white font-bold ring-2 ring-white">PG</div>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 mt-8">
+  <main class="max-w-5xl mx-auto px-4 py-8">
     
-    <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-10 transition-all hover:shadow-md">
-      <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-        <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span> Añadir Nueva Agencia
-      </h2>
+    <section class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-200/60 mb-10">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+        </div>
+        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Registrar Nueva Agencia</h2>
+      </div>
 
-      <form id="agencyForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Código ID</label>
-          <input id="idReal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none" placeholder="Ej: AG-000000" required />
+      <form id="agencyForm" class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <div class="md:col-span-3 space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wide">Código ID</label>
+          <input id="idReal" class="w-full bg-slate-50 rounded-xl px-4 py-3 input-focus text-sm font-medium" placeholder="AG-000001" required />
         </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Zona Geográfica</label>
-          <input id="zona" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none" placeholder="A, B, C,..." required />
+        <div class="md:col-span-3 space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wide">Zona</label>
+          <input id="zona" class="w-full bg-slate-50 rounded-xl px-4 py-3 input-focus text-sm font-medium" placeholder="A, B, C, D,..." required />
         </div>
-        <div class="space-y-1 md:col-span-2 lg:col-span-1">
-          <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Dirección</label>
-          <input id="direccion" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none" placeholder="Opcional..." />
+        <div class="md:col-span-6 space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wide">Dirección Detallada</label>
+          <input id="direccion" class="w-full bg-slate-50 rounded-xl px-4 py-3 input-focus text-sm font-medium" placeholder="Calle, número, ciudad..." />
         </div>
 
-        <button class="md:col-span-2 lg:col-span-3 bg-slate-900 hover:bg-indigo-600 text-white w-full py-4 rounded-2xl font-bold transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2 mt-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-          </svg>
-          Registrar en Base de Datos
+        <button class="md:col-span-12 bg-indigo-600 hover:bg-indigo-700 text-white w-full py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 mt-2">
+          Guardar Agencia en Sistema
         </button>
       </form>
     </section>
 
-    <section class="space-y-4 mb-8">
-      <div class="flex flex-col md:flex-row gap-3">
+    <section class="space-y-5 mb-8">
+      <div class="flex flex-col md:flex-row gap-4">
         <div class="relative flex-grow">
           <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </span>
-          <input id="searchInput" type="text" placeholder="Buscar agencia..." class="w-full bg-white border border-slate-200 rounded-2xl pl-11 pr-4 py-3 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none transition" />
+          <input id="searchInput" type="text" placeholder="Buscar por ID, zona o dirección..." class="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 shadow-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-sm" />
         </div>
         
         <div class="flex gap-2">
-          <select id="stateFilter" class="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
-            <option value="all">Todos los estados</option>
+          <select id="stateFilter" class="flex-1 md:w-44 bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-xs font-bold text-slate-600 shadow-sm outline-none cursor-pointer hover:border-indigo-300 transition-colors uppercase tracking-tight">
+            <option value="all font-bold">Todos los Estados</option>
             <option value="located">Ubicadas</option>
             <option value="pending">Pendientes</option>
           </select>
           
-          <select id="orderSelect" class="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
-            <option value="az">A → Z</option>
-            <option value="za">Z → A</option>
+          <select id="orderSelect" class="bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-xs font-bold text-slate-600 shadow-sm outline-none cursor-pointer hover:border-indigo-300 transition-colors uppercase">
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
           </select>
         </div>
       </div>
       
       <div class="flex justify-between items-center px-2">
-        <p id="resultsCounter" class="text-[11px] font-bold text-slate-400 uppercase tracking-widest"></p>
+        <p id="resultsCounter" class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"></p>
       </div>
     </section>
     
     <div id="agenciesList" class="grid grid-cols-1 gap-4">
-      </div>
+        </div>
 
   </main>
+
+  <footer class="mt-20 py-10 border-t border-slate-200 text-center">
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">&copy; 2026 Pedro Garcia &bull; GesAg</p>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
@@ -571,78 +644,80 @@ ARCHIVO: .\index.html
 
 <body class="h-screen flex flex-col bg-slate-50 text-slate-900 antialiased overflow-hidden">
 
-  <header
-    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
-    <div class="flex items-center gap-3">
-      <div class="bg-indigo-600 p-2 rounded-lg md:rounded-xl shadow-lg shadow-indigo-100 shrink-0">
-        <i class="fas fa-map-marked-alt text-white text-sm md:text-lg"></i>
+  <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
+    <div class="flex items-center gap-3 overflow-hidden">
+      <div class="p-1.5 rounded-lg md:rounded-xl shadow-lg shadow-indigo-100 shrink-0">
+        <img src="assets/icons/Logo-horizontal-azul.png" alt="logo" class="h-6 md:h-7 w-auto object-contain">
       </div>
-      <div class="min-w-0">
-        <h1 class="font-bold text-sm md:text-base tracking-tight text-slate-800 leading-none truncate">Control de
-          Agencias</h1>
-        <p class="hidden sm:block text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Dashboard
-          Operativo</p>
+      <div class="min-w-0 leading-tight">
+        <h1 class="font-bold text-sm md:text-base tracking-tight text-slate-800 truncate">
+          Control de Agencias
+        </h1>
+        <p class="hidden sm:block text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+          Mapa interactivo
+        </p>
       </div>
     </div>
-
-    <nav class="hidden lg:flex items-center gap-2">
-      <a href="dataAgencias.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-database opacity-70"></i>
-        <span>Data Agencias</span>
+  
+    <nav class="hidden lg:flex items-center gap-1">
+      <a href="dataAgencias.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-database opacity-70 text-xs"></i>
+        <span>Sin GPS</span>
       </a>
-      <a href="data.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-database opacity-70"></i>
-        <span>Data</span>
+      <a href="data.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-hdd opacity-70 text-xs"></i>
+        <span>Backup</span>
       </a>
-      <a href="cercana.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-street-view opacity-70"></i>
+      <a href="cercana.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-street-view opacity-70 text-xs"></i>
         <span>Cercana</span>
       </a>
-      <a href="agencies.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-building opacity-70"></i>
-        <span>Agencias</span>
+      <a href="agencies.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-building opacity-70 text-xs"></i>
+        <span>Lista</span>
       </a>
     </nav>
-
+  
     <div class="flex items-center gap-2 md:gap-4">
-      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0">
-        <i class="fa fa-user text-xs text-slate-500"></i>
+      <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100">
+        <i class="fa fa-user text-[10px] text-slate-400"></i>
+        <span class="text-xs font-medium text-slate-600 hidden md:block">Pedro</span>
       </div>
-
+  
       <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
         <i class="fas fa-bars text-xl"></i>
       </button>
     </div>
-
-    <div id="mobileMenu" class="fixed inset-0 bg-slate-900/50 z-[60] hidden backdrop-blur-sm">
-      <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-2xl p-6 flex flex-col gap-4">
-        <div class="flex justify-between items-center mb-4">
-          <span class="font-bold text-slate-800">Menú</span>
-          <button id="closeMenuBtn" class="p-2 text-slate-400 hover:text-slate-600">
+  
+    <div id="mobileMenu" class="fixed inset-0 bg-slate-900/60 z-[60] hidden backdrop-blur-sm transition-all">
+      <div class="absolute right-0 top-0 h-full w-72 bg-white shadow-2xl p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-8">
+          <span class="font-bold text-lg text-slate-800">Navegación</span>
+          <button id="closeMenuBtn" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
             <i class="fas fa-times text-xl"></i>
           </button>
         </div>
+        
         <nav class="flex flex-col gap-2">
-          <a href="dataAgencias.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
-            <i class="fas fa-database text-indigo-500 w-5"></i> Agencias
+          <a href="dataAgencias.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+            <i class="fas fa-database text-indigo-500 w-5"></i> Agencias Sin GPS
           </a>
-          <a href="data.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
-            <i class="fas fa-database text-indigo-500 w-5"></i> Data
+          <a href="data.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+            <i class="fas fa-hdd text-indigo-500 w-5"></i> Backup de Data
           </a>
-          <a href="cercana.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
-            <i class="fas fa-street-view text-indigo-500 w-5"></i> Cercana
+          <a href="cercana.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+            <i class="fas fa-street-view text-indigo-500 w-5"></i> Agencias Cercanas
           </a>
-          <a href="agencies.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
-            <i class="fas fa-building text-indigo-500 w-5"></i> Agencias
+          <a href="agencies.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+            <i class="fas fa-building text-indigo-500 w-5"></i> Lista Completa
           </a>
+  
+          <hr class="my-4 border-slate-100">
+  
+          <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+            <input type="checkbox" name="seguimiento" id="seguimiento" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+            <span class="text-sm font-medium text-slate-700">Seguir en el mapa</span>
+          </label>
         </nav>
       </div>
     </div>
@@ -739,24 +814,30 @@ ARCHIVO: .\index.html
     <div class="text-slate-400 font-medium italic normal-case">v2.2 &copy; 2026</div>
   </footer>
   <script>
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    // Lógica para abrir y cerrar el menú
     const mobileMenu = document.getElementById('mobileMenu');
-
-    mobileMenuBtn.addEventListener('click', () => {
+    const openBtn = document.getElementById('mobileMenuBtn');
+    const closeBtn = document.getElementById('closeMenuBtn');
+  
+    openBtn.addEventListener('click', () => {
       mobileMenu.classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // Evita scroll al estar abierto
     });
-
-    closeMenuBtn.addEventListener('click', () => {
+  
+    closeBtn.addEventListener('click', () => {
       mobileMenu.classList.add('hidden');
+      document.body.style.overflow = 'auto';
     });
-
-    // Cerrar al hacer clic fuera del menú
+  
+    // Cerrar al hacer click fuera del contenedor blanco
     mobileMenu.addEventListener('click', (e) => {
-      if (e.target === mobileMenu) mobileMenu.classList.add('hidden');
+      if (e.target === mobileMenu) {
+        mobileMenu.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+      }
     });
   </script>
-
+<script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
@@ -839,6 +920,65 @@ updateNetworkStatus();
 
 
 ================================================================================
+ARCHIVO: .\observaciones.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Notas | Agencia Pro</title>
+    <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] min-h-screen pb-20">
+
+    <header class="bg-indigo-700 text-white p-6 rounded-b-[2rem] shadow-lg mb-6">
+        <div class="flex justify-between items-center">
+            <a href="cercana.html" class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <i class="fa fa-arrow-left"></i>
+            </a>
+            <h1 class="text-xl font-bold">Historial Completo</h1>
+            <button id="btnExport" class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <i class="fa fa-file-excel"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="px-4 space-y-6">
+        
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="filterBy('TODAS')" class="bg-indigo-600 text-white px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-md">Todas</button>
+            <button onclick="filterBy('Excelente')" class="bg-white text-emerald-600 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border border-emerald-100 shadow-sm">Excelente</button>
+            <button onclick="filterBy('Regular')" class="bg-white text-amber-600 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border border-amber-100 shadow-sm">Regular</button>
+            <button onclick="filterBy('Crítico')" class="bg-white text-rose-600 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border border-rose-100 shadow-sm">Crítico</button>
+        </div>
+
+        <div class="relative">
+            <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="searchAgency" placeholder="Buscar por código AG..." 
+                class="w-full bg-white border border-slate-200 py-4 pl-12 pr-4 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div id="historyContainer" class="space-y-4">
+            <div class="animate-pulse flex flex-col gap-4">
+                <div class="h-32 bg-slate-200 rounded-3xl"></div>
+                <div class="h-32 bg-slate-200 rounded-3xl"></div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="./js/observaciones/observaciones.page.js"></script>
+</body>
+</html>
+
+================================================================================
 ARCHIVO: .\offline.html
 ================================================================================
 <!DOCTYPE html>
@@ -847,6 +987,7 @@ ARCHIVO: .\offline.html
   <meta charset="UTF-8">
   <title>Sin conexión</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
   <style>
     body {
       font-family: sans-serif;
@@ -1156,82 +1297,142 @@ ARCHIVO: .\cercana.html
 ================================================================================
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Agencia Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+
     .timeline-line::before {
-        content: '';
-        position: absolute;
-        left: 7px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e2e8f0;
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e2e8f0;
+    }
+
+    .timeline-line::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 5px;
+      /* Ajustado para que empiece en el primer círculo */
+      bottom: 20px;
+      /* Ajustado para que no sobrepase el final */
+      width: 2px;
+      background: #e2e8f0;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 
 <body class="bg-[#f8fafc] min-h-screen flex flex-col text-slate-900">
 
-<header class="bg-gradient-to-r from-indigo-700 to-violet-800 text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-2xl shadow-indigo-200">
-  <div class="flex justify-between items-center mb-4">
-    <div class="space-y-1">
-      <div class="flex items-center gap-2">
-        <span class="flex h-2 w-2">
-          <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-        </span>
-        <p id="estadoGPS" class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Rastreo Activo</p>
-      </div>
-      <h1 class="text-3xl font-extrabold tracking-tight">Cercanía</h1>
-    </div>
-    <div class="flex gap-2">
-      <button id="btnAddAgency" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-        <i class="fa fa-plus"></i>
-      </button>
-      <a href="index.html" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-        <i class="fa fa-home"></i>
-      </a>
-    </div>
-  </div>
-</header>
-
-<main class="flex-1 -mt-8 px-4 space-y-8">
-  
-  <div id="closestAgency" class="hidden transform transition-all duration-500"></div>
-
-  <section>
-    <div class="flex items-center justify-between mb-4 px-2">
-      <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Otras sucursales</h3>
-      <div class="h-[1px] flex-1 bg-slate-200 ml-4"></div>
-    </div>
-    <div id="agencyList" class="space-y-4"></div>
-  </section>
-
-  <section class="pb-12">
-    <div class="flex items-center gap-3 mb-6 px-2">
-        <div class="p-2 bg-indigo-100 rounded-lg">
-            <i class="fa-solid fa-clipboard-list text-indigo-600"></i>
+  <header
+    class="bg-gradient-to-r from-indigo-700 to-violet-800 text-white pt-8 pb-12 px-6 rounded-b-[2.5rem] shadow-2xl shadow-indigo-200">
+    <div class="flex justify-between items-center mb-4">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <p id="estadoGPS" class="text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Rastreo Activo</p>
         </div>
-        <h3 class="text-sm font-black text-slate-700 uppercase tracking-widest">Actividad Reciente</h3>
-    </div>
-    <div id="observationsPanel" class="relative space-y-6 timeline-line">
+        <h1 class="text-3xl font-extrabold tracking-tight">Cercanía</h1>
       </div>
-  </section>
-</main>
+      <div class="flex gap-2">
+        <button id="btnAddAgency"
+          class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+          <i class="fa fa-plus"></i>
+        </button>
+        <a href="index.html"
+          class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+          <i class="fa fa-home"></i>
+        </a>
+        <a href="observaciones.html"
+        class="w-10 h-10 glass rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
+        <i class="fa fa-book"></i>
+      </a>
+      </div>
+    </div>
+  </header>
 
-<script type="module" src="./js/cercana/cercana.page.js"></script>
+  <main class="flex-1 -mt-8 px-4 space-y-8">
+
+    <div id="closestAgency">
+      <div class="bg-white rounded-[2rem] p-6 shadow animate-pulse">
+        <div class="h-4 bg-slate-200 w-24 rounded mb-4"></div>
+        <div class="h-8 bg-slate-200 w-48 rounded mb-6"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="h-12 bg-slate-100 rounded-2xl"></div>
+          <div class="h-12 bg-slate-100 rounded-2xl"></div>
+        </div>
+      </div>
+    </div>
+
+    <section>
+      <div id="agencyList" class="space-y-4">
+        <div class="bg-white/50 rounded-2xl p-4 flex justify-between animate-pulse">
+          <div class="flex gap-4">
+            <div class="w-12 h-12 bg-slate-200 rounded-xl"></div>
+            <div class="space-y-2">
+              <div class="h-4 bg-slate-200 w-20 rounded"></div>
+              <div class="h-3 bg-slate-200 w-32 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="observationsPanel" class="relative space-y-6 timeline-line">
+      <div class="relative pl-10 animate-pulse">
+        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-slate-200"></div>
+        <div class="bg-white rounded-[1.5rem] p-5 border border-slate-100">
+          <div class="h-4 bg-slate-100 w-3/4 rounded mb-3"></div>
+          <div class="h-3 bg-slate-50 w-full rounded"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="./js/cercana/cercana.page.js"></script>
 </body>
+
 </html>
 
 ================================================================================
@@ -1412,101 +1613,114 @@ ARCHIVO: .\dataAgencias.html
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Gestión de Agencias</title>
+  <title>Sistema de Gestión de Agencias</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); }
-    /* Estilo para los selects nativos más limpios */
-    select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+    .input-focus { transition: all 0.2s ease; border: 1px solid #e2e8f0; }
+    .input-focus:focus { border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); outline: none; }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.75rem center; background-repeat: no-repeat; background-size: 1.25em; }
   </style>
 </head>
 
-<body class="bg-slate-50 min-h-screen pb-20 text-slate-900">
+<body class="text-slate-900">
 
-  <header class="sticky top-0 z-20 glass border-b border-slate-200 px-4 md:px-6 py-4">
-    <div class="max-w-4xl mx-auto flex justify-between items-center">
-      <div class="flex items-center gap-4">
-        <a href="index.html" class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500" title="Volver">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  <header class="sticky top-0 z-50 glass border-b border-slate-200/60 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="group p-2.5 hover:bg-white rounded-xl transition-all border border-transparent hover:border-slate-200 shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
         </a>
         <div>
-          <h1 class="text-xl font-extrabold tracking-tight">Gestión de Agencias</h1>
-          <p id="counter" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full inline-block uppercase tracking-wider"></p>
+          <h1 class="text-lg font-bold tracking-tight text-slate-800">Panel de Agencias</h1>
+          <div id="counter" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block uppercase border border-indigo-100"></div>
         </div>
       </div>
-      <div class="h-10 w-10 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-200 flex items-center justify-center text-white font-bold tracking-tighter">GA</div>
+      <div class="flex items-center gap-3">
+          <div class="hidden sm:block text-right">
+              <p class="text-[10px] font-bold text-slate-400 uppercase leading-none">Usuario Administrador</p>
+              <p class="text-xs font-semibold text-slate-700">Pedro Garcia</p>
+          </div>
+          <div class="h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-200 flex items-center justify-center text-white font-bold ring-2 ring-white">PG</div>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 mt-8">
+  <main class="max-w-5xl mx-auto px-4 py-8">
     
-    <section class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-10 transition-all hover:shadow-md">
-      <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-        <span class="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span> Añadir Nueva Agencia
-      </h2>
+    <section class="bg-white p-6 rounded-[2rem] card-shadow border border-slate-200/60 mb-10">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+        </div>
+        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Registrar Nueva Agencia</h2>
+      </div>
 
-      <form id="agencyForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Código ID</label>
-          <input id="idReal" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none" placeholder="Ej: AG-000000" required />
+      <form id="agencyForm" class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <div class="md:col-span-3 space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wide">Código ID</label>
+          <input id="idReal" class="w-full bg-slate-50 rounded-xl px-4 py-3 input-focus text-sm font-medium" placeholder="AG-000001" required />
         </div>
-        <div class="space-y-1">
-          <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Zona Geográfica</label>
-          <input id="zona" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none" placeholder="A, B, C,..." required />
+        <div class="md:col-span-3 space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wide">Zona</label>
+          <input id="zona" class="w-full bg-slate-50 rounded-xl px-4 py-3 input-focus text-sm font-medium" placeholder="A, B, C, D,..." required />
         </div>
-        <div class="space-y-1 md:col-span-2 lg:col-span-1">
-          <label class="text-[10px] font-bold text-slate-500 ml-1 uppercase">Dirección</label>
-          <input id="direccion" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all outline-none" placeholder="Opcional..." />
+        <div class="md:col-span-6 space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-500 ml-1 uppercase tracking-wide">Dirección Detallada</label>
+          <input id="direccion" class="w-full bg-slate-50 rounded-xl px-4 py-3 input-focus text-sm font-medium" placeholder="Calle, número, ciudad..." />
         </div>
 
-        <button class="md:col-span-2 lg:col-span-3 bg-slate-900 hover:bg-indigo-600 text-white w-full py-4 rounded-2xl font-bold transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2 mt-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-          </svg>
-          Registrar en Base de Datos
+        <button class="md:col-span-12 bg-indigo-600 hover:bg-indigo-700 text-white w-full py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 mt-2">
+          Guardar Agencia en Sistema
         </button>
       </form>
     </section>
 
-    <section class="space-y-4 mb-8">
-      <div class="flex flex-col md:flex-row gap-3">
+    <section class="space-y-5 mb-8">
+      <div class="flex flex-col md:flex-row gap-4">
         <div class="relative flex-grow">
           <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </span>
-          <input id="searchInput" type="text" placeholder="Buscar agencia..." class="w-full bg-white border border-slate-200 rounded-2xl pl-11 pr-4 py-3 shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none transition" />
+          <input id="searchInput" type="text" placeholder="Buscar por ID, zona o dirección..." class="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3.5 shadow-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium text-sm" />
         </div>
         
         <div class="flex gap-2">
-          <select id="stateFilter" class="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
-            <option value="all">Todos los estados</option>
+          <select id="stateFilter" class="flex-1 md:w-44 bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-xs font-bold text-slate-600 shadow-sm outline-none cursor-pointer hover:border-indigo-300 transition-colors uppercase tracking-tight">
+            <option value="all font-bold">Todos los Estados</option>
             <option value="located">Ubicadas</option>
             <option value="pending">Pendientes</option>
           </select>
           
-          <select id="orderSelect" class="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-sm font-medium shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer">
-            <option value="az">A → Z</option>
-            <option value="za">Z → A</option>
+          <select id="orderSelect" class="bg-white border border-slate-200 rounded-2xl px-4 py-3.5 text-xs font-bold text-slate-600 shadow-sm outline-none cursor-pointer hover:border-indigo-300 transition-colors uppercase">
+            <option value="az">A-Z</option>
+            <option value="za">Z-A</option>
           </select>
         </div>
       </div>
       
       <div class="flex justify-between items-center px-2">
-        <p id="resultsCounter" class="text-[11px] font-bold text-slate-400 uppercase tracking-widest"></p>
+        <p id="resultsCounter" class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"></p>
       </div>
     </section>
     
     <div id="agenciesList" class="grid grid-cols-1 gap-4">
-      </div>
+        </div>
 
   </main>
+
+  <footer class="mt-20 py-10 border-t border-slate-200 text-center">
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">&copy; 2026 Pedro Garcia &bull; GesAg</p>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
@@ -1637,78 +1851,80 @@ ARCHIVO: .\index.html
 
 <body class="h-screen flex flex-col bg-slate-50 text-slate-900 antialiased overflow-hidden">
 
-  <header
-    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
-    <div class="flex items-center gap-3">
-      <div class="bg-indigo-600 p-2 rounded-lg md:rounded-xl shadow-lg shadow-indigo-100 shrink-0">
-        <i class="fas fa-map-marked-alt text-white text-sm md:text-lg"></i>
+  <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
+    <div class="flex items-center gap-3 overflow-hidden">
+      <div class="p-1.5 rounded-lg md:rounded-xl shadow-lg shadow-indigo-100 shrink-0">
+        <img src="assets/icons/Logo-horizontal-azul.png" alt="logo" class="h-6 md:h-7 w-auto object-contain">
       </div>
-      <div class="min-w-0">
-        <h1 class="font-bold text-sm md:text-base tracking-tight text-slate-800 leading-none truncate">Control de
-          Agencias</h1>
-        <p class="hidden sm:block text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-1">Dashboard
-          Operativo</p>
+      <div class="min-w-0 leading-tight">
+        <h1 class="font-bold text-sm md:text-base tracking-tight text-slate-800 truncate">
+          Control de Agencias
+        </h1>
+        <p class="hidden sm:block text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+          Mapa interactivo
+        </p>
       </div>
     </div>
-
-    <nav class="hidden lg:flex items-center gap-2">
-      <a href="dataAgencias.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-database opacity-70"></i>
-        <span>Data Agencias</span>
+  
+    <nav class="hidden lg:flex items-center gap-1">
+      <a href="dataAgencias.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-database opacity-70 text-xs"></i>
+        <span>Sin GPS</span>
       </a>
-      <a href="data.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-database opacity-70"></i>
-        <span>Data</span>
+      <a href="data.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-hdd opacity-70 text-xs"></i>
+        <span>Backup</span>
       </a>
-      <a href="cercana.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-street-view opacity-70"></i>
+      <a href="cercana.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-street-view opacity-70 text-xs"></i>
         <span>Cercana</span>
       </a>
-      <a href="agencies.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-building opacity-70"></i>
-        <span>Agencias</span>
+      <a href="agencies.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+        <i class="fas fa-building opacity-70 text-xs"></i>
+        <span>Lista</span>
       </a>
     </nav>
-
+  
     <div class="flex items-center gap-2 md:gap-4">
-      <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0">
-        <i class="fa fa-user text-xs text-slate-500"></i>
+      <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100">
+        <i class="fa fa-user text-[10px] text-slate-400"></i>
+        <span class="text-xs font-medium text-slate-600 hidden md:block">Pedro</span>
       </div>
-
+  
       <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
         <i class="fas fa-bars text-xl"></i>
       </button>
     </div>
-
-    <div id="mobileMenu" class="fixed inset-0 bg-slate-900/50 z-[60] hidden backdrop-blur-sm">
-      <div class="absolute right-0 top-0 h-full w-64 bg-white shadow-2xl p-6 flex flex-col gap-4">
-        <div class="flex justify-between items-center mb-4">
-          <span class="font-bold text-slate-800">Menú</span>
-          <button id="closeMenuBtn" class="p-2 text-slate-400 hover:text-slate-600">
+  
+    <div id="mobileMenu" class="fixed inset-0 bg-slate-900/60 z-[60] hidden backdrop-blur-sm transition-all">
+      <div class="absolute right-0 top-0 h-full w-72 bg-white shadow-2xl p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-8">
+          <span class="font-bold text-lg text-slate-800">Navegación</span>
+          <button id="closeMenuBtn" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
             <i class="fas fa-times text-xl"></i>
           </button>
         </div>
+        
         <nav class="flex flex-col gap-2">
-          <a href="dataAgencias.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
-            <i class="fas fa-database text-indigo-500 w-5"></i> Agencias
+          <a href="dataAgencias.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+            <i class="fas fa-database text-indigo-500 w-5"></i> Agencias Sin GPS
           </a>
-          <a href="data.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
-            <i class="fas fa-database text-indigo-500 w-5"></i> Data
+          <a href="data.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+            <i class="fas fa-hdd text-indigo-500 w-5"></i> Backup de Data
           </a>
-          <a href="cercana.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
-            <i class="fas fa-street-view text-indigo-500 w-5"></i> Cercana
+          <a href="cercana.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+            <i class="fas fa-street-view text-indigo-500 w-5"></i> Agencias Cercanas
           </a>
-          <a href="agencies.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-medium">
-            <i class="fas fa-building text-indigo-500 w-5"></i> Agencias
+          <a href="agencies.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+            <i class="fas fa-building text-indigo-500 w-5"></i> Lista Completa
           </a>
+  
+          <hr class="my-4 border-slate-100">
+  
+          <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+            <input type="checkbox" name="seguimiento" id="seguimiento" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+            <span class="text-sm font-medium text-slate-700">Seguir en el mapa</span>
+          </label>
         </nav>
       </div>
     </div>
@@ -1805,24 +2021,30 @@ ARCHIVO: .\index.html
     <div class="text-slate-400 font-medium italic normal-case">v2.2 &copy; 2026</div>
   </footer>
   <script>
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    // Lógica para abrir y cerrar el menú
     const mobileMenu = document.getElementById('mobileMenu');
-
-    mobileMenuBtn.addEventListener('click', () => {
+    const openBtn = document.getElementById('mobileMenuBtn');
+    const closeBtn = document.getElementById('closeMenuBtn');
+  
+    openBtn.addEventListener('click', () => {
       mobileMenu.classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // Evita scroll al estar abierto
     });
-
-    closeMenuBtn.addEventListener('click', () => {
+  
+    closeBtn.addEventListener('click', () => {
       mobileMenu.classList.add('hidden');
+      document.body.style.overflow = 'auto';
     });
-
-    // Cerrar al hacer clic fuera del menú
+  
+    // Cerrar al hacer click fuera del contenedor blanco
     mobileMenu.addEventListener('click', (e) => {
-      if (e.target === mobileMenu) mobileMenu.classList.add('hidden');
+      if (e.target === mobileMenu) {
+        mobileMenu.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+      }
     });
   </script>
-
+<script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
@@ -1905,6 +2127,65 @@ updateNetworkStatus();
 
 
 ================================================================================
+ARCHIVO: .\observaciones.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Notas | Agencia Pro</title>
+    <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] min-h-screen pb-20">
+
+    <header class="bg-indigo-700 text-white p-6 rounded-b-[2rem] shadow-lg mb-6">
+        <div class="flex justify-between items-center">
+            <a href="cercana.html" class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <i class="fa fa-arrow-left"></i>
+            </a>
+            <h1 class="text-xl font-bold">Historial Completo</h1>
+            <button id="btnExport" class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <i class="fa fa-file-excel"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="px-4 space-y-6">
+        
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button onclick="filterBy('TODAS')" class="bg-indigo-600 text-white px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap shadow-md">Todas</button>
+            <button onclick="filterBy('Excelente')" class="bg-white text-emerald-600 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border border-emerald-100 shadow-sm">Excelente</button>
+            <button onclick="filterBy('Regular')" class="bg-white text-amber-600 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border border-amber-100 shadow-sm">Regular</button>
+            <button onclick="filterBy('Crítico')" class="bg-white text-rose-600 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap border border-rose-100 shadow-sm">Crítico</button>
+        </div>
+
+        <div class="relative">
+            <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="searchAgency" placeholder="Buscar por código AG..." 
+                class="w-full bg-white border border-slate-200 py-4 pl-12 pr-4 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div id="historyContainer" class="space-y-4">
+            <div class="animate-pulse flex flex-col gap-4">
+                <div class="h-32 bg-slate-200 rounded-3xl"></div>
+                <div class="h-32 bg-slate-200 rounded-3xl"></div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="./js/observaciones/observaciones.page.js"></script>
+</body>
+</html>
+
+================================================================================
 ARCHIVO: .\offline.html
 ================================================================================
 <!DOCTYPE html>
@@ -1913,6 +2194,7 @@ ARCHIVO: .\offline.html
   <meta charset="UTF-8">
   <title>Sin conexión</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
   <style>
     body {
       font-family: sans-serif;
@@ -2000,131 +2282,6 @@ ARCHIVO: .\report.html
 <script type="module" src="./js/reports/reports.page.js"></script>
 </body>
 </html>
-
-
-================================================================================
-ARCHIVO: .\sw.js
-================================================================================
-const CACHE_NAME = 'agencias-pwa-v4';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/offline.html',
-  '/data.html',
-  '/manifest.json',
-  '/css/app.css',
-  '/js/app.js',
-  '/js/network.js',
-  '/js/sw-register.js',
-  '/js/location.service.js',
-  '/js/agencies/agencies.store.js',
-  '/js/map/map.actions.js'
-];
-
-const EXTERNAL_ASSETS = [
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
-  'https://cdn.jsdelivr.net/npm/sweetalert2@11'
-];
-
-// ==========================================
-// INSTALL
-// ==========================================
-self.addEventListener('install', event => {
-  console.log('[SW] Installing...');
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll([...STATIC_ASSETS, ...EXTERNAL_ASSETS]))
-  );
-  self.skipWaiting();
-});
-
-// ==========================================
-// ACTIVATE
-// ==========================================
-self.addEventListener('activate', event => {
-  console.log('[SW] Activating...');
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            console.log('[SW] Removing old cache:', key);
-            return caches.delete(key);
-          }
-        })
-      )
-    )
-  );
-  self.clients.claim();
-});
-
-// ==========================================
-// FETCH – CACHE FIRST para estáticos, NETWORK FIRST para API / JSON
-// ==========================================
-self.addEventListener('fetch', event => {
-  const req = event.request;
-  const url = new URL(req.url);
-
-  // Si es API o JSON (agencias), NETWORK FIRST
-  if (url.pathname.endsWith('.json') || url.pathname.includes('/agencies')) {
-    event.respondWith(networkFirst(req));
-  } else {
-    // Archivos estáticos, cache primero
-    event.respondWith(cacheFirst(req));
-  }
-});
-
-// Estrategias
-async function cacheFirst(req) {
-  const cacheResp = await caches.match(req);
-  if (cacheResp) return cacheResp;
-
-  try {
-    const networkResp = await fetch(req);
-    if (req.method === 'GET' && networkResp.status === 200) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(req, networkResp.clone());
-    }
-    return networkResp;
-  } catch (err) {
-    return caches.match('/offline.html');
-  }
-}
-
-async function networkFirst(req) {
-  try {
-    const networkResp = await fetch(req);
-    if (req.method === 'GET' && networkResp.status === 200) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(req, networkResp.clone());
-    }
-    return networkResp;
-  } catch (err) {
-    const cacheResp = await caches.match(req);
-    return cacheResp || caches.match('/offline.html');
-  }
-}
-
-// ==========================================
-// SYNC – Cola de sincronización
-// ==========================================
-self.addEventListener('sync', event => {
-  if (event.tag === 'sync-agencies') {
-    event.waitUntil(syncAgencies());
-  }
-});
-
-async function syncAgencies() {
-  console.log('[SW] Syncing agencies...');
-  // Aquí llamarías a tu cola: queueSync
-  // Ejemplo: enviar cambios pendientes al servidor
-  // fetch('/api/sync', { method: 'POST', body: ... })
-}
-
-// ==========================================
-// PUSH NOTIFICATIONS (opcional)
-// ==========================================
-// self.addEventListener('push', event => {...});
 
 
 ================================================================================
@@ -2234,12 +2391,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   botonesIrRutas.forEach(boton => {
     boton.addEventListener('click', (e)=>{
         console.log('Iniciando ruta ' + e.currentTarget.dataset.ruta)
+        stopRoute()
         startRouteByZone(map, e.currentTarget.dataset.ruta);
     })
   })
-
-
-
 });
 
 // Exportación global (botón HTML)
@@ -2426,67 +2581,62 @@ function renderCounter(agencies) {
   counter.textContent = `Agencias sin ubicación: ${pending}`;
 }
 
-// ... (Toda tu lógica de filtros y DB se mantiene igual)
-
 function renderAgencies(agencies) {
     list.innerHTML = '';
   
     if (!agencies.length) {
       list.innerHTML = `
-        <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-          <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        <div class="text-center py-20 bg-white rounded-[2rem] border-2 border-dashed border-slate-200/60">
+          <div class="bg-indigo-50 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5">
+              <svg class="h-10 w-10 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
           </div>
-          <p class="text-slate-400 font-semibold">No se encontraron agencias</p>
-          <p class="text-slate-300 text-sm">Intenta cambiar los filtros o el término de búsqueda</p>
+          <p class="text-slate-600 font-bold text-lg">No hay resultados</p>
+          <p class="text-slate-400 text-sm max-w-xs mx-auto">No encontramos agencias que coincidan con tu búsqueda actual.</p>
         </div>`;
       return;
     }
   
     agencies.forEach(a => {
       const card = document.createElement('div');
-      card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:shadow-md transition-shadow group';
+      card.className = 'bg-white p-4 sm:p-5 rounded-3xl card-shadow border border-slate-200/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 hover:border-indigo-200 transition-all group relative overflow-hidden';
   
       const statusBadge = a.lat 
-        ? '<span class="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide leading-none">Localizada</span>'
-        : '<span class="flex items-center gap-1.5 bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide leading-none">Sin GPS</span>';
+        ? '<span class="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase border border-emerald-100">Localizada</span>'
+        : '<span class="flex items-center gap-1.5 bg-amber-50 text-amber-600 px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase border border-amber-100">Sin GPS</span>';
   
       card.innerHTML = `
-        <div class="flex items-start gap-4">
-          <div class="hidden sm:flex h-12 w-12 bg-slate-50 text-slate-400 rounded-xl items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors font-bold text-xs">
-            ${a.idReal.substring(0,2)}
+        <div class="flex items-center gap-5">
+          <div class="hidden sm:flex h-14 w-14 bg-slate-50 text-slate-400 rounded-2xl items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 font-bold text-sm border border-slate-100 shadow-inner">
+            ${a.idReal.substring(0,2).toUpperCase()}
           </div>
           <div class="space-y-1">
-            <div class="flex flex-wrap items-center gap-2">
-              <h3 class="text-base font-black text-slate-800">${a.idReal}</h3>
+            <div class="flex flex-wrap items-center gap-3">
+              <h3 class="text-lg font-bold text-slate-800 tracking-tight">${a.idReal}</h3>
               ${statusBadge}
             </div>
-            <div class="flex flex-col gap-0.5">
-              <p class="text-[11px] font-bold text-indigo-500 uppercase">Zona ${a.zona}</p>
-              <p class="text-sm text-slate-500 truncate max-w-[250px] md:max-w-md">${a.direccion || 'No se especificó dirección'}</p>
+            <div class="flex flex-col">
+              <p class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">Zona ${a.zona}</p>
+              <p class="text-xs font-medium text-slate-500 line-clamp-1 max-w-[200px] md:max-w-md">${a.direccion || 'Sin dirección registrada'}</p>
             </div>
           </div>
         </div>
   
-        <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0">
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-4 sm:pt-0">
           ${!a.lat ? `
-            <button data-gps="${a.id}" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-100">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              </svg>
-              GPS
+            <button data-gps="${a.id}" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-100 active:scale-95">
+              Fijar GPS
             </button>` : ''}
           
-          <button data-edit="${a.id}" class="p-2.5 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-colors" title="Editar">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button data-edit="${a.id}" class="p-2.5 bg-slate-50 text-slate-500 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-all border border-slate-100" title="Editar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
           </button>
   
-          <button data-del="${a.id}" class="p-2.5 bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-colors" title="Eliminar">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button data-del="${a.id}" class="p-2.5 bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-rose-100" title="Eliminar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </button>
@@ -3179,6 +3329,16 @@ export async function exportAgenciesAdvanced() {
     return agencies.find(a => a.idReal === idReal);
   }
 
+  export async function saveObservation(observation) {
+    const db = await dbPromise;
+    return db.add('observaciones', observation);
+  }
+  
+  export async function getAllObservations() {
+    const db = await dbPromise;
+    return db.getAll('observaciones');
+  }
+
 ================================================================================
 ARCHIVO: .\js\agencies\agencies.ui.js
 ================================================================================
@@ -3254,15 +3414,37 @@ export async function createAgencyFromMap(latlng, map, formValues) {
 ================================================================================
 ARCHIVO: .\js\cercana\cercana.page.js
 ================================================================================
-import { getAllAgencies, updateAgency } from '../agencies/agencies.store.js';
+import { saveObservation, getAllAgencies, updateAgency } from '../agencies/agencies.store.js';
 import { createAgencyFromGPS } from '../agencies/agencies.actions.js';
+import { decir } from '../speech/speech.js';
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.addEventListener('mouseenter', Swal.stopTimer)
+    toast.addEventListener('mouseleave', Swal.resumeTimer)
+  }
+});
 
 const nearestBox = document.getElementById('closestAgency');
 const list = document.getElementById('agencyList');
 const btnAdd = document.getElementById('btnAddAgency');
-
+const avisosDados = {};
 let currentPos = null;
-
+let isFirstLoad = true;
+// MOSTRAR LOADING INICIAL
+Swal.fire({
+  title: 'Localizando...',
+  text: 'Esperando señal de GPS para calcular distancias.',
+  allowOutsideClick: false,
+  didOpen: () => {
+      Swal.showLoading();
+  }
+});
 function distanceMeters(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
@@ -3294,6 +3476,12 @@ function isVisitedToday(a) {
 async function loadNearby() {
   if (!currentPos) return;
 
+  // CERRAMOS EL LOADING cuando recibimos la primera posición válida
+  if (isFirstLoad) {
+    Swal.close();
+    isFirstLoad = false;
+}
+
   const agencies = await getAllAgencies();
 
   const enriched = agencies.map(a => ({
@@ -3322,8 +3510,43 @@ async function loadNearby() {
 }
 
 function renderNearest(a) {
-  const isNear = a.distance <= 100;
+  const isNear = a.distance <= 75;
   const colorClass = isNear ? 'from-emerald-500 to-teal-600' : 'from-slate-400 to-slate-500';
+
+  const id = a.idReal;
+  
+  // 1. INICIALIZACIÓN: Si no existe la agencia en el registro, la creamos
+  if (!avisosDados[id]) {
+    avisosDados[id] = [];
+  }
+
+  // 2. REINICIO: Si la distancia es > 200m, vaciamos sus avisos previos
+  if (a.distance > 200) {
+    if (avisosDados[id].length > 0) {
+      console.log(`Reseteando avisos para agencia ${id} por distancia (>200m)`);
+      avisosDados[id] = []; 
+    } 
+  }
+
+  // 3. LÓGICA DE AVISOS (Solo si está a menos de 200m)
+  // Usamos una pequeña función para evitar repetir código
+  const dispararAviso = (metros) => {
+    if (a.distance <= metros && !avisosDados[id].includes(metros)) {
+      decir(id, `está a ${metros} metros o menos`);
+      avisosDados[id].push(metros);
+      return true;
+    }
+    return false;
+  };
+
+  // Evaluamos de menor a mayor distancia para que el aviso sea preciso
+  if (!dispararAviso(10)) {
+    if (!dispararAviso(30)) {
+      if (!dispararAviso(50)) {
+        dispararAviso(75);
+      }
+    }
+  }
 
   nearestBox.classList.remove('hidden');
   nearestBox.innerHTML = `
@@ -3342,7 +3565,7 @@ function renderNearest(a) {
             <h2 class="text-3xl font-black leading-tight mb-1">AG ${a.idReal}</h2>
             <div class="flex items-center gap-2 opacity-90 text-sm mb-8">
                 <i class="fa-solid fa-location-dot"></i>
-                <span>Zona ${a.zona || 'Sucursal Principal'}</span>
+                <span>Zona ${a.zona || 'Zona'} | ${a.direccion || 'Direccion fisica!'}</span>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
@@ -3359,7 +3582,7 @@ function renderNearest(a) {
         </div>
       </div>`;
 }
-console.log("Test")
+
 function renderList(data) {
   list.innerHTML = '';
   data.slice(1).forEach(a => {
@@ -3371,7 +3594,7 @@ function renderList(data) {
                     </div>
                     <div>
                         <h4 class="font-bold text-slate-800">${a.idReal}</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Zona ${a.zona || 'Sucursal'}</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Zona: <span class="italic font-normal">${a.zona || 'Zona'}</span> | Direccion: <span class="italic font-normal">${a.direccion || 'Direccion'}</span></p>
                     </div>
                 </div>
                 <div class="text-right">
@@ -3389,11 +3612,10 @@ function renderObservations(agencies) {
 
   const today = new Date();
 
+  // Filtrar solo las agencias con notas de hoy
   const withNotes = agencies.filter(a => {
     if (!a.ultima_nota || !a.fecha_ultima_visita) return false;
-
     const visitDate = new Date(a.fecha_ultima_visita);
-
     if (isNaN(visitDate)) return false;
 
     return (
@@ -3403,54 +3625,56 @@ function renderObservations(agencies) {
     );
   });
 
+  // CASO: No hay reportes
   if (withNotes.length === 0) {
     panel.innerHTML = `
-      <div class="text-center py-10 opacity-70">
-        <i class="fa-solid fa-clipboard-list text-3xl mb-3"></i>
-        <p class="text-xs text-slate-400 font-bold uppercase tracking-widest italic">
-          Sin reportes hoy
+      <div class="text-center py-10 opacity-70 fade-in">
+        <i class="fa-solid fa-clipboard-check text-3xl mb-3 text-slate-300"></i>
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">
+          Sin reportes registrados hoy
         </p>
       </div>`;
     return;
   }
 
+  // CASO: Renderizar Notas
   panel.innerHTML = withNotes.map(a => {
     const estado = a.ultimo_estado || 'Regular';
+    
+    // Mapeo de colores basado en el estado
+    const config = {
+        'Excelente': { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-500' },
+        'Regular': { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-500' },
+        'Crítico': { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-500' }
+    };
 
-    const color =
-      estado === 'Excelente' ? 'emerald' :
-      estado === 'Regular'   ? 'amber'   :
-      'rose';
-
+    const style = config[estado] || config['Regular'];
     const hora = new Date(a.fecha_ultima_visita).toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit'
     });
 
     return `
-      <div class="relative pl-10">
-        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-4 border-${color}-500 z-10 shadow-sm"></div>
+      <div class="relative pl-10 transition-all duration-700 fade-in">
+        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-4 ${style.border} z-10 shadow-sm"></div>
 
-        <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100">
+        <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
           <div class="flex justify-between items-start mb-3">
-            <div>
-              <h4 class="font-black text-slate-800 text-sm leading-none">
+            <div class="flex-1">
+              <h4 class="font-black text-slate-800 text-sm leading-tight">
                 AG ${a.idReal}
               </h4>
-              <span class="text-[9px] text-slate-400 font-bold uppercase">
-                Hora ${hora}
-              </span>
+              <p class="text-[9px] text-slate-400 font-bold uppercase">
+                <i class="fa fa-clock mr-1"></i> ${hora} | ${a.zona}
+              </p>
             </div>
 
-            <span class="text-[9px] font-black px-2 py-1 rounded-lg
-              bg-${color}-50 text-${color}-600 uppercase
-              border border-${color}-100">
+            <span class="text-[9px] font-black px-2 py-1 rounded-lg ${style.bg} ${style.text} uppercase border">
               ${estado}
             </span>
           </div>
 
-          <p class="text-slate-500 text-xs italic leading-relaxed
-            border-l-2 border-slate-100 pl-3">
+          <p class="text-slate-600 text-xs leading-relaxed border-l-2 border-slate-100 pl-3 italic">
             "${a.ultima_nota}"
           </p>
         </div>
@@ -3544,11 +3768,17 @@ btnAdd?.addEventListener('click', async () => {
 
 navigator.geolocation.watchPosition(
   pos => {
-    currentPos = pos.coords;
-    loadNearby();
+      currentPos = pos.coords;
+      loadNearby();
   },
   err => {
-    Swal.fire('Error', 'No se pudo acceder al GPS', 'error');
+      console.error(err);
+      Swal.fire({
+          icon: 'error',
+          title: 'GPS no detectado',
+          text: 'Activa la ubicación para ver las agencias cercanas.',
+          confirmButtonText: 'Reintentar'
+      }).then(() => location.reload());
   },
   { enableHighAccuracy: true }
 );
@@ -3566,9 +3796,9 @@ window.registrarVisita = async function (id) {
         <div class="text-left">
           <label class="block text-xs font-bold mb-1">ESTADO DE AGENCIA</label>
           <select id="swal-estado" class="swal2-input w-full m-0 mb-4">
-            <option value="Excelente">Excelente ✅</option>
-            <option value="Regular">Regular ⚠️</option>
-            <option value="Crítico">Crítico ❌</option>
+            <option value="Excelente">Excelente</option>
+            <option value="Regular">Regular</option>
+            <option value="Crítico">Crítico</option>
           </select>
           
           <label class="block text-xs font-bold mb-1">OBSERVACIONES</label>
@@ -3589,7 +3819,20 @@ window.registrarVisita = async function (id) {
   });
 
   if (formValues) {
+    const ahora = new Date();
 
+    
+    const nuevaObservacion = {
+      agenciaId: id, // ID de la agencia
+      idReal: agency.idReal, // El código AG-XXXX
+      descripcion: formValues.notas,
+      fecha: ahora.toLocaleDateString(), // Ejemplo: "18/01/2026"
+      hora: ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), // "12:15 PM"
+      estado: formValues.estado_visita,
+      timestamp: ahora.getTime() // Útil para ordenar por fecha real
+    };
+
+    await saveObservation(nuevaObservacion);
     const updatedAgency = {
       ...agency,
       fecha_ultima_visita: formValues.fecha,
@@ -3598,14 +3841,13 @@ window.registrarVisita = async function (id) {
       contador_visitas: (agency.contador_visitas || 0) + 1
     };
 
+
     await updateAgency(updatedAgency);
 
-    await Swal.fire({
+    Toast.fire({
       icon: 'success',
       title: '¡Visita Registrada!',
-      text: 'Se ha guardado en el historial local.',
-      timer: 2000,
-      showConfirmButton: false
+      text: `Agencia ${agency.idReal} actualizada`
     });
 
     loadNearby();
@@ -3616,7 +3858,7 @@ window.registrarVisita = async function (id) {
 ARCHIVO: .\js\db\db.js
 ================================================================================
 const DB_NAME = 'control_agencias_db';
-const DB_VERSION = 3;
+const DB_VERSION = 5;
 
 export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
   upgrade(db) {
@@ -3636,6 +3878,15 @@ export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
     if (!db.objectStoreNames.contains('observations')) {
       const store = db.createObjectStore('observations', { keyPath: 'id' });
       store.createIndex('visit_id', 'visit_id');
+    }
+
+    if (!db.objectStoreNames.contains('observaciones')) {
+      const store = db.createObjectStore('observaciones', { 
+        keyPath: 'id', 
+        autoIncrement: true 
+      });
+      store.createIndex('agenciaId', 'agenciaId');
+      store.createIndex('timestamp', 'timestamp');
     }
 
     if (!db.objectStoreNames.contains('sync_queue')) {
@@ -4233,6 +4484,7 @@ ARCHIVO: .\js\gps\location.service.js
 ================================================================================
 let watchId = null;
 let retryTimeout = null;
+let goodFixes = [];
 
 export function startLocationTracking(onUpdate) {
   if (!navigator.geolocation) {
@@ -4247,56 +4499,73 @@ export function startLocationTracking(onUpdate) {
   }
 
   function startWatch() {
+
+    // 🔴 Limpia watch anterior (CRÍTICO)
+    if (watchId) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+
     watchId = navigator.geolocation.watchPosition(
       pos => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+        const { latitude, longitude, accuracy } = pos.coords;
 
-        if (typeof lat !== 'number' || typeof lng !== 'number') return;
+        if (
+          typeof latitude !== 'number' ||
+          typeof longitude !== 'number' ||
+          accuracy > 25
+        ) return;
 
-        // Actualiza la posición
-        onUpdate({ lat, lng, accuracy: pos.coords.accuracy });
+        // 🧠 Ignorar primeras lecturas
+        goodFixes.push({ lat: latitude, lng: longitude, accuracy });
+
+        if (goodFixes.length < 2) return;
+
+        const best = goodFixes.shift();
+
+        onUpdate(best);
       },
       err => {
         console.error('GPS error', err);
 
-        // Mostrar alerta según tipo de error
         if (err.code === 1) {
           Swal.fire({
             icon: 'error',
             title: 'Permiso denegado',
-            text: 'Activa el acceso a tu ubicación para usar el GPS.',
+            text: 'Activa el acceso a tu ubicación.',
             timer: 2500,
             showConfirmButton: false
           });
-        } else if (err.code === 2) {
+        }
+
+        if (err.code === 2) {
           Swal.fire({
             icon: 'warning',
             title: 'Ubicación no disponible',
-            text: 'No se pudo determinar tu posición. Revisa tu señal.',
+            text: 'Revisa señal GPS o WiFi.',
             timer: 2500,
             showConfirmButton: false
           });
-        } else if (err.code === 3) {
+        }
+
+        if (err.code === 3) {
           Swal.fire({
             icon: 'info',
             title: 'GPS lento',
-            text: 'Intentando obtener tu ubicación nuevamente...',
-            timer: 2500,
+            text: 'Reintentando...',
+            timer: 2000,
             showConfirmButton: false
           });
 
-          // Reintentar automáticamente después de 3s
           if (retryTimeout) clearTimeout(retryTimeout);
-          retryTimeout = setTimeout(() => {
-            startWatch();
-          }, 3000);
+
+          retryTimeout = setTimeout(startWatch, 3000);
         }
       },
       {
-        enableHighAccuracy: true,  // ⚡ alta precisión
-        maximumAge: 5000,          // usar posición reciente hasta 5s
-        timeout: 30000             // esperar hasta 30s
+        enableHighAccuracy: true,
+        maximumAge: 0,      // 🔥 clave
+        timeout: 30000
       }
     );
   }
@@ -4524,109 +4793,127 @@ export async function startRouteByZone(map, zone) {
 ================================================================================
 ARCHIVO: .\js\map\map.service.js
 ================================================================================
+/* 1. TODOS LOS IMPORTS AL PRINCIPIO */
+import { setMapInstance } from './map.instance.js';
+import { renderAgencies, createAgencyFromMap } from '../agencies/agencies.ui.js';
+
+/* 2. VARIABLES DE ESTADO */
 let map;
 let userMarker = null;
 let firstFix = true;
 const SAN_JUAN = [18.8059, -71.2299];
-import { setMapInstance } from './map.instance.js';
 
-
+/* 3. INICIALIZACIÓN DEL MAPA */
 export function initMap() {
-  map = L.map('map').setView(SAN_JUAN, 17);
+    map = L.map('map').setView(SAN_JUAN, 17);
 
-  L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    { maxZoom: 19 }
-  ).addTo(map);
-
-  
-  renderAgencies(map);
-  setupCreateAgency(map);
-  setMapInstance(map)
-  
-  return map;
-}
-
-export function updateUserPosition(map, position) {
-  if (!map || !position?.lat || !position?.lng) return;
-
-  if (!userMarker) {
-    userMarker = L.circleMarker([position.lat, position.lng], {
-      radius: 10,
-    //   color: '#2563eb',
-    //   fillColor: '#3b82f6',
-      fillOpacity: 0.9
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+        maxZoom: 19 
     }).addTo(map);
 
-    userMarker.bindPopup('Mi ubicación');
-
+    renderAgencies(map);
+    setupCreateAgency(map);
+    setMapInstance(map);
     
-    if (firstFix) {
-      map.setView([position.lat, position.lng], 17);
-      firstFix = false;
-    }
-
-    return;
-  }
-
-  userMarker.setLatLng([position.lat, position.lng]);
+    return map;
 }
 
-/* ============================= */
-/* Helpers */
-/* ============================= */
+/* 4. ACTUALIZACIÓN DE POSICIÓN, SEGUIMIENTO Y GIRO */
+export function updateUserPosition(map, position) {
+    if (!map || !position?.lat || !position?.lng) return;
 
-import { renderAgencies, createAgencyFromMap } from '../agencies/agencies.ui.js';
+    const latlng = [position.lat, position.lng];
+    const seguimientoActivo = document.getElementById('seguimiento').checked;
 
-function setupCreateAgency(map) {
-  map.on('click', async (e) => {
-    const confirm = await Swal.fire({
-      title: 'Crear agencia',
-      text: '¿Agregar agencia en este punto?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, continuar',
-      cancelButtonText: 'Cancelar'
-    });
+    // A. Crear o mover el marcador
+    if (!userMarker) {
+        const arrowIcon = L.divIcon({
+            className: 'location-arrow',
+            html: '<i class="fa fa-location-arrow" style="font-size:24px; color:#3b82f6; text-shadow: 0 0 3px #fff;"></i>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+        userMarker = L.marker(latlng, { icon: arrowIcon }).addTo(map);
+    } else {
+        userMarker.setLatLng(latlng);
+    }
 
-    if (!confirm.isConfirmed) return;
-
-    const { value: formValues } = await Swal.fire({
-      title: 'Datos de la agencia',
-      html: `
-        <input id="codigo" class="swal2-input" placeholder="Código">
-        <select id="zona" class="swal2-select">
-          <option value="">Seleccione zona</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-          <option value="OTRA">OTRA</option>
-        </select>
-        <input id="direccion" class="swal2-input" placeholder="Dirección">
-      `,
-      showCancelButton: true,
-      confirmButtonText: 'Guardar',
-      preConfirm: () => {
-        const codigo = document.getElementById('codigo').value.trim();
-        const zona = document.getElementById('zona').value;
-        const direccion = document.getElementById('direccion').value.trim();
-
-        if (!codigo || !zona || !direccion) {
-          Swal.showValidationMessage('Todos los campos son obligatorios');
-          return false;
+    // B. Lógica de seguimiento (Cámara)
+    if (seguimientoActivo) {
+        if (firstFix) {
+            map.setView(latlng, 17);
+            firstFix = false;
+        } else {
+            map.panTo(latlng);
         }
-
-        return { codigo, zona, direccion };
-      }
-    });
-
-    if (formValues) {
-      await createAgencyFromMap(e.latlng, map, formValues);
     }
-  });
+
+    // C. Lógica de Rotación (Icono o Mapa)
+    if (position.heading !== null && position.heading !== undefined) {
+        // Si tienes instalado el plugin Leaflet.Rotate
+        if (map.setBearing && seguimientoActivo) {
+            map.setBearing(position.heading); 
+        } else {
+            // Rotar solo la flechita mediante CSS
+            const el = userMarker.getElement();
+            if (el) {
+                // Ajustamos el ángulo (fa-location-arrow apunta a 45° por defecto, 
+                // restamos 45 para que 0° sea el Norte real)
+                el.style.transformOrigin = "center";
+                el.style.transform = `translate3d(${el._leaflet_pos?.x}px, ${el._leaflet_pos?.y}px, 0) rotate(${position.heading - 45}deg)`;
+            }
+        }
+    }
 }
 
+/* 5. AYUDANTES (HELPERS) */
+function setupCreateAgency(map) {
+    map.on('click', async (e) => {
+        const confirm = await Swal.fire({
+            title: 'Crear agencia',
+            text: '¿Agregar agencia en este punto?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, continuar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!confirm.isConfirmed) return;
+
+        const { value: formValues } = await Swal.fire({
+            title: 'Datos de la agencia',
+            html: `
+                <input id="codigo" class="swal2-input" placeholder="Código">
+                <select id="zona" class="swal2-select">
+                    <option value="">Seleccione zona</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="OTRA">OTRA</option>
+                </select>
+                <input id="direccion" class="swal2-input" placeholder="Dirección">
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            preConfirm: () => {
+                const codigo = document.getElementById('codigo').value.trim();
+                const zona = document.getElementById('zona').value;
+                const direccion = document.getElementById('direccion').value.trim();
+
+                if (!codigo || !zona || !direccion) {
+                    Swal.showValidationMessage('Todos los campos son obligatorios');
+                    return false;
+                }
+                return { codigo, zona, direccion };
+            }
+        });
+
+        if (formValues) {
+            await createAgencyFromMap(e.latlng, map, formValues);
+        }
+    });
+}
 
 ================================================================================
 ARCHIVO: .\js\map\markers.service.js
@@ -4647,6 +4934,86 @@ export function agencyMarker(agency) {
     `);
   }
   
+
+================================================================================
+ARCHIVO: .\js\observaciones\observaciones.page.js
+================================================================================
+import { getAllObservations } from '../agencies/agencies.store.js';
+
+let allObservations = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadHistory();
+
+    // Evento para el buscador
+    document.getElementById('searchAgency').addEventListener('input', (e) => {
+        const term = e.target.value.toUpperCase();
+        const filtered = allObservations.filter(o => o.idReal.includes(term));
+        renderList(filtered);
+    });
+});
+
+async function loadHistory() {
+    allObservations = await getAllObservations();
+    // Ordenar por las más recientes primero (usando timestamp)
+    allObservations.sort((a, b) => b.timestamp - a.timestamp);
+    renderList(allObservations);
+}
+
+function renderList(data) {
+    const container = document.getElementById('historyContainer');
+    
+    if (data.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-20 text-slate-400">
+                <i class="fa-regular fa-folder-open text-5xl mb-4"></i>
+                <p class="font-bold">No se encontraron notas</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = data.map(obs => {
+        const colors = {
+            'Excelente': 'emerald',
+            'Regular': 'amber',
+            'Crítico': 'rose'
+        };
+        const c = colors[obs.estado] || 'slate';
+
+        return `
+        <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-lg font-black text-slate-800">${obs.idReal}</h3>
+                    <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase">
+                        <span><i class="fa fa-calendar"></i> ${obs.fecha}</span>
+                        <span><i class="fa fa-clock"></i> ${obs.hora}</span>
+                    </div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-[9px] font-black bg-${c}-50 text-${c}-600 border border-${c}-100 uppercase">
+                    ${obs.estado}
+                </span>
+            </div>
+            
+            <div class="bg-slate-50 rounded-2xl p-4">
+                <p class="text-sm text-slate-600 leading-relaxed italic">
+                    "${obs.descripcion}"
+                </p>
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+// Filtro global expuesto
+window.filterBy = function(estado) {
+    if (estado === 'TODAS') {
+        renderList(allObservations);
+    } else {
+        const filtered = allObservations.filter(o => o.estado === estado);
+        renderList(filtered);
+    }
+};
 
 ================================================================================
 ARCHIVO: .\js\reports\reports.page.js
@@ -4870,6 +5237,68 @@ export function onLocationUpdate(pos) {
 
 }
 
+
+================================================================================
+ARCHIVO: .\js\speech\speech.js
+================================================================================
+export async function decir(agencia, text = "") {
+    let msg;
+
+    // 1. Validaciones
+    if (!agencia) {
+        msg = "No hay número de agencia";
+    } else if (!/^\d+$/.test(agencia.toString())) { // Convertimos a string por si acaso
+        msg = "El identificador de agencia debe contener solo números";
+    } else {
+        // 2. Formateo por pares (ej: "1234" -> "12 34")
+        const pares = agencia.toString().match(/.{1,2}/g);
+        const numeroEspaciado = pares.join(" ");
+        
+        // Construimos la frase final
+        msg = `La agencia ${numeroEspaciado} ${text}`;
+    }
+
+    // 3. Síntesis de voz
+    const mensaje = new SpeechSynthesisUtterance(msg);
+    mensaje.lang = "es-ES";
+    mensaje.rate = 0.9;
+
+    window.speechSynthesis.cancel();
+    sonarAlerta(); 
+    
+    // Un pequeño retraso de 150ms para que el beep no tape la voz
+    setTimeout(() => {
+        window.speechSynthesis.speak(mensaje);
+    }, 150);
+}
+
+export async function decirTexto(text) {
+
+    const mensaje = new SpeechSynthesisUtterance(text);
+    mensaje.lang = "es-ES";
+    mensaje.rate = 0.9;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(mensaje);
+}
+
+function sonarAlerta() {
+    const context = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+
+    oscillator.type = 'sine'; // Sonido suave
+    oscillator.frequency.setValueAtTime(880, context.currentTime); // Nota La (A5)
+    
+    gain.gain.setValueAtTime(0.1, context.currentTime); // Volumen bajo
+    gain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.1);
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.1);
+}
 
 ================================================================================
 ARCHIVO: .\js\sync\firebase.js

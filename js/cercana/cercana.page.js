@@ -152,10 +152,14 @@ function renderNearest(a) {
                 <span>Zona ${a.zona || 'Zona'} | ${a.direccion || 'Direccion fisica!'}</span>
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-3 gap-3">
                 <button onclick="goTo(${a.lat}, ${a.lng})" 
                     class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
                     <i class="fa fa-map-location-dot mr-2"></i> MAPA
+                </button>
+                <button onclick="copiar(${a.idReal})" 
+                    class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
+                    <i class="fa fa-copy mr-2"></i> Copiar
                 </button>
                 <button onclick="registrarVisita('${a.id}')" 
                     ${!isNear ? 'disabled' : ''}
@@ -272,6 +276,32 @@ window.goTo = function (lat, lng) {
   window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
 };
 
+window.copiar = async function (texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: `Agencia ${texto} copiada`,
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+
+  } catch (error) {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'error',
+      title: 'No se pudo copiar',
+      showConfirmButton: false,
+      timer: 3000
+    });
+  }
+}
+
 
 btnAdd?.addEventListener('click', async () => {
 
@@ -375,7 +405,7 @@ window.registrarVisita = async function (id) {
   if (!agency) return;
 
   const { value: formValues } = await Swal.fire({
-    title: `Visita: ${agency.nombre}`,
+    title: `Visita: ${agency.idReal}`,
     html: `
         <div class="text-left">
           <label class="block text-xs font-bold mb-1">ESTADO DE AGENCIA</label>
