@@ -17,6 +17,10 @@ const Toast = Swal.mixin({
 const nearestBox = document.getElementById('closestAgency');
 const list = document.getElementById('agencyList');
 const btnAdd = document.getElementById('btnAddAgency');
+
+let allEnrichedAgencies = []; 
+const inputSearch = document.getElementById('inputSearch');
+
 const avisosDados = {};
 let currentPos = null;
 let isFirstLoad = true;
@@ -60,15 +64,15 @@ function isVisitedToday(a) {
 async function loadNearby() {
   if (!currentPos) return;
 
-  // CERRAMOS EL LOADING cuando recibimos la primera posición válida
   if (isFirstLoad) {
     Swal.close();
     isFirstLoad = false;
-}
+  }
 
   const agencies = await getAllAgencies();
 
-  const enriched = agencies.map(a => ({
+  // Guardamos en la variable global
+  allEnrichedAgencies = agencies.map(a => ({
     ...a,
     distance: distanceMeters(
       currentPos.latitude,
@@ -76,21 +80,32 @@ async function loadNearby() {
       a.lat,
       a.lng
     )
-  }))
-    .sort((a, b) => a.distance - b.distance);
+  })).sort((a, b) => a.distance - b.distance);
 
-  if (!enriched.length) {
-    nearestBox.innerHTML = `
-      <div class="bg-white rounded-3xl p-6 shadow text-center opacity-60">
+  if (!allEnrichedAgencies.length) {
+    nearestBox.innerHTML = `<div class="bg-white rounded-3xl p-6 shadow text-center opacity-60">
         <i class="fa fa-location-dot text-4xl mb-2"></i>
         <p>No hay agencias registradas</p>
       </div>`;
     return;
   }
 
-  renderNearest(enriched[0]);
-  renderList(enriched);
-  renderObservations(enriched);
+  renderNearest(allEnrichedAgencies[0]);
+  
+  // Si el buscador está vacío, renderiza normal, si no, mantén el filtro
+  const term = inputSearch?.value.toLowerCase() || '';
+  if (!term) {
+    renderList(allEnrichedAgencies.slice(1));
+  } else {
+    // Si ya había algo escrito, mantén el filtro aplicado
+    const filtered = allEnrichedAgencies.slice(1).filter(a => 
+      a.idReal.toString().toLowerCase().includes(term) || 
+      (a.direccion && a.direccion.toLowerCase().includes(term))
+    );
+    renderList(filtered);
+  }
+
+  renderObservations(allEnrichedAgencies);
 }
 
 function renderNearest(a) {
@@ -173,24 +188,40 @@ function renderNearest(a) {
 
 function renderList(data) {
   list.innerHTML = '';
-  data.slice(1).forEach(a => {
-    list.innerHTML += `
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex justify-between items-center active:scale-[0.97] transition-transform">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-indigo-500">
-                        <i class="fa-solid fa-building text-lg"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800">${a.idReal}</h4>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Zona: <span class="italic font-normal">${a.zona || 'Zona'}</span> | Direccion: <span class="italic font-normal">${a.direccion || 'Direccion'}</span></p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="font-black text-indigo-600">${Math.round(a.distance)}m</p>
-                    <button onclick="goTo(${a.lat}, ${a.lng})" class="text-[10px] font-black text-slate-300 hover:text-indigo-400 uppercase">Ver ruta</button>
-                </div>
-            </div>
-        `;
+
+  if (data.length === 0) {
+    list.innerHTML = `
+      <div class="text-center py-10 opacity-50">
+        <i class="fa fa-magnifying-glass text-2xl mb-2"></i>
+        <p class="text-xs font-bold uppercase tracking-widest">No hay coincidencias</p>
+      </div>`;
+    return;
+  }
+
+  // USAMOS 'data' directamente, sin .slice(1)
+  data.forEach(a => {
+// Dentro del data.forEach de renderList
+list.innerHTML += `
+  <div class="bg-white rounded-2xl p-5 shadow-md border-2 border-slate-100 flex justify-between items-center active:bg-slate-50">
+      <div class="flex items-center gap-4">
+          <div class="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-inner">
+              <i class="fa-solid fa-building text-xl"></i>
+          </div>
+          <div>
+              <h4 class="font-extrabold text-lg text-slate-900">${a.idReal}</h4>
+              <p class="text-[11px] font-black text-slate-600 uppercase">
+                Zona ${a.zona || 'D'}
+              </p>
+          </div>
+      </div>
+      <div class="text-right">
+          <p class="font-black text-xl text-indigo-700">${Math.round(a.distance)}m</p>
+          <button onclick="goTo(${a.lat}, ${a.lng})"
+            class="mt-1 px-4 py-2 text-xs font-black rounded-lg bg-slate-900 text-white shadow-md">
+            RUTA
+          </button>
+      </div>
+  </div>`;
   });
 }
 
@@ -467,3 +498,26 @@ window.registrarVisita = async function (id) {
     loadNearby();
   }
 };
+
+inputSearch?.addEventListener('input', (e) => {
+  const term = e.target.value.toLowerCase().trim();
+  
+  if (term === "") {
+    // Si está vacío, mostramos la lista normal (quitando la primera que ya se ve arriba)
+    renderList(allEnrichedAgencies.slice(1));
+    return;
+  }
+
+  // Buscamos en TODAS las agencias (sin slice) para que encuentre incluso la que tienes cerca
+  const filtered = allEnrichedAgencies.filter(a => {
+    const idReal = String(a.idReal).toLowerCase();
+    const direccion = a.direccion ? String(a.direccion).toLowerCase() : "";
+    
+    // Comprobamos si el término está incluido en el ID o la dirección
+    return idReal.includes(term) || direccion.includes(term);
+  });
+
+  renderList(filtered);
+  const container = document.getElementById('scrollContainer');
+  if (container) container.scrollTop = 0;
+});
