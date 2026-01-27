@@ -167,19 +167,25 @@ function renderNearest(a) {
                 <span>Zona ${a.zona || 'Zona'} | ${a.direccion || 'Direccion fisica!'}</span>
             </div>
 
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-4 gap-3">
                 <button onclick="goTo(${a.lat}, ${a.lng})" 
                     class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
-                    <i class="fa fa-map-location-dot mr-2"></i> MAPA
+                    <i class="fa fa-map-location-dot mr-2"></i> Mapa
                 </button>
                 <button onclick="copiar(${a.idReal})" 
                     class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
                     <i class="fa fa-copy mr-2"></i> Copiar
                 </button>
+                <button onclick="copiar(${a.idReal} + ' cerrada')" 
+                    ${!isNear ? 'disabled' : ''}
+                    class="bg-red-800 text-white-600 py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
+                    ${isNear ? 'Cerrada' : '<i class="fa fa-lock"></i> Bloqueo'}
+                </button>
+                
                 <button onclick="registrarVisita('${a.id}')" 
                     ${!isNear ? 'disabled' : ''}
                     class="bg-white text-emerald-600 py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
-                    ${isNear ? '<i class="fa fa-check-circle"></i> VISITAR' : '<i class="fa fa-lock"></i> BLOQUEDO'}
+                    ${isNear ? 'Visitar' : '<i class="fa fa-lock"></i> Bloqueo'}
                 </button>
             </div>
         </div>
