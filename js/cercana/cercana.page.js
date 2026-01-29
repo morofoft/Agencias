@@ -18,7 +18,7 @@ const nearestBox = document.getElementById('closestAgency');
 const list = document.getElementById('agencyList');
 const btnAdd = document.getElementById('btnAddAgency');
 
-let allEnrichedAgencies = []; 
+let allEnrichedAgencies = [];
 const inputSearch = document.getElementById('inputSearch');
 
 const avisosDados = {};
@@ -30,7 +30,7 @@ Swal.fire({
   text: 'Esperando señal de GPS para calcular distancias.',
   allowOutsideClick: false,
   didOpen: () => {
-      Swal.showLoading();
+    Swal.showLoading();
   }
 });
 function distanceMeters(lat1, lon1, lat2, lon2) {
@@ -91,15 +91,15 @@ async function loadNearby() {
   }
 
   renderNearest(allEnrichedAgencies[0]);
-  
+
   // Si el buscador está vacío, renderiza normal, si no, mantén el filtro
   const term = inputSearch?.value.toLowerCase() || '';
   if (!term) {
     renderList(allEnrichedAgencies.slice(1));
   } else {
     // Si ya había algo escrito, mantén el filtro aplicado
-    const filtered = allEnrichedAgencies.slice(1).filter(a => 
-      a.idReal.toString().toLowerCase().includes(term) || 
+    const filtered = allEnrichedAgencies.slice(1).filter(a =>
+      a.idReal.toString().toLowerCase().includes(term) ||
       (a.direccion && a.direccion.toLowerCase().includes(term))
     );
     renderList(filtered);
@@ -113,7 +113,7 @@ function renderNearest(a) {
   const colorClass = isNear ? 'from-emerald-500 to-teal-600' : 'from-slate-400 to-slate-500';
 
   const id = a.idReal;
-  
+
   // 1. INICIALIZACIÓN: Si no existe la agencia en el registro, la creamos
   if (!avisosDados[id]) {
     avisosDados[id] = [];
@@ -123,8 +123,8 @@ function renderNearest(a) {
   if (a.distance > 200) {
     if (avisosDados[id].length > 0) {
       console.log(`Reseteando avisos para agencia ${id} por distancia (>200m)`);
-      avisosDados[id] = []; 
-    } 
+      avisosDados[id] = [];
+    }
   }
 
   // 3. LÓGICA DE AVISOS (Solo si está a menos de 200m)
@@ -176,12 +176,15 @@ function renderNearest(a) {
                     class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
                     <i class="fa fa-copy mr-2"></i> Copiar
                 </button>
-                <button onclick="copiar(${a.idReal} + ' cerrada')" 
-                    ${!isNear ? 'disabled' : ''}
-                    class="bg-red-800 text-white-600 py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
-                    ${isNear ? 'Cerrada' : '<i class="fa fa-lock"></i> Bloqueo'}
-                </button>
-                
+
+                <button onclick="copiar('Agencia ' + ${a.idReal} + ' abierta')" 
+                    class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
+                    <i class="fa fa-door-open mr-2"></i> AG Open</button>
+
+                <button onclick="copiar('Agencia ' + ${a.idReal} + ' cerrada')" 
+                    class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
+                    <i class="fa fa-door-closed mr-2"></i> AG Close</button>
+
                 <button onclick="registrarVisita('${a.id}')" 
                     ${!isNear ? 'disabled' : ''}
                     class="bg-white text-emerald-600 py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
@@ -206,8 +209,8 @@ function renderList(data) {
 
   // USAMOS 'data' directamente, sin .slice(1)
   data.forEach(a => {
-// Dentro del data.forEach de renderList
-list.innerHTML += `
+    // Dentro del data.forEach de renderList
+    list.innerHTML += `
   <div class="bg-white rounded-2xl p-5 shadow-md border-2 border-slate-100 flex justify-between items-center active:bg-slate-50">
       <div class="flex items-center gap-4">
           <div class="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-inner">
@@ -265,12 +268,12 @@ function renderObservations(agencies) {
   // CASO: Renderizar Notas
   panel.innerHTML = withNotes.map(a => {
     const estado = a.ultimo_estado || 'Regular';
-    
+
     // Mapeo de colores basado en el estado
     const config = {
-        'Excelente': { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-500' },
-        'Regular': { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-500' },
-        'Crítico': { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-500' }
+      'Excelente': { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-500' },
+      'Regular': { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-500' },
+      'Crítico': { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-500' }
     };
 
     const style = config[estado] || config['Regular'];
@@ -419,17 +422,17 @@ btnAdd?.addEventListener('click', async () => {
 
 navigator.geolocation.watchPosition(
   pos => {
-      currentPos = pos.coords;
-      loadNearby();
+    currentPos = pos.coords;
+    loadNearby();
   },
   err => {
-      console.error(err);
-      Swal.fire({
-          icon: 'error',
-          title: 'GPS no detectado',
-          text: 'Activa la ubicación para ver las agencias cercanas.',
-          confirmButtonText: 'Reintentar'
-      }).then(() => location.reload());
+    console.error(err);
+    Swal.fire({
+      icon: 'error',
+      title: 'GPS no detectado',
+      text: 'Activa la ubicación para ver las agencias cercanas.',
+      confirmButtonText: 'Reintentar'
+    }).then(() => location.reload());
   },
   { enableHighAccuracy: true }
 );
@@ -472,7 +475,7 @@ window.registrarVisita = async function (id) {
   if (formValues) {
     const ahora = new Date();
 
-    
+
     const nuevaObservacion = {
       agenciaId: id, // ID de la agencia
       idReal: agency.idReal, // El código AG-XXXX
@@ -507,7 +510,7 @@ window.registrarVisita = async function (id) {
 
 inputSearch?.addEventListener('input', (e) => {
   const term = e.target.value.toLowerCase().trim();
-  
+
   if (term === "") {
     // Si está vacío, mostramos la lista normal (quitando la primera que ya se ve arriba)
     renderList(allEnrichedAgencies.slice(1));
@@ -518,7 +521,7 @@ inputSearch?.addEventListener('input', (e) => {
   const filtered = allEnrichedAgencies.filter(a => {
     const idReal = String(a.idReal).toLowerCase();
     const direccion = a.direccion ? String(a.direccion).toLowerCase() : "";
-    
+
     // Comprobamos si el término está incluido en el ID o la dirección
     return idReal.includes(term) || direccion.includes(term);
   });

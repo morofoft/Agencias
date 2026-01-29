@@ -23,6 +23,18 @@ export function initMap() {
     return map;
 }
 
+export function initMap2() {
+    map = L.map('map').setView(SAN_JUAN, 17);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+        maxZoom: 19 
+    }).addTo(map);
+    renderAgencies(map);
+    setupCreateAgency(map);
+    setMapInstance(map);
+    return map;
+}
+
 /* 4. ACTUALIZACIÓN DE POSICIÓN, SEGUIMIENTO Y GIRO */
 export function updateUserPosition(map, position) {
     if (!map || !position?.lat || !position?.lng) return;

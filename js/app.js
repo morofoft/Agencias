@@ -12,16 +12,18 @@ import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.rout
 let agencies = [];
 let map = null;
 
+
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('🚀 Control de Agencias iniciado');
+
 
   map = initMap();
   agencies = await getAgencies();
   agencies
-  .filter(a => a.lat != null && a.lng != null)
-  .forEach(agency => {
-    agencyMarker(agency).addTo(map);
-  });
+    .filter(a => a.lat != null && a.lng != null)
+    .forEach(agency => {
+      agencyMarker(agency).addTo(map);
+    });
 
   startLocationTracking(pos => {
     updateUserPosition(map, pos);
@@ -30,25 +32,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   await renderAgenciesList();
 
-  document.getElementById('btnRouteA').onclick = () => {
+  document.getElementById('btnRouteA') ? document.getElementById('btnRouteA').onclick = () => {
     generateRouteByZone(map, 'A');
-  };
-  document.getElementById('btnRouteB').onclick = () => {
+  } : console.log("Console")
+
+  document.getElementById('btnRouteB') ? document.getElementById('btnRouteA').onclick = () => {
     generateRouteByZone(map, 'B');
-  };
-  document.getElementById('btnRouteC').onclick = () => {
+  } : console.log("Console")
+
+  document.getElementById('btnRouteC') ? document.getElementById('btnRouteA').onclick = () => {
     generateRouteByZone(map, 'C');
-  };
-  document.getElementById('btnRouteD').onclick = () => {
+  } : console.log("Console")
+
+  document.getElementById('btnRouteD') ? document.getElementById('btnRouteA').onclick = () => {
     generateRouteByZone(map, 'D');
-  };
+  } : console.log("Console")
+
+
 
   const botonesIrRutas = document.querySelectorAll('.btnRouteIr');
   botonesIrRutas.forEach(boton => {
-    boton.addEventListener('click', (e)=>{
-        console.log('Iniciando ruta ' + e.currentTarget.dataset.ruta)
-        stopRoute()
-        startRouteByZone(map, e.currentTarget.dataset.ruta);
+    boton.addEventListener('click', (e) => {
+      console.log('Iniciando ruta ' + e.currentTarget.dataset.ruta)
+      stopRoute()
+      startRouteByZone(map, e.currentTarget.dataset.ruta);
     })
   })
 });
