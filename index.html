@@ -67,6 +67,28 @@
           Mapa interactivo
         </p>
       </div>
+
+
+    </div>
+
+
+
+    <div class="fixed top-20 right-4 z-[50] flex flex-col gap-2">
+      <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-2xl p-3 shadow-lg flex items-center gap-3">
+        <div id="acc-dot" class="w-2 h-2 rounded-full bg-slate-400"></div>
+        <div>
+          <p class="text-[9px] uppercase font-bold text-slate-400 leading-none">Precisión</p>
+          <p class="text-sm font-bold text-slate-700"><span id="accuracy-value">0</span> <span class="text-[10px] text-slate-400">m</span></p>
+        </div>
+      </div>
+    
+      <div class="bg-indigo-600 border border-indigo-400 rounded-2xl p-3 shadow-lg flex items-center gap-3 text-white">
+        <i class="fas fa-gauge-high text-indigo-200"></i>
+        <div>
+          <p class="text-[9px] uppercase font-bold text-indigo-200 leading-none">Velocidad</p>
+          <p class="text-sm font-bold"><span id="speed-value">0.0</span> <span class="text-[10px] text-indigo-200">km/h</span></p>
+        </div>
+      </div>
     </div>
   
     <nav class="hidden lg:flex items-center gap-1">
@@ -255,14 +277,15 @@
       }
     });
   </script>
-<script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" defer />
   <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
   <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
-
+  <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js" defer></script>
+  
   <script src="./network.js"></script>
   <script src="js/sw-register.js"></script>
   <script type="module" src="js/app.js"></script>

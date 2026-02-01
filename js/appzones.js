@@ -1,115 +1,54 @@
-import { getAgencies } from './agencies/agencies.store.js';
-import { initMap2, updateUserPosition } from './map/map.service.js';
-import { agencyMarker } from './map/markers.service.js';
-import { startLocationTracking } from './gps/location.service.js';
-import { checkAgencies } from './gps/geofence.service.js';
-import { onLocationUpdate } from './routes/tracking.service.js';
-import { exportAll } from './export/excel.js';
-import { renderAgenciesList } from './agencies/agencies.list.ui.js';
-import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.routes.js';
+import { getAgencies } from './agencies/agencies.store.js'; // Seguimos usando idb por ahora
+import { ZONE_COLORS } from './utils/zoneColors.js';
 
-let agencies = [];
-let map = null;
-let markersLayer = null;
+const zoneSelect = document.getElementById('zoneSelect');
+const agenciesList = document.getElementById('agenciesList');
 
-export async function renderAgenciesZone(map) {
-  const agencies = await getAllAgencies();
+zoneSelect.addEventListener('change', async (e) => {
+    const zone = e.target.value;
+    if (!zone) return;
 
-  agencies.forEach(agency => {
-
-    if (markers.has(agency.id)) {
-      const marker = markers.get(agency.id);
-      marker.setStyle({ color: colorByState(agency.estado) });
-      return;
-    }
-  
-    const marker = L.circleMarker(
-      [agency.lat, agency.lng],
-      {
-        radius: 8,
-        color: colorByState(agency.estado),
-        fillOpacity: 0.8
-      }
-    ).addTo(map);
-  
-    marker.bindPopup(`
-      <b>${agency.idReal}</b><br>
-      Zona: ${agency.zona}<br>
-      Estado: ${agency.estado}
-    `);
-  
-    markers.set(agency.id, marker);
-  });
-  
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Control de Agencias iniciado');
-
-    // 1. Inicializar Mapa y Capas
-    map = initMap2();
-    markersLayer = L.layerGroup().addTo(map);
-    
-    // 2. Obtener datos (CRÍTICO: esperar a que agencies tenga datos)
-    agencies = await getAgencies(); 
-
-    const selectZona = document.getElementById('selectZona');
-
-    // 3. Definir función de filtrado
-    const filterByZone = () => {
-        const zonaSeleccionada = selectZona ? selectZona.value : 'A';
-        console.log(`Filtrando por zona: ${zonaSeleccionada}`);
-
-        // Limpiar markers previos
-        markersLayer.clearLayers();
-
-        // Filtrar datos locales
-        const filtered = agencies.filter(a =>
-            a.lat != null &&
-            a.lng != null &&
-            String(a.zona).toUpperCase() === String(zonaSeleccionada).toUpperCase()
-        );
-
-        // Renderizar en mapa y lista
-        filtered.forEach(agency => {
-            agencyMarker(agency).addTo(markersLayer);
-        });
-
-        renderAgenciesList(filtered); 
-    };
-
-    // 4. Configurar eventos del Select
-    if (selectZona) {
-        selectZona.addEventListener('change', filterByZone);
-    }
-
-    // 5. Ejecutar filtro inicial ahora que ya tenemos agencies
-    filterByZone();
-
-    // 6. Tracking de GPS
-    startLocationTracking(pos => {
-        updateUserPosition(map, pos);
-        checkAgencies(pos, agencies);
-        onLocationUpdate(pos);
-    });
-
-    // 7. Configuración de botones de ruta (Optimizado)
-    ['A', 'B', 'C', 'D'].forEach(z => {
-        const btn = document.getElementById(`btnRoute${z}`);
-        if (btn) {
-            btn.onclick = () => generateRouteByZone(map, z);
-        }
-    });
-
-    const botonesIrRutas = document.querySelectorAll('.btnRouteIr');
-    botonesIrRutas.forEach(boton => {
-        boton.addEventListener('click', (e) => {
-            const ruta = e.currentTarget.dataset.ruta;
-            console.log('Iniciando ruta ' + ruta);
-            stopRoute();
-            startRouteByZone(map, ruta);
-        });
-    });
+    renderAgencias(zone);
 });
 
-window.exportAll = exportAll;
+async function renderAgencias(zone) {
+    agenciesList.innerHTML = '<div class="text-center p-5">Cargando...</div>';
+    
+    const allAgencies = await getAgencies();
+
+    const filtered = allAgencies.filter(a => a.zona === zone);
+
+    if (filtered.length === 0) {
+        agenciesList.innerHTML = `<p class="text-center text-slate-500 mt-5">No hay agencias en la Zona ${zone}</p>`;
+        return;
+    }
+
+    agenciesList.innerHTML = ''; // Limpiar
+
+    filtered.forEach(agencia => {
+        const color = ZONE_COLORS[agencia.zona] || '#64748b';
+        
+        const card = document.createElement('div');
+        card.className = "bg-white p-4 rounded-2xl shadow-sm border-l-4 flex justify-between items-center transition-transform active:scale-95";
+        card.style.borderLeftColor = color;
+
+        card.innerHTML = `
+            <div>
+                <h3 class="font-bold text-slate-800">${agencia.idReal}</h3>
+                <p class="text-xs text-slate-500">Direccion: ${agencia.direccion}</p>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 mt-2 inline-block">
+                    ${agencia.estado || 'Pendiente'}
+                </span>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="window.location.href='mapa.html?id=${agencia.idReal}'" class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i class="fas fa-location-arrow"></i>
+                </button>
+                <button onclick="window.location.href='hallazgos.html?id=${agencia.idReal}'" class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        `;
+        agenciesList.appendChild(card);
+    });
+}

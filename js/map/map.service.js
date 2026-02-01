@@ -10,76 +10,102 @@ const SAN_JUAN = [18.8059, -71.2299];
 
 /* 3. INICIALIZACIÓN DEL MAPA */
 export function initMap() {
-    map = L.map('map').setView(SAN_JUAN, 17);
+    // Es vital que el objeto de configuración sea el segundo parámetro
+    map = L.map('map', {
+        rotate: true,
+        touchRotate: true,
+        bearing: 0,
+        zoomControl: false
+    }).setView(SAN_JUAN, 17);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-        maxZoom: 19 
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
     }).addTo(map);
+
+    // Forzar el renderizado correcto
+    setTimeout(() => { map.invalidateSize(); }, 400);
 
     renderAgencies(map);
     setupCreateAgency(map);
     setMapInstance(map);
-    
+
     return map;
 }
 
-export function initMap2() {
-    map = L.map('map').setView(SAN_JUAN, 17);
+// export function updateUserPosition(map, position) {
+//     if (!map || !position?.lat || !position?.lng) return;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-        maxZoom: 19 
-    }).addTo(map);
-    renderAgencies(map);
-    setupCreateAgency(map);
-    setMapInstance(map);
-    return map;
-}
+//     const latlng = [position.lat, position.lng];
+//     const seguimientoActivo = document.getElementById('seguimiento')?.checked;
 
-/* 4. ACTUALIZACIÓN DE POSICIÓN, SEGUIMIENTO Y GIRO */
+//     if (!userMarker) {
+//         // Usamos un CircleMarker: es imposible que falle por CSS o iconos
+//         userMarker = L.circleMarker(latlng, {
+//             radius: 10,
+//             fillColor: "#3b82f6",
+//             color: "white",
+//             weight: 3,
+//             fillOpacity: 0.8,
+//             zIndexOffset: 1000
+//         }).addTo(map);
+
+//         map.setView(latlng, 17);
+//     } else {
+//         userMarker.setLatLng(latlng);
+//     }
+
+//     if (seguimientoActivo) {
+//         map.panTo(latlng);
+//         // El giro del mapa se encarga el evento en app.js, no aquí.
+//     }
+// }
+
+let accuracyCircle = null;
 export function updateUserPosition(map, position) {
-    if (!map || !position?.lat || !position?.lng) return;
+    if (!map || !position.lat || !position.lng) return;
 
     const latlng = [position.lat, position.lng];
-    const seguimientoActivo = document.getElementById('seguimiento').checked;
+    const seguimientoActivo = document.getElementById('seguimiento')?.checked;
+    // --- CÍRCULO DE PRECISIÓN ---
+    if (!accuracyCircle) {
+        accuracyCircle = L.circle(latlng, {
+            radius: position.accuracy,
+            color: '#3b82f6',
+            fillColor: '#3b82f6',
+            fillOpacity: 0.15,
+            weight: 1,
+            interactive: false // No interfiere con clicks en el mapa
+        }).addTo(map);
+    } else {
+        accuracyCircle.setLatLng(latlng);
+        accuracyCircle.setRadius(position.accuracy); // Se agranda o achica según la señal
+    }
 
-    // A. Crear o mover el marcador
     if (!userMarker) {
         const arrowIcon = L.divIcon({
-            className: 'location-arrow',
-            html: '<i class="fa fa-location-arrow" style="font-size:24px; color:#3b82f6; text-shadow: 0 0 3px #fff;"></i>',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
+            className: 'user-location-wrapper',
+            html: `<div id="userArrow" style="transition: transform 0.2s ease;">
+                    <i class="fa fa-location-arrow" style="font-size: 30px; color: #3b82f6; text-shadow: 0 0 5px white; transform: rotate(-45deg);"></i>
+                   </div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
         });
-        userMarker = L.marker(latlng, { icon: arrowIcon }).addTo(map);
+        userMarker = L.marker(latlng, { icon: arrowIcon, zIndexOffset: 2000 }).addTo(map);
+        map.setView(latlng, 17);
     } else {
         userMarker.setLatLng(latlng);
     }
-
-    // B. Lógica de seguimiento (Cámara)
-    if (seguimientoActivo) {
-        if (firstFix) {
-            map.setView(latlng, 17);
-            firstFix = false;
-        } else {
-            map.panTo(latlng);
+    // Si hay información de hacia dónde apuntas (heading) y NO estás rotando el mapa completo
+    if (position.heading !== null && position.heading !== undefined && !seguimientoActivo) {
+        const arrowDiv = document.getElementById('userArrow');
+        if (arrowDiv) {
+            // Rotamos solo la flecha si el mapa está quieto
+            arrowDiv.style.transform = `rotate(${position.heading}deg)`;
         }
     }
 
-    // C. Lógica de Rotación (Icono o Mapa)
-    if (position.heading !== null && position.heading !== undefined) {
-        // Si tienes instalado el plugin Leaflet.Rotate
-        if (map.setBearing && seguimientoActivo) {
-            map.setBearing(position.heading); 
-        } else {
-            // Rotar solo la flechita mediante CSS
-            const el = userMarker.getElement();
-            if (el) {
-                // Ajustamos el ángulo (fa-location-arrow apunta a 45° por defecto, 
-                // restamos 45 para que 0° sea el Norte real)
-                el.style.transformOrigin = "center";
-                el.style.transform = `translate3d(${el._leaflet_pos?.x}px, ${el._leaflet_pos?.y}px, 0) rotate(${position.heading - 45}deg)`;
-            }
-        }
+    if (seguimientoActivo) {
+        map.panTo(latlng);
     }
 }
 

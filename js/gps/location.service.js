@@ -26,11 +26,19 @@ export function startLocationTracking(onUpdate) {
       pos => {
         const { latitude, longitude, accuracy } = pos.coords;
 
-        if (
-          typeof latitude !== 'number' ||
-          typeof longitude !== 'number' ||
-          accuracy > 25
-        ) return;
+        if (typeof latitude !== 'number' || typeof longitude !== 'number' || accuracy > 250) {
+          console.warn("Señal GPS débil:", accuracy);
+          return;
+        }
+
+        const currentPos = {
+          lat: latitude,
+          lng: longitude,
+          accuracy: accuracy,
+          speed: pos.coords.speed,
+          heading: pos.coords.heading
+      };
+        onUpdate(currentPos); // Enviamos la posición de inmediato
 
         // 🧠 Ignorar primeras lecturas
         goodFixes.push({ lat: latitude, lng: longitude, accuracy });
@@ -80,7 +88,7 @@ export function startLocationTracking(onUpdate) {
       },
       {
         enableHighAccuracy: true,
-        maximumAge: 0,      // 🔥 clave
+        maximumAge: 0,
         timeout: 30000
       }
     );
