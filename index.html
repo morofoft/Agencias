@@ -49,6 +49,20 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+    /* Quita el borde feo por defecto de Leaflet y suaviza esquinas */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 12px;
+}
+.custom-house-marker {
+  background: none !important;
+  border: none !important;
+}
   </style>
 </head>
 
@@ -168,6 +182,24 @@
     <section class="flex-1 relative map-container">
       <div id="map" class="absolute inset-0 z-0"></div>
     </section>
+
+    <div id="closest-agency-widget" class="bg-white border-t border-slate-100 p-4 shadow-inner">
+      <div class="flex items-center justify-between bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md">
+            <i class="fas fa-route"></i>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold uppercase text-indigo-400 leading-none">Más cercana ahora</p>
+            <h3 id="closest-name" class="text-sm font-bold text-slate-700">Buscando agencia...</h3>
+          </div>
+        </div>
+        <div class="text-right">
+          <span id="closest-distance" class="text-lg font-black text-indigo-600">--</span>
+          <span class="text-[10px] font-bold text-indigo-400">m</span>
+        </div>
+      </div>
+    </div>
 
     <section
       class="h-[45%] bg-white border-t border-slate-200 flex flex-col shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] z-10 rounded-t-[2rem]">

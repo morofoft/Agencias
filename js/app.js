@@ -28,7 +28,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   const speedValue = document.getElementById('speed-value');
   const accDot = document.getElementById('acc-dot');
 
-  startLocationTracking(pos => {
+  startLocationTracking(async(pos) => {
+    updateUserPosition(map, pos);
+    onLocationUpdate(pos);
+    renderAgenciesList(pos);
+    const closest = await checkAgencies(pos, agencies);
+
+    if (closest) {
+      document.getElementById('closest-name').textContent = closest.idReal;
+      document.getElementById('closest-distance').textContent = closest.currentDist;
+
+      // Efecto visual: Si estás a menos de 50m, poner en verde
+      const distEl = document.getElementById('closest-distance');
+      if (closest.currentDist <= 25) {
+        distEl.classList.replace('text-indigo-600', 'text-emerald-600');
+      } else {
+        distEl.classList.replace('text-emerald-600', 'text-indigo-600');
+      }
+    }
+
     // 1. Actualizar Precisión con indicadores de color
     if (accuracyValue) {
       const acc = Math.round(pos.accuracy);

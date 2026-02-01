@@ -25,6 +25,9 @@ function distance(lat1, lon1, lat2, lon2) {
 }
 
 export async function checkAgencies(position, agencies) {
+  let closest = null;
+  let minDistance = Infinity;
+
   for (const agency of agencies) {
     const dist = distance(
       position.lat,
@@ -32,6 +35,11 @@ export async function checkAgencies(position, agencies) {
       agency.lat,
       agency.lng
     );
+
+    if (dist < minDistance) {
+      minDistance = dist;
+      closest = { ...agency, currentDist: Math.round(dist) };
+    }
 
     const info = state.get(agency.id) || {
       inside: false,
@@ -72,4 +80,5 @@ export async function checkAgencies(position, agencies) {
 
     state.set(agency.id, info);
   }
+  return closest;
 }
