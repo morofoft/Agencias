@@ -18,6 +18,10 @@ export function initMap() {
         zoomControl: false
     }).setView(SAN_JUAN, 17);
 
+    setTimeout(() => {
+        map.invalidateSize(); // Esto obliga a Leaflet a recalcular el tamaño
+    }, 500);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19
     }).addTo(map);
@@ -84,9 +88,15 @@ export function updateUserPosition(map, position) {
     if (!userMarker) {
         const arrowIcon = L.divIcon({
             className: 'user-location-wrapper',
-            html: `<div id="userArrow" style="transition: transform 0.2s ease;">
-                    <i class="fa fa-location-arrow" style="font-size: 30px; color: #3b82f6; text-shadow: 0 0 5px white; transform: rotate(-45deg);"></i>
-                   </div>`,
+            html: `
+                <div id="userArrow" style="transition: transform 0.1s linear; display: flex; justify-content: center; align-items: center;">
+                    <i class="fas fa-location-arrow" style="
+                        font-size: 24px; 
+                        color: #3b82f6; 
+                        text-shadow: 0 0 4px white;
+                    "></i>
+                </div>
+            `,
             iconSize: [30, 30],
             iconAnchor: [15, 15]
         });

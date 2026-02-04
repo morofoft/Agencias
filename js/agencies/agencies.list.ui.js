@@ -148,6 +148,16 @@ export async function renderAgenciesList(currentPos = null) {
         Swal.fire({ icon: 'success', title: 'Agencia Actualizada', timer: 1000, showConfirmButton: false });
       }
     };
+    item.querySelector('.btn-go').onclick = () => {
+      goToAgency(agency); // Tu función de mapa
+      
+      // CERRAMOS LA LISTA AUTOMÁTICAMENTE
+      const listContainer = document.getElementById('collapsible-list');
+      const btnToggle = document.getElementById('btn-toggle-list');
+      
+      listContainer.classList.remove('is-active');
+      btnToggle.querySelector('i').className = 'fas fa-list-ul';
+  };
 
     container.appendChild(item);
   });
