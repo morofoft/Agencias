@@ -18,7 +18,8 @@ export async function createAgencyFromGPS(coords, formValues) {
     visited: false,
 
     created_at: now,
-    updated_at: now
+    updated_at: now,
+    synced:false
   };
 
 

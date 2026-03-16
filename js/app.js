@@ -262,3 +262,26 @@ window.addEventListener('deviceorientationabsolute', (e) => {
 // Exportación global (botón HTML)
 window.exportAll = exportAll;
 
+
+import { syncAgencies } from "./firebase/firebase.sync.js";
+
+window.addEventListener("online",()=>{
+
+  console.log("Internet detectado");
+
+  syncAgencies();
+
+});
+
+// sincronizar al iniciar
+syncAgencies();
+
+import { syncFromFirebase } from "./firebase/firebase.sync.js";
+
+window.addEventListener("load",()=>{
+
+  if(navigator.onLine){
+    syncFromFirebase();
+  }
+
+});

@@ -17,7 +17,8 @@ export async function queueSync(action, storeName, data) {
     action,
     storeName,
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    synced:false
   };
 
   await db.put(SYNC_STORE, item);

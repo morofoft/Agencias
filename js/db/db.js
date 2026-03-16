@@ -1,5 +1,5 @@
 const DB_NAME = 'control_agencias_db';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
   upgrade(db) {
@@ -8,6 +8,10 @@ export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
       const store = db.createObjectStore('agencies', { keyPath: 'id' });
       store.createIndex('estado', 'estado');
       store.createIndex('zona', 'zona');
+
+
+      // 🔥 necesario para Firebase sync
+      store.createIndex('synced', 'synced');
     }
 
     if (!db.objectStoreNames.contains('visits')) {
@@ -22,9 +26,9 @@ export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
     }
 
     if (!db.objectStoreNames.contains('observaciones')) {
-      const store = db.createObjectStore('observaciones', { 
-        keyPath: 'id', 
-        autoIncrement: true 
+      const store = db.createObjectStore('observaciones', {
+        keyPath: 'id',
+        autoIncrement: true
       });
       store.createIndex('agenciaId', 'agenciaId');
       store.createIndex('timestamp', 'timestamp');

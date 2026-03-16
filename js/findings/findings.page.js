@@ -190,7 +190,8 @@ btnNew.addEventListener('click', async () => {
 
         creado_por: 'Pedro Garcia',
         synced: false,
-        created_at: Date.now()
+        created_at: Date.now(),
+        synced:false
       };
     }
   });

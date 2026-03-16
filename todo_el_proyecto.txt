@@ -711,6 +711,91 @@ ARCHIVO: .\index.html
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+    /* Quita el borde feo por defecto de Leaflet y suaviza esquinas */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 12px;
+}
+.custom-house-marker {
+  background: none !important;
+  border: none !important;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Evita scrolls raros en móvil */
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0; /* Al fondo */
+}
+/* Contenedor HUD (Velocímetro/Precisión) */
+.hud-container {
+  pointer-events: none; /* Deja que los clics pasen al mapa */
+}
+.hud-container > * {
+  pointer-events: auto; /* Reactiva clics solo para los botones */
+}
+/* Estilo para que el scroll de la lista sea fluido en móvil */
+#agencies-list {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Oculta scrollbar en Firefox */
+}
+#agencies-list::-webkit-scrollbar {
+  display: none; /* Oculta scrollbar en Chrome/Safari */
+}
+
+/* Animación de entrada para el widget */
+#closest-agency-widget {
+  animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+/* Estado Base: La lista está escondida bajo el borde inferior */
+#collapsible-list {
+    position: fixed; /* Fixed para que no dependa del flujo de otros divs */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 75vh;
+    z-index: 50;
+    background: white;
+    border-radius: 2.5rem 2.5rem 0 0;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+    transform: translateY(100%); /* Escondida */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility: hidden;
+}
+
+/* Estado Activo: La lista sube */
+#collapsible-list.is-active {
+    transform: translateY(0);
+    visibility: visible;
+}
+
+/* Botón de cerrar dentro de la lista */
+#btn-close-list {
+    cursor: pointer;
+    active: scale(0.9);
+    transition: transform 0.2s;
+}
   </style>
 </head>
 
@@ -728,6 +813,28 @@ ARCHIVO: .\index.html
         <p class="hidden sm:block text-[10px] text-slate-400 font-bold uppercase tracking-widest">
           Mapa interactivo
         </p>
+      </div>
+
+
+    </div>
+
+
+
+    <div class="fixed top-20 right-4 z-[50] flex flex-col gap-2">
+      <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-2xl p-3 shadow-lg flex items-center gap-3">
+        <div id="acc-dot" class="w-2 h-2 rounded-full bg-slate-400"></div>
+        <div>
+          <p class="text-[9px] uppercase font-bold text-slate-400 leading-none">Precisión</p>
+          <p class="text-sm font-bold text-slate-700"><span id="accuracy-value">0</span> <span class="text-[10px] text-slate-400">m</span></p>
+        </div>
+      </div>
+    
+      <div class="bg-indigo-600 border border-indigo-400 rounded-2xl p-3 shadow-lg flex items-center gap-3 text-white">
+        <i class="fas fa-gauge-high text-indigo-200"></i>
+        <div>
+          <p class="text-[9px] uppercase font-bold text-indigo-200 leading-none">Velocidad</p>
+          <p class="text-sm font-bold"><span id="speed-value">0.0</span> <span class="text-[10px] text-indigo-200">km/h</span></p>
+        </div>
       </div>
     </div>
   
@@ -804,80 +911,56 @@ ARCHIVO: .\index.html
   </header>
 
   <main class="flex-1 flex flex-col overflow-hidden">
-
-    <section class="flex-1 relative map-container">
-      <div id="map" class="absolute inset-0 z-0"></div>
-    </section>
-
-    <section
-      class="h-[45%] bg-white border-t border-slate-200 flex flex-col shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] z-10 rounded-t-[2rem]">
-
-      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-3 shrink-0"></div>
-
-      <div class="px-6 pb-3">
-        <div class="flex items-center justify-between mb-3 px-1">
-          <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Rutas del Día</h2>
-          <span
-            class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold border border-indigo-100">4
-            RUTAS ACTIVAS</span>
-        </div>
-
-        <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteA"
-              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
-              A</button>
-            <button data-ruta="A"
-              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
-              a Ruta A</button>
-          </div>
-
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteB"
-              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
-              B</button>
-            <button data-ruta="B"
-              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
-              a Ruta B</button>
-          </div>
-
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteC"
-              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
-              C</button>
-            <button data-ruta="C"
-              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
-              a Ruta C</button>
-          </div>
-
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteD"
-              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
-              D</button>
-            <button data-ruta="D"
-              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
-              a Ruta D</button>
-          </div>
+    <div class="relative h-screen w-screen overflow-hidden">
+  
+      <div id="map"></div>
+    
+      <div class="absolute top-4 left-4 right-4 z-10 pointer-events-none flex justify-between">
+        <div class="bg-white/90 backdrop-blur px-3 py-2 rounded-2xl shadow-lg pointer-events-auto border border-white">
+          <span class="text-xs font-black text-slate-700"><span id="speed-value">0</span> km/h</span>
         </div>
       </div>
-
-      <div id="agencies-list" class="flex-1 overflow-y-auto px-6 py-2 space-y-3 mb-2">
-        <div
-          class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200 transition-all">
-          <div class="flex items-center gap-4">
-            <div
-              class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
-              <i class="fas fa-building text-lg"></i>
+    
+      <div class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none flex flex-col">
+        
+        <div class="flex justify-end p-4">
+          <button id="btn-recenter" class="w-12 h-12 bg-white rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-slate-600 active:bg-slate-100">
+            <i class="fas fa-crosshairs"></i>
+          </button>
+        </div>
+    
+        <div class="p-4 pointer-events-auto">
+          <div id="closest-agency-widget" class="bg-white rounded-3xl shadow-2xl p-4 flex items-center justify-between border border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                <i class="fas fa-route"></i>
+              </div>
+              <div>
+                <h3 id="closest-name" class="text-sm font-black text-slate-800">Buscando...</h3>
+                <p id="closest-distance-text" class="text-[10px] font-bold text-indigo-500 uppercase">Calculando...</p>
+              </div>
             </div>
-            <div>
-              <p class="font-bold text-slate-800 text-sm">Cargando Agencias...</p>
-              <p class="text-[11px] text-slate-400 font-medium italic">Sincronizando ubicación</p>
-            </div>
+            <button id="btn-toggle-list" class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
+              <i class="fas fa-list-ul"></i>
+            </button>
           </div>
-          <i class="fas fa-arrow-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
+        </div>
+    
+        <div id="collapsible-list" class="bg-white rounded-t-[2.5rem] shadow-2xl pointer-events-auto transition-transform duration-500 translate-y-full h-[75vh] flex flex-col">
+          <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-4"></div>
+    
+          <div class="px-6 pb-4 flex justify-between items-center border-b border-slate-50">
+              <h2 class="text-sm font-black text-slate-800 uppercase tracking-tighter">Listado de Agencias</h2>
+              <button id="btn-close-list" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center">
+                  <i class="fas fa-times"></i>
+              </button>
+          </div>
+          
+          <div id="agencies-list" class="overflow-y-auto flex-1 px-4 py-4">
+              </div>
         </div>
       </div>
-    </section>
+    </div>
 
   </main>
 
@@ -917,14 +1000,15 @@ ARCHIVO: .\index.html
       }
     });
   </script>
-<script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" defer />
   <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
   <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
-
+  <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js" defer></script>
+  
   <script src="./network.js"></script>
   <script src="js/sw-register.js"></script>
   <script type="module" src="js/app.js"></script>
@@ -2013,6 +2097,91 @@ ARCHIVO: .\index.html
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+    /* Quita el borde feo por defecto de Leaflet y suaviza esquinas */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 12px;
+}
+.custom-house-marker {
+  background: none !important;
+  border: none !important;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Evita scrolls raros en móvil */
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0; /* Al fondo */
+}
+/* Contenedor HUD (Velocímetro/Precisión) */
+.hud-container {
+  pointer-events: none; /* Deja que los clics pasen al mapa */
+}
+.hud-container > * {
+  pointer-events: auto; /* Reactiva clics solo para los botones */
+}
+/* Estilo para que el scroll de la lista sea fluido en móvil */
+#agencies-list {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Oculta scrollbar en Firefox */
+}
+#agencies-list::-webkit-scrollbar {
+  display: none; /* Oculta scrollbar en Chrome/Safari */
+}
+
+/* Animación de entrada para el widget */
+#closest-agency-widget {
+  animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+/* Estado Base: La lista está escondida bajo el borde inferior */
+#collapsible-list {
+    position: fixed; /* Fixed para que no dependa del flujo de otros divs */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 75vh;
+    z-index: 50;
+    background: white;
+    border-radius: 2.5rem 2.5rem 0 0;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+    transform: translateY(100%); /* Escondida */
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility: hidden;
+}
+
+/* Estado Activo: La lista sube */
+#collapsible-list.is-active {
+    transform: translateY(0);
+    visibility: visible;
+}
+
+/* Botón de cerrar dentro de la lista */
+#btn-close-list {
+    cursor: pointer;
+    active: scale(0.9);
+    transition: transform 0.2s;
+}
   </style>
 </head>
 
@@ -2030,6 +2199,28 @@ ARCHIVO: .\index.html
         <p class="hidden sm:block text-[10px] text-slate-400 font-bold uppercase tracking-widest">
           Mapa interactivo
         </p>
+      </div>
+
+
+    </div>
+
+
+
+    <div class="fixed top-20 right-4 z-[50] flex flex-col gap-2">
+      <div class="bg-white/90 backdrop-blur border border-slate-200 rounded-2xl p-3 shadow-lg flex items-center gap-3">
+        <div id="acc-dot" class="w-2 h-2 rounded-full bg-slate-400"></div>
+        <div>
+          <p class="text-[9px] uppercase font-bold text-slate-400 leading-none">Precisión</p>
+          <p class="text-sm font-bold text-slate-700"><span id="accuracy-value">0</span> <span class="text-[10px] text-slate-400">m</span></p>
+        </div>
+      </div>
+    
+      <div class="bg-indigo-600 border border-indigo-400 rounded-2xl p-3 shadow-lg flex items-center gap-3 text-white">
+        <i class="fas fa-gauge-high text-indigo-200"></i>
+        <div>
+          <p class="text-[9px] uppercase font-bold text-indigo-200 leading-none">Velocidad</p>
+          <p class="text-sm font-bold"><span id="speed-value">0.0</span> <span class="text-[10px] text-indigo-200">km/h</span></p>
+        </div>
       </div>
     </div>
   
@@ -2106,80 +2297,56 @@ ARCHIVO: .\index.html
   </header>
 
   <main class="flex-1 flex flex-col overflow-hidden">
-
-    <section class="flex-1 relative map-container">
-      <div id="map" class="absolute inset-0 z-0"></div>
-    </section>
-
-    <section
-      class="h-[45%] bg-white border-t border-slate-200 flex flex-col shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] z-10 rounded-t-[2rem]">
-
-      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-3 shrink-0"></div>
-
-      <div class="px-6 pb-3">
-        <div class="flex items-center justify-between mb-3 px-1">
-          <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Rutas del Día</h2>
-          <span
-            class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold border border-indigo-100">4
-            RUTAS ACTIVAS</span>
-        </div>
-
-        <div class="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteA"
-              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
-              A</button>
-            <button data-ruta="A"
-              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
-              a Ruta A</button>
-          </div>
-
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteB"
-              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
-              B</button>
-            <button data-ruta="B"
-              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
-              a Ruta B</button>
-          </div>
-
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteC"
-              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
-              C</button>
-            <button data-ruta="C"
-              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
-              a Ruta C</button>
-          </div>
-
-          <div class="flex flex-col gap-1.5 min-w-[110px]">
-            <button id="btnRouteD"
-              class="w-full py-2 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all">Ruta
-              D</button>
-            <button data-ruta="D"
-              class="btnRouteIr w-full py-1.5 rounded-lg bg-indigo-600 text-[10px] font-bold text-white shadow-md active:scale-95 transition-transform uppercase tracking-wider">Ir
-              a Ruta D</button>
-          </div>
+    <div class="relative h-screen w-screen overflow-hidden">
+  
+      <div id="map"></div>
+    
+      <div class="absolute top-4 left-4 right-4 z-10 pointer-events-none flex justify-between">
+        <div class="bg-white/90 backdrop-blur px-3 py-2 rounded-2xl shadow-lg pointer-events-auto border border-white">
+          <span class="text-xs font-black text-slate-700"><span id="speed-value">0</span> km/h</span>
         </div>
       </div>
-
-      <div id="agencies-list" class="flex-1 overflow-y-auto px-6 py-2 space-y-3 mb-2">
-        <div
-          class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200 transition-all">
-          <div class="flex items-center gap-4">
-            <div
-              class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
-              <i class="fas fa-building text-lg"></i>
+    
+      <div class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none flex flex-col">
+        
+        <div class="flex justify-end p-4">
+          <button id="btn-recenter" class="w-12 h-12 bg-white rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-slate-600 active:bg-slate-100">
+            <i class="fas fa-crosshairs"></i>
+          </button>
+        </div>
+    
+        <div class="p-4 pointer-events-auto">
+          <div id="closest-agency-widget" class="bg-white rounded-3xl shadow-2xl p-4 flex items-center justify-between border border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                <i class="fas fa-route"></i>
+              </div>
+              <div>
+                <h3 id="closest-name" class="text-sm font-black text-slate-800">Buscando...</h3>
+                <p id="closest-distance-text" class="text-[10px] font-bold text-indigo-500 uppercase">Calculando...</p>
+              </div>
             </div>
-            <div>
-              <p class="font-bold text-slate-800 text-sm">Cargando Agencias...</p>
-              <p class="text-[11px] text-slate-400 font-medium italic">Sincronizando ubicación</p>
-            </div>
+            <button id="btn-toggle-list" class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
+              <i class="fas fa-list-ul"></i>
+            </button>
           </div>
-          <i class="fas fa-arrow-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
+        </div>
+    
+        <div id="collapsible-list" class="bg-white rounded-t-[2.5rem] shadow-2xl pointer-events-auto transition-transform duration-500 translate-y-full h-[75vh] flex flex-col">
+          <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-4"></div>
+    
+          <div class="px-6 pb-4 flex justify-between items-center border-b border-slate-50">
+              <h2 class="text-sm font-black text-slate-800 uppercase tracking-tighter">Listado de Agencias</h2>
+              <button id="btn-close-list" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center">
+                  <i class="fas fa-times"></i>
+              </button>
+          </div>
+          
+          <div id="agencies-list" class="overflow-y-auto flex-1 px-4 py-4">
+              </div>
         </div>
       </div>
-    </section>
+    </div>
 
   </main>
 
@@ -2219,14 +2386,15 @@ ARCHIVO: .\index.html
       }
     });
   </script>
-<script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" defer />
   <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
   <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
-
+  <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js" defer></script>
+  
   <script src="./network.js"></script>
   <script src="js/sw-register.js"></script>
   <script type="module" src="js/app.js"></script>
@@ -2526,250 +2694,49 @@ ARCHIVO: .\zona.html
 ================================================================================
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8" />
-  <title>Control de Agencias | Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#4f46e5" />
-
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
-    /* Scrollbar estético */
-    #agencies-list::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    #agencies-list::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    #agencies-list::-webkit-scrollbar-thumb {
-      background: #e2e8f0;
-      border-radius: 10px;
-    }
-
-    /* Estilo para el mapa */
-    .map-container {
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Ocultar barra de scroll en botones de ruta */
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Selección de Zona</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
+<body class="bg-slate-50 min-h-screen">
+    <header class="bg-white shadow-sm p-4 sticky top-0 z-10">
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="text-slate-600"><i class="fas fa-arrow-left"></i></a>
+            <h1 class="text-xl font-bold text-slate-800">Agencias por Zona</h1>
+        </div>
+    </header>
 
-<body class="h-screen flex flex-col bg-slate-50 text-slate-900 antialiased overflow-hidden">
-
-  <header
-    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
-    <div class="flex items-center gap-3 overflow-hidden">
-      <div class="p-1.5 rounded-lg md:rounded-xl shadow-lg shadow-indigo-100 shrink-0">
-        <img src="assets/icons/Logo-horizontal-azul.png" alt="logo" class="h-6 md:h-7 w-auto object-contain">
-      </div>
-      <div class="min-w-0 leading-tight">
-        <h1 class="font-bold text-sm md:text-base tracking-tight text-slate-800 truncate">
-          Control de Agencias / Zona X
-        </h1>
-        <p class="hidden sm:block text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-          Mapa interactivo
-        </p>
-      </div>
-    </div>
-
-    <nav class="hidden lg:flex items-center gap-1">
-      <a href="dataAgencias.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-database opacity-70 text-xs"></i>
-        <span>Sin GPS</span>
-      </a>
-      <a href="data.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-hdd opacity-70 text-xs"></i>
-        <span>Backup</span>
-      </a>
-      <a href="cercana.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-street-view opacity-70 text-xs"></i>
-        <span>Cercana</span>
-      </a>
-      <a href="agencies.html"
-        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
-        <i class="fas fa-building opacity-70 text-xs"></i>
-        <span>Lista</span>
-      </a>
-    </nav>
-
-    <div class="flex items-center gap-2 md:gap-4">
-      <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100">
-        <i class="fa fa-user text-[10px] text-slate-400"></i>
-        <span class="text-xs font-medium text-slate-600 hidden md:block">Pedro</span>
-      </div>
-
-      <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
-        <i class="fas fa-bars text-xl"></i>
-      </button>
-    </div>
-
-    <div id="mobileMenu" class="fixed inset-0 bg-slate-900/60 z-[60] hidden backdrop-blur-sm transition-all">
-      <div class="absolute right-0 top-0 h-full w-72 bg-white shadow-2xl p-6 flex flex-col">
-        <div class="flex justify-between items-center mb-8">
-          <span class="font-bold text-lg text-slate-800">Navegación</span>
-          <button id="closeMenuBtn"
-            class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
-            <i class="fas fa-times text-xl"></i>
-          </button>
+    <main class="p-4">
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-slate-600 mb-2">Selecciona una Zona</label>
+            <select id="zoneSelect" class="w-full p-3 rounded-xl border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <option value="">-- Elige zona --</option>
+                <option value="A">Zona A</option>
+                <option value="B">Zona B</option>
+                <option value="C">Zona C</option>
+                <option value="D">Zona D</option>
+            </select>
         </div>
 
-        <nav class="flex flex-col gap-2">
-          <a href="dataAgencias.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
-            <i class="fas fa-database text-indigo-500 w-5"></i> Agencias Sin GPS
-          </a>
-          <a href="data.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
-            <i class="fas fa-hdd text-indigo-500 w-5"></i> Backup de Data
-          </a>
-          <a href="cercana.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
-            <i class="fas fa-street-view text-indigo-500 w-5"></i> Agencias Cercanas
-          </a>
-          <a href="agencies.html"
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
-            <i class="fas fa-building text-indigo-500 w-5"></i> Lista Completa
-          </a>
-
-          <hr class="my-4 border-slate-100">
-
-          <label
-            class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-            <input type="checkbox" name="seguimiento" id="seguimiento"
-              class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
-            <span class="text-sm font-medium text-slate-700">Seguir en el mapa</span>
-          </label>
-
-          <select name="selectZona" id="selectZona">
-            <option value="A">Zona A</option>
-            <option value="B">Zona B</option>
-            <option value="C">Zona C</option>
-            <option value="D">Zona D</option>
-          </select>
-        </nav>
-      </div>
-    </div>
-  </header>
-
-  <main class="flex-1 flex flex-col overflow-hidden">
-
-    <section class="flex-1 relative map-container">
-      <div id="map" class="absolute inset-0 z-0"></div>
-    </section>
-
-    <section
-      class="h-[45%] bg-white border-t border-slate-200 flex flex-col shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.05)] z-10 rounded-t-[2rem]">
-
-      <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-3 shrink-0"></div>
-
-      <div class="px-6 pb-3">
-        <div class="flex items-center justify-between mb-3 px-1">
-          <h2 class="text-xs font-bold uppercase tracking-widest text-slate-400">Rutas del Día</h2>
-          <span
-            class="text-[10px] bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-full font-bold border border-indigo-100">4
-            RUTAS ACTIVAS</span>
-        </div>
-      </div>
-
-      <div id="agencies-list" class="flex-1 overflow-y-auto px-6 py-2 space-y-3 mb-2">
-        <div
-          class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group cursor-pointer hover:border-indigo-200 transition-all">
-          <div class="flex items-center gap-4">
-            <div
-              class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
-              <i class="fas fa-building text-lg"></i>
+        <div id="agenciesList" class="space-y-3">
+            <div class="text-center py-10 text-slate-400">
+                <i class="fas fa-map-marked-alt text-4xl mb-3"></i>
+                <p>Selecciona una zona para ver las agencias</p>
             </div>
-            <div>
-              <p class="font-bold text-slate-800 text-sm">Cargando Agencias...</p>
-              <p class="text-[11px] text-slate-400 font-medium italic">Sincronizando ubicación</p>
-            </div>
-          </div>
-          <i class="fas fa-arrow-right text-slate-300 group-hover:text-indigo-500 transition-colors"></i>
         </div>
-      </div>
-    </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 
-  </main>
-
-  <footer
-    class="h-10 bg-white border-t border-slate-200 text-slate-500 flex items-center justify-between px-6 text-[10px] shrink-0 font-bold uppercase tracking-widest">
-    <div class="flex items-center gap-4">
-      <span class="flex items-center gap-2" id="networkStatus">
-        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-        Status: Conectado
-      </span>
-      <span class="text-slate-300">|</span>
-      <span>Ing. Pedro Garcia</span>
-    </div>
-    <div class="text-slate-400 font-medium italic normal-case">v2.2 &copy; 2026</div>
-  </footer>
-  <script>
-
-
-    // Lógica para abrir y cerrar el menú
-    const mobileMenu = document.getElementById('mobileMenu');
-    const openBtn = document.getElementById('mobileMenuBtn');
-    const closeBtn = document.getElementById('closeMenuBtn');
-
-    openBtn.addEventListener('click', () => {
-      mobileMenu.classList.remove('hidden');
-      document.body.style.overflow = 'hidden'; // Evita scroll al estar abierto
-    });
-
-    closeBtn.addEventListener('click', () => {
-      mobileMenu.classList.add('hidden');
-      document.body.style.overflow = 'auto';
-    });
-
-    // Cerrar al hacer click fuera del contenedor blanco
-    mobileMenu.addEventListener('click', (e) => {
-      if (e.target === mobileMenu) {
-        mobileMenu.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-      }
-    });
-  </script>
-  <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" defer />
-  <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
-  <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
-
-  <script src="./network.js"></script>
-  <script src="js/sw-register.js"></script>
-  <script type="module" src="js/appzones.js"></script>
-
+    <script type="module" src="./js/appzones.js"></script>
 </body>
-
 </html>
 
 ================================================================================
@@ -2797,12 +2764,143 @@ import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.rout
 let agencies = [];
 let map = null;
 
+let lastPos = null;
+let lastTimestamp = null;
+
+/**
+ * Calcula la distancia en metros entre dos coordenadas (Haversine)
+ */
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Radio de la tierra en metros
+  const toRad = x => (x * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lon2 - lon1);
+
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Resultado en metros
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
+
+  const btnOpenModal = document.getElementById('btn-open-copy-modal');
+  const closestName = document.getElementById('closest-name');
+
   console.log('🚀 Control de Agencias iniciado');
+  const accuracyValue = document.getElementById('accuracy-value');
 
+  const btnToggle = document.getElementById('btn-toggle-list');
+  const btnClose = document.getElementById('btn-close-list');
+  const listContainer = document.getElementById('collapsible-list');
 
+  if (btnToggle && listContainer) {
+    // Función para cerrar la lista
+    const closeAgenciesList = () => {
+      listContainer.classList.remove('is-active');
+      // Restaurar el icono a 'lista'
+      const icon = btnToggle.querySelector('i');
+      icon.className = 'fas fa-list-ul';
+    };
+
+    // Función para abrir la lista
+    const openAgenciesList = () => {
+      listContainer.classList.add('is-active');
+      // Cambiar el icono a 'flecha abajo' para indicar que se puede cerrar
+      const icon = btnToggle.querySelector('i');
+      icon.className = 'fas fa-chevron-down';
+    };
+
+    // Evento en el botón del Widget
+    btnToggle.onclick = () => {
+      if (listContainer.classList.contains('is-active')) {
+        closeAgenciesList();
+      } else {
+        openAgenciesList();
+      }
+    };
+
+    // Evento en la 'X' de la lista
+    if (btnClose) {
+      btnClose.onclick = closeAgenciesList;
+    }
+  }
+
+  if (btnOpenModal) {
+    btnOpenModal.onclick = async () => {
+      const idReal = closestName.textContent;
+
+      if (!idReal || idReal === "Buscando...") {
+        return Swal.fire({
+          icon: 'info',
+          title: 'Espera...',
+          text: 'Aún no detecto una agencia cercana',
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: { popup: 'rounded-3xl' }
+        });
+      }
+
+      // El Modal de 3 Botones
+      await Swal.fire({
+        title: `<span class="text-lg font-black text-slate-700">Copiar ID: ${idReal}</span>`,
+        html: `
+          <div class="flex flex-col gap-4 mt-4">
+            <button id="copy-only-id" class="p-5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl font-bold text-base border-b-4 border-slate-300 active:border-b-0 transition-all flex justify-between items-center">
+              <span>${idReal}</span>
+              <i class="fas fa-fingerprint opacity-30"></i>
+            </button>
+            
+            <button id="copy-abierta" class="p-5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-2xl font-bold text-base border-b-4 border-emerald-300 active:border-b-0 transition-all flex justify-between items-center text-left">
+              <span>Agencia ${idReal} abierta</span>
+              <i class="fas fa-door-open opacity-30"></i>
+            </button>
+            
+            <button id="copy-cerrada" class="p-5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-2xl font-bold text-base border-b-4 border-rose-300 active:border-b-0 transition-all flex justify-between items-center text-left">
+              <span>Agencia ${idReal} cerrada</span>
+              <i class="fas fa-door-closed opacity-30"></i>
+            </button>
+          </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true,
+        customClass: {
+          popup: 'rounded-t-[2rem] sm:rounded-3xl !p-6 !pb-10',
+        },
+        didOpen: () => {
+          const copy = async (text) => {
+            try {
+              await navigator.clipboard.writeText(text);
+              Swal.close();
+              // Toast de confirmación pequeño abajo
+              const Toast = Swal.mixin({
+                toast: true,
+                position: 'bottom',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+              });
+              Toast.fire({
+                icon: 'success',
+                title: '¡Copiado al portapapeles!'
+              });
+            } catch (err) {
+              console.error('Error al copiar', err);
+            }
+          };
+
+          document.getElementById('copy-only-id').onclick = () => copy(idReal);
+          document.getElementById('copy-abierta').onclick = () => copy(`Agencia ${idReal} abierta`);
+          document.getElementById('copy-cerrada').onclick = () => copy(`Agencia ${idReal} cerrada`);
+        }
+      });
+    };
+  }
   map = initMap();
+
+
   agencies = await getAgencies();
   agencies
     .filter(a => a.lat != null && a.lng != null)
@@ -2810,30 +2908,76 @@ document.addEventListener('DOMContentLoaded', async () => {
       agencyMarker(agency).addTo(map);
     });
 
-  startLocationTracking(pos => {
-    updateUserPosition(map, pos);
-    checkAgencies(pos, agencies);
-    onLocationUpdate(pos);
-  });
+  const speedValue = document.getElementById('speed-value');
+  const accDot = document.getElementById('acc-dot');
+
+  startLocationTracking(async (pos) => {
+    // 1. Cálculos de sensores (Velocidad y Precisión)
+    let speedKMH = "0.0";
+    if (pos.speed > 0) {
+        speedKMH = (pos.speed * 3.6).toFixed(1);
+    } else if (lastPos) {
+        const dist = getDistance(lastPos.lat, lastPos.lng, pos.lat, pos.lng);
+        const timeDiff = (Date.now() - lastTimestamp) / 1000;
+        if (timeDiff > 0 && dist > 1) {
+            speedKMH = ((dist / timeDiff) * 3.6).toFixed(1);
+        }
+    }
+    
+    // Guardar estado para el siguiente ciclo
+    lastPos = { lat: pos.lat, lng: pos.lng };
+    lastTimestamp = Date.now();
+
+    // 2. Lógica de Negocio (Geofencing y Lista)
+    // Solo llamamos a estas funciones UNA VEZ
+    updateUserPosition(map, pos); 
+    renderAgenciesList(pos); // Esto suele ser pesado, asegúrate que esté optimizado
+    const closest = await checkAgencies(pos, agencies);
+
+    // 3. Actualización de Interfaz (DOM) con Validaciones "Anti-Crash"
+    
+    // Velocidad y Precisión
+    if (speedValue) speedValue.textContent = speedKMH;
+    
+    if (accuracyValue && accDot) {
+        const acc = Math.round(pos.accuracy);
+        accuracyValue.textContent = acc;
+        if (acc < 20) accDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]";
+        else if (acc < 70) accDot.className = "w-2 h-2 rounded-full bg-amber-500";
+        else accDot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse";
+    }
+
+    // Widget de Agencia Cercana
+    const nameEl = document.getElementById('closest-name');
+    const distEl = document.getElementById('closest-distance-text');
+
+    if (closest) {
+        if (nameEl) nameEl.textContent = `AG ${closest.idReal}`;
+        if (distEl) {
+            distEl.textContent = `${closest.currentDist} Metros`;
+            // Cambio de color según cercanía
+            const isNear = closest.currentDist < 20;
+            distEl.classList.toggle('text-emerald-500', isNear);
+            distEl.classList.toggle('text-indigo-600', !isNear);
+        }
+    } else {
+        if (nameEl) nameEl.textContent = "Buscando...";
+        if (distEl) {
+            distEl.textContent = "--";
+            distEl.className = "text-indigo-600"; // Reset de color
+        }
+    }
+});
   await renderAgenciesList();
 
-  document.getElementById('btnRouteA') ? document.getElementById('btnRouteA').onclick = () => {
-    generateRouteByZone(map, 'A');
-  } : console.log("Console")
 
-  document.getElementById('btnRouteB') ? document.getElementById('btnRouteA').onclick = () => {
-    generateRouteByZone(map, 'B');
-  } : console.log("Console")
-
-  document.getElementById('btnRouteC') ? document.getElementById('btnRouteA').onclick = () => {
-    generateRouteByZone(map, 'C');
-  } : console.log("Console")
-
-  document.getElementById('btnRouteD') ? document.getElementById('btnRouteA').onclick = () => {
-    generateRouteByZone(map, 'D');
-  } : console.log("Console")
-
-
+  const rutas = ['A', 'B', 'C', 'D'];
+  rutas.forEach(id => {
+    const btn = document.getElementById(`btnRoute${id}`);
+    if (btn) {
+      btn.onclick = () => generateRouteByZone(map, id);
+    }
+  });
 
   const botonesIrRutas = document.querySelectorAll('.btnRouteIr');
   botonesIrRutas.forEach(boton => {
@@ -2845,6 +2989,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
 });
 
+window.addEventListener('deviceorientationabsolute', (e) => {
+  if (!map || e.alpha === null) return;
+
+  const heading = 360 - e.alpha; // El ángulo real de la brújula
+  const seguimientoActivo = document.getElementById('seguimiento')?.checked;
+  const arrowDiv = document.getElementById('userArrow');
+
+  if (seguimientoActivo) {
+    // MODO A: El mapa gira, la flecha se queda fija mirando "adelante"
+    map.setBearing(heading);
+    if (arrowDiv) {
+      arrowDiv.style.transform = `rotate(0deg)`;
+    }
+  } else {
+    // MODO B: El mapa está quieto (Norte arriba), la flecha gira sola
+    map.setBearing(0);
+    if (arrowDiv) {
+      // Ajustamos -45deg si usas fa-location-arrow porque apunta al noreste por defecto
+      arrowDiv.style.transform = `rotate(${heading - 45}deg)`;
+    }
+  }
+});
 // Exportación global (botón HTML)
 window.exportAll = exportAll;
 
@@ -2853,121 +3019,60 @@ window.exportAll = exportAll;
 ================================================================================
 ARCHIVO: .\js\appzones.js
 ================================================================================
-import { getAgencies } from './agencies/agencies.store.js';
-import { initMap2, updateUserPosition } from './map/map.service.js';
-import { agencyMarker } from './map/markers.service.js';
-import { startLocationTracking } from './gps/location.service.js';
-import { checkAgencies } from './gps/geofence.service.js';
-import { onLocationUpdate } from './routes/tracking.service.js';
-import { exportAll } from './export/excel.js';
-import { renderAgenciesList } from './agencies/agencies.list.ui.js';
-import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.routes.js';
+import { getAgencies } from './agencies/agencies.store.js'; // Seguimos usando idb por ahora
+import { ZONE_COLORS } from './utils/zoneColors.js';
 
-let agencies = [];
-let map = null;
-let markersLayer = null;
+const zoneSelect = document.getElementById('zoneSelect');
+const agenciesList = document.getElementById('agenciesList');
 
-export async function renderAgenciesZone(map) {
-  const agencies = await getAllAgencies();
+zoneSelect.addEventListener('change', async (e) => {
+    const zone = e.target.value;
+    if (!zone) return;
 
-  agencies.forEach(agency => {
-
-    if (markers.has(agency.id)) {
-      const marker = markers.get(agency.id);
-      marker.setStyle({ color: colorByState(agency.estado) });
-      return;
-    }
-  
-    const marker = L.circleMarker(
-      [agency.lat, agency.lng],
-      {
-        radius: 8,
-        color: colorByState(agency.estado),
-        fillOpacity: 0.8
-      }
-    ).addTo(map);
-  
-    marker.bindPopup(`
-      <b>${agency.idReal}</b><br>
-      Zona: ${agency.zona}<br>
-      Estado: ${agency.estado}
-    `);
-  
-    markers.set(agency.id, marker);
-  });
-  
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Control de Agencias iniciado');
-
-    // 1. Inicializar Mapa y Capas
-    map = initMap2();
-    markersLayer = L.layerGroup().addTo(map);
-    
-    // 2. Obtener datos (CRÍTICO: esperar a que agencies tenga datos)
-    agencies = await getAgencies(); 
-
-    const selectZona = document.getElementById('selectZona');
-
-    // 3. Definir función de filtrado
-    const filterByZone = () => {
-        const zonaSeleccionada = selectZona ? selectZona.value : 'A';
-        console.log(`Filtrando por zona: ${zonaSeleccionada}`);
-
-        // Limpiar markers previos
-        markersLayer.clearLayers();
-
-        // Filtrar datos locales
-        const filtered = agencies.filter(a =>
-            a.lat != null &&
-            a.lng != null &&
-            String(a.zona).toUpperCase() === String(zonaSeleccionada).toUpperCase()
-        );
-
-        // Renderizar en mapa y lista
-        filtered.forEach(agency => {
-            agencyMarker(agency).addTo(markersLayer);
-        });
-
-        renderAgenciesList(filtered); 
-    };
-
-    // 4. Configurar eventos del Select
-    if (selectZona) {
-        selectZona.addEventListener('change', filterByZone);
-    }
-
-    // 5. Ejecutar filtro inicial ahora que ya tenemos agencies
-    filterByZone();
-
-    // 6. Tracking de GPS
-    startLocationTracking(pos => {
-        updateUserPosition(map, pos);
-        checkAgencies(pos, agencies);
-        onLocationUpdate(pos);
-    });
-
-    // 7. Configuración de botones de ruta (Optimizado)
-    ['A', 'B', 'C', 'D'].forEach(z => {
-        const btn = document.getElementById(`btnRoute${z}`);
-        if (btn) {
-            btn.onclick = () => generateRouteByZone(map, z);
-        }
-    });
-
-    const botonesIrRutas = document.querySelectorAll('.btnRouteIr');
-    botonesIrRutas.forEach(boton => {
-        boton.addEventListener('click', (e) => {
-            const ruta = e.currentTarget.dataset.ruta;
-            console.log('Iniciando ruta ' + ruta);
-            stopRoute();
-            startRouteByZone(map, ruta);
-        });
-    });
+    renderAgencias(zone);
 });
 
-window.exportAll = exportAll;
+async function renderAgencias(zone) {
+    agenciesList.innerHTML = '<div class="text-center p-5">Cargando...</div>';
+    
+    const allAgencies = await getAgencies();
+
+    const filtered = allAgencies.filter(a => a.zona === zone);
+
+    if (filtered.length === 0) {
+        agenciesList.innerHTML = `<p class="text-center text-slate-500 mt-5">No hay agencias en la Zona ${zone}</p>`;
+        return;
+    }
+
+    agenciesList.innerHTML = ''; // Limpiar
+
+    filtered.forEach(agencia => {
+        const color = ZONE_COLORS[agencia.zona] || '#64748b';
+        
+        const card = document.createElement('div');
+        card.className = "bg-white p-4 rounded-2xl shadow-sm border-l-4 flex justify-between items-center transition-transform active:scale-95";
+        card.style.borderLeftColor = color;
+
+        card.innerHTML = `
+            <div>
+                <h3 class="font-bold text-slate-800">${agencia.idReal}</h3>
+                <p class="text-xs text-slate-500">Direccion: ${agencia.direccion}</p>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 mt-2 inline-block">
+                    ${agencia.estado || 'Pendiente'}
+                </span>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="window.location.href='mapa.html?id=${agencia.idReal}'" class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <i class="fas fa-location-arrow"></i>
+                </button>
+                <button onclick="window.location.href='hallazgos.html?id=${agencia.idReal}'" class="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        `;
+        agenciesList.appendChild(card);
+    });
+}
 
 ================================================================================
 ARCHIVO: .\js\dashboard.js
@@ -3379,6 +3484,26 @@ list.addEventListener('click', async e => {
   
 
 ================================================================================
+ARCHIVO: .\js\firebase-config.js
+================================================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "TU_API_KEY",
+  authDomain: "tu-app.firebaseapp.com",
+  projectId: "tu-app",
+  storageBucket: "tu-app.appspot.com",
+  messagingSenderId: "...",
+  appId: "..."
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+export { db, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot };
+
+================================================================================
 ARCHIVO: .\js\sw-register.js
 ================================================================================
 if ('serviceWorker' in navigator) {
@@ -3431,140 +3556,162 @@ import { getAllAgencies, updateAgency, deleteAgency } from './agencies.store.js'
 import { goToAgency } from '../map/map.actions.js';
 import Swal from 'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.esm.js';
 
-export async function renderAgenciesList() {
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const toRad = x => x * Math.PI / 180;
+  const a = Math.sin(toRad(lat2 - lat1) / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(toRad(lon2 - lon1) / 2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+export async function renderAgenciesList(currentPos = null) {
   const agencies = await getAllAgencies();
   const container = document.getElementById('agencies-list');
-
+  if (!container) return;
   container.innerHTML = '';
 
   if (!agencies.length) {
-    container.innerHTML = `
-      <div class="flex flex-col items-center justify-center py-10 opacity-30">
-        <i class="fas fa-folder-open text-4xl mb-2"></i>
-        <p class="text-xs font-bold uppercase tracking-widest">No hay agencias</p>
-      </div>`;
+    container.innerHTML = `<div class="flex flex-col items-center justify-center py-10 opacity-30"><i class="fas fa-folder-open text-4xl mb-2"></i><p class="text-xs font-bold uppercase tracking-widest">No hay agencias</p></div>`;
     return;
+  }
+
+  if (currentPos?.lat && currentPos?.lng) {
+    agencies.forEach(a => a.currentDistance = getDistance(currentPos.lat, currentPos.lng, a.lat, a.lng));
+    agencies.sort((a, b) => a.currentDistance - b.currentDistance);
   }
 
   agencies.forEach(agency => {
     const item = document.createElement('div');
-    // Clase de tarjeta moderna
     item.className = 'p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:border-indigo-200 transition-all shadow-sm mb-3';
+
+    let distanceHTML = '';
+    if (agency.currentDistance !== undefined) {
+      const d = agency.currentDistance;
+      distanceHTML = `<div class="flex flex-col items-end mr-2"><span class="text-indigo-600 font-black text-xs">${d > 1000 ? (d / 1000).toFixed(1) + ' km' : Math.round(d) + ' m'}</span><span class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Distancia</span></div>`;
+    }
 
     item.innerHTML = `
       <div class="flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
-          <i class="fas fa-building"></i>
-        </div>
+        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all"><i class="fas fa-building"></i></div>
         <div>
           <div class="font-bold text-slate-800 text-sm leading-tight">${agency.idReal}</div>
           <div class="flex items-center gap-2 mt-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${agency.zona}</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Ruta ${agency.zona}</span>
             <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase 
-              ${agency.estado === 'verde' ? 'bg-emerald-100 text-emerald-600' : 
-                agency.estado === 'amarillo' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'}">
-              ${agency.estado}
-            </span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase ${agency.estado === 'verde' ? 'bg-emerald-100 text-emerald-600' : agency.estado === 'amarillo' ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'}">${agency.estado}</span>
           </div>
         </div>
       </div>
-
       <div class="flex items-center gap-2">
-        <button title="Ir a ubicación" class="btn-go w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center shadow-sm">
-          <i class="fas fa-location-dot text-xs"></i>
-        </button>
-        <button title="Editar" class="btn-edit w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center shadow-sm">
-          <i class="fas fa-pen text-xs"></i>
-        </button>
-        <button title="Eliminar" class="btn-delete w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center shadow-sm">
-          <i class="fas fa-trash text-xs"></i>
-        </button>
-      </div>
-    `;
+        ${distanceHTML}
+        <div class="flex items-center gap-1 border-l border-slate-200 pl-2">
+          <button title="Ir" class="btn-go w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-location-dot text-xs"></i></button>
+          <button title="Editar" class="btn-edit w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-pen text-xs"></i></button>
+          <button title="Eliminar" class="btn-delete w-8 h-8 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button>
+        </div>
+      </div>`;
 
-    // Asignación de eventos optimizada
     item.querySelector('.btn-go').onclick = () => goToAgency(agency);
+    item.querySelector('.btn-delete').onclick = async () => { /* ... lógica delete igual ... */ };
 
+    // --- LÓGICA DE EDICIÓN CON BOTÓN DE GPS ---
     item.querySelector('.btn-edit').onclick = async () => {
+      let tempCoords = { lat: agency.lat, lng: agency.lng };
+
       const { value: formValues } = await Swal.fire({
         title: 'Editar Agencia',
-        customClass: {
-          popup: 'rounded-3xl',
-          confirmButton: 'rounded-xl px-6',
-          cancelButton: 'rounded-xl'
-        },
         html: `
           <div class="flex flex-col gap-3 mt-4 text-left">
-            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Agencia</label>
-            <input id="codigo" class="swal2-input !m-0 w-full rounded-xl border-slate-200" placeholder="Ej. Agencia Central" value="${agency.idReal}">
+            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Nombre de Agencia</label>
+            <input id="swal-codigo" class="swal2-input !m-0 w-full rounded-xl" value="${agency.idReal}">
             
-            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Dirección Exacta</label>
-            <input id="direccion" class="swal2-input !m-0 w-full rounded-xl border-slate-200" placeholder="Calle, número..." value="${agency.direccion}">
+            <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Dirección</label>
+            <input id="swal-direccion" class="swal2-input !m-0 w-full rounded-xl" value="${agency.direccion}">
             
+            <div class="mt-2">
+              <button type="button" id="btn-update-gps" class="w-full py-4 bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-200 transition-all flex flex-col items-center justify-center gap-1">
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-crosshairs"></i>
+                  <span class="text-xs font-bold uppercase" id="gps-status">Actualizar a ubicación actual</span>
+                </div>
+                <span id="gps-diff" class="text-[10px] font-medium hidden"></span>
+              </button>
+            </div>
+
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Zona / Ruta</label>
-                <select id="zona" class="swal2-select !m-0 !w-full rounded-xl border-slate-200">
-                  ${['A', 'B', 'C', 'D', 'E', 'F', 'G', 'OTRA'].map(z => 
-                    `<option value="${z}" ${agency.zona === z ? 'selected' : ''}>Ruta ${z}</option>`
-                  ).join('')}
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Ruta</label>
+                <select id="swal-zona" class="swal2-select !m-0 !w-full rounded-xl">
+                  ${['A', 'B', 'C', 'D', 'OTRA'].map(z => `<option value="${z}" ${agency.zona === z ? 'selected' : ''}>${z}</option>`).join('')}
                 </select>
               </div>
               <div>
-                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Estado Operativo</label>
-                <select id="estado" class="swal2-select !m-0 !w-full rounded-xl border-slate-200">
+                <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Estado</label>
+                <select id="swal-estado" class="swal2-select !m-0 !w-full rounded-xl">
                   <option value="verde" ${agency.estado === 'verde' ? 'selected' : ''}>🟢 Verde</option>
                   <option value="amarillo" ${agency.estado === 'amarillo' ? 'selected' : ''}>🟡 Amarillo</option>
                   <option value="rojo" ${agency.estado === 'rojo' ? 'selected' : ''}>🔴 Rojo</option>
                 </select>
               </div>
             </div>
-          </div>
-        `,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Guardar Cambios',
-        confirmButtonColor: '#4f46e5',
-        preConfirm: () => {
-          const idReal = document.getElementById('codigo').value.trim();
-          const direccion = document.getElementById('direccion').value.trim();
-          const zona = document.getElementById('zona').value;
-          const estado = document.getElementById('estado').value;
+          </div>`,
+        didOpen: () => {
+          const btnGps = document.getElementById('btn-update-gps');
+          const statusText = document.getElementById('gps-status');
+          const diffText = document.getElementById('gps-diff');
 
-          if (!idReal || !direccion) {
-            Swal.showValidationMessage('Por favor completa los campos');
-            return false;
-          }
-          return { idReal, direccion, zona, estado };
+          btnGps.onclick = () => {
+            if (currentPos?.lat && currentPos?.lng) {
+              // Calculamos la diferencia entre la vieja y la nueva
+              const offset = getDistance(agency.lat, agency.lng, currentPos.lat, currentPos.lng);
+              
+              tempCoords = { lat: currentPos.lat, lng: currentPos.lng };
+              
+              // Feedback visual
+              statusText.innerText = "¡Ubicación capturada!";
+              diffText.innerText = `Desplazamiento: ${Math.round(offset)} metros desde el punto original`;
+              diffText.classList.remove('hidden');
+              
+              btnGps.classList.replace('bg-slate-100', 'bg-emerald-50');
+              btnGps.classList.replace('border-slate-200', 'border-emerald-200');
+              btnGps.classList.replace('text-slate-600', 'text-emerald-700');
+
+              Swal.showValidationMessage(`Nueva posición a ${Math.round(offset)}m de la anterior`);
+            } else {
+              Swal.showValidationMessage('Esperando señal GPS válida...');
+            }
+          };
+        },
+        preConfirm: () => {
+          return {
+            idReal: document.getElementById('swal-codigo').value,
+            direccion: document.getElementById('swal-direccion').value,
+            zona: document.getElementById('swal-zona').value,
+            estado: document.getElementById('swal-estado').value,
+            lat: tempCoords.lat,
+            lng: tempCoords.lng
+          };
         }
       });
 
       if (formValues) {
         Object.assign(agency, formValues, { updated_at: Date.now() });
         await updateAgency(agency);
-        renderAgenciesList();
+        renderAgenciesList(currentPos);
+        Swal.fire({ icon: 'success', title: 'Agencia Actualizada', timer: 1000, showConfirmButton: false });
       }
     };
-
-    item.querySelector('.btn-delete').onclick = async () => {
-      const result = await Swal.fire({
-        title: '¿Confirmar eliminación?',
-        text: `La agencia "${agency.idReal}" no podrá ser recuperada.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#e11d48',
-        customClass: { popup: 'rounded-3xl' }
-      });
-
-      if (result.isConfirmed) {
-        await deleteAgency(agency.id);
-        renderAgenciesList();
-        Swal.fire({ icon: 'success', title: 'Eliminado', timer: 1000, showConfirmButton: false, customClass: { popup: 'rounded-3xl' } });
-      }
-    };
+    item.querySelector('.btn-go').onclick = () => {
+      goToAgency(agency); // Tu función de mapa
+      
+      // CERRAMOS LA LISTA AUTOMÁTICAMENTE
+      const listContainer = document.getElementById('collapsible-list');
+      const btnToggle = document.getElementById('btn-toggle-list');
+      
+      listContainer.classList.remove('is-active');
+      btnToggle.querySelector('i').className = 'fas fa-list-ul';
+  };
 
     container.appendChild(item);
   });
@@ -5064,7 +5211,6 @@ ARCHIVO: .\js\gps\geofence.service.js
 ================================================================================
 import { registerVisit } from '../db/visits.store.js';
 import { vibrate } from '../feedback/vibration.js';
-import { playSound } from '../feedback/sound.js';
 
 const ENTER_RADIUS = 20;
 const EXIT_RADIUS = 25;
@@ -5072,10 +5218,27 @@ const COOLDOWN = 30 * 60 * 1000; // 30 minutos
 
 const state = new Map();
 
+// --- Función para leer texto ---
+function speak(text, idReal) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    
+    // Transformamos "12-58-78" en "1 2 5 8 7 8 " para que la voz no diga "ciento veinticinco mil..."
+    const idDeletreado = idReal.toString().replace(/[-_]/g, '').split('').join(' ');
+    
+    const mensajeFinal = `Agencia ${idDeletreado} está cerca`;
+    
+    const utterance = new SpeechSynthesisUtterance(mensajeFinal);
+    utterance.lang = 'es-ES';
+    utterance.rate = 0.9; // Un poco más lento para que se entienda mejor el código
+    utterance.pitch = 1.0;
+    
+    window.speechSynthesis.speak(utterance);
+  }
+}
 function distance(lat1, lon1, lat2, lon2) {
   const R = 6371e3;
   const toRad = x => x * Math.PI / 180;
-
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lon2 - lon1);
 
@@ -5089,18 +5252,18 @@ function distance(lat1, lon1, lat2, lon2) {
 }
 
 export async function checkAgencies(position, agencies) {
-  for (const agency of agencies) {
-    const dist = distance(
-      position.lat,
-      position.lng,
-      agency.lat,
-      agency.lng
-    );
+  let closest = null;
+  let minDistance = Infinity;
 
-    const info = state.get(agency.id) || {
-      inside: false,
-      lastVisit: 0
-    };
+  for (const agency of agencies) {
+    const dist = distance(position.lat, position.lng, agency.lat, agency.lng);
+
+    if (dist < minDistance) {
+      minDistance = dist;
+      closest = { ...agency, currentDist: Math.round(dist) };
+    }
+
+    const info = state.get(agency.id) || { inside: false, lastVisit: 0 };
 
     // 🟢 ENTRADA
     if (!info.inside && dist <= ENTER_RADIUS) {
@@ -5118,14 +5281,29 @@ export async function checkAgencies(position, agencies) {
       await registerVisit(agency.id, now);
 
       vibrate();
-      playSound();
+      
+      // CAMBIO: Ahora usa voz en lugar de playSound()
+      speak("Agencia está cerca", agency.idReal);
 
-      Swal.fire({
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end', // Puedes usar 'top', 'bottom', o 'top-end'
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        },
+        customClass: {
+          popup: 'rounded-2xl shadow-lg border-l-4 border-emerald-500'
+        }
+      });
+      
+      Toast.fire({
         icon: 'success',
         title: 'Agencia visitada',
-        text: agency.idReal,
-        timer: 1800,
-        showConfirmButton: false
+        text: `ID: ${agency.idReal}`
       });
     }
 
@@ -5136,8 +5314,8 @@ export async function checkAgencies(position, agencies) {
 
     state.set(agency.id, info);
   }
+  return closest;
 }
-
 
 ================================================================================
 ARCHIVO: .\js\gps\location.service.js
@@ -5170,11 +5348,19 @@ export function startLocationTracking(onUpdate) {
       pos => {
         const { latitude, longitude, accuracy } = pos.coords;
 
-        if (
-          typeof latitude !== 'number' ||
-          typeof longitude !== 'number' ||
-          accuracy > 25
-        ) return;
+        if (typeof latitude !== 'number' || typeof longitude !== 'number' || accuracy > 250) {
+          console.warn("Señal GPS débil:", accuracy);
+          return;
+        }
+
+        const currentPos = {
+          lat: latitude,
+          lng: longitude,
+          accuracy: accuracy,
+          speed: pos.coords.speed,
+          heading: pos.coords.heading
+      };
+        onUpdate(currentPos); // Enviamos la posición de inmediato
 
         // 🧠 Ignorar primeras lecturas
         goodFixes.push({ lat: latitude, lng: longitude, accuracy });
@@ -5224,7 +5410,7 @@ export function startLocationTracking(onUpdate) {
       },
       {
         enableHighAccuracy: true,
-        maximumAge: 0,      // 🔥 clave
+        maximumAge: 0,
         timeout: 30000
       }
     );
@@ -5465,76 +5651,112 @@ const SAN_JUAN = [18.8059, -71.2299];
 
 /* 3. INICIALIZACIÓN DEL MAPA */
 export function initMap() {
-    map = L.map('map').setView(SAN_JUAN, 17);
+    // Es vital que el objeto de configuración sea el segundo parámetro
+    map = L.map('map', {
+        rotate: true,
+        touchRotate: true,
+        bearing: 0,
+        zoomControl: false
+    }).setView(SAN_JUAN, 17);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-        maxZoom: 19 
+    setTimeout(() => {
+        map.invalidateSize(); // Esto obliga a Leaflet a recalcular el tamaño
+    }, 500);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
     }).addTo(map);
+
+    // Forzar el renderizado correcto
+    setTimeout(() => { map.invalidateSize(); }, 400);
 
     renderAgencies(map);
     setupCreateAgency(map);
     setMapInstance(map);
-    
+
     return map;
 }
 
-export function initMap2() {
-    map = L.map('map').setView(SAN_JUAN, 17);
+// export function updateUserPosition(map, position) {
+//     if (!map || !position?.lat || !position?.lng) return;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-        maxZoom: 19 
-    }).addTo(map);
-    renderAgencies(map);
-    setupCreateAgency(map);
-    setMapInstance(map);
-    return map;
-}
+//     const latlng = [position.lat, position.lng];
+//     const seguimientoActivo = document.getElementById('seguimiento')?.checked;
 
-/* 4. ACTUALIZACIÓN DE POSICIÓN, SEGUIMIENTO Y GIRO */
+//     if (!userMarker) {
+//         // Usamos un CircleMarker: es imposible que falle por CSS o iconos
+//         userMarker = L.circleMarker(latlng, {
+//             radius: 10,
+//             fillColor: "#3b82f6",
+//             color: "white",
+//             weight: 3,
+//             fillOpacity: 0.8,
+//             zIndexOffset: 1000
+//         }).addTo(map);
+
+//         map.setView(latlng, 17);
+//     } else {
+//         userMarker.setLatLng(latlng);
+//     }
+
+//     if (seguimientoActivo) {
+//         map.panTo(latlng);
+//         // El giro del mapa se encarga el evento en app.js, no aquí.
+//     }
+// }
+
+let accuracyCircle = null;
 export function updateUserPosition(map, position) {
-    if (!map || !position?.lat || !position?.lng) return;
+    if (!map || !position.lat || !position.lng) return;
 
     const latlng = [position.lat, position.lng];
-    const seguimientoActivo = document.getElementById('seguimiento').checked;
+    const seguimientoActivo = document.getElementById('seguimiento')?.checked;
+    // --- CÍRCULO DE PRECISIÓN ---
+    if (!accuracyCircle) {
+        accuracyCircle = L.circle(latlng, {
+            radius: position.accuracy,
+            color: '#3b82f6',
+            fillColor: '#3b82f6',
+            fillOpacity: 0.15,
+            weight: 1,
+            interactive: false // No interfiere con clicks en el mapa
+        }).addTo(map);
+    } else {
+        accuracyCircle.setLatLng(latlng);
+        accuracyCircle.setRadius(position.accuracy); // Se agranda o achica según la señal
+    }
 
-    // A. Crear o mover el marcador
     if (!userMarker) {
         const arrowIcon = L.divIcon({
-            className: 'location-arrow',
-            html: '<i class="fa fa-location-arrow" style="font-size:24px; color:#3b82f6; text-shadow: 0 0 3px #fff;"></i>',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
+            className: 'user-location-wrapper',
+            html: `
+                <div id="userArrow" style="transition: transform 0.1s linear; display: flex; justify-content: center; align-items: center;">
+                    <i class="fas fa-location-arrow" style="
+                        font-size: 24px; 
+                        color: #3b82f6; 
+                        text-shadow: 0 0 4px white;
+                    "></i>
+                </div>
+            `,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
         });
-        userMarker = L.marker(latlng, { icon: arrowIcon }).addTo(map);
+        userMarker = L.marker(latlng, { icon: arrowIcon, zIndexOffset: 2000 }).addTo(map);
+        map.setView(latlng, 17);
     } else {
         userMarker.setLatLng(latlng);
     }
-
-    // B. Lógica de seguimiento (Cámara)
-    if (seguimientoActivo) {
-        if (firstFix) {
-            map.setView(latlng, 17);
-            firstFix = false;
-        } else {
-            map.panTo(latlng);
+    // Si hay información de hacia dónde apuntas (heading) y NO estás rotando el mapa completo
+    if (position.heading !== null && position.heading !== undefined && !seguimientoActivo) {
+        const arrowDiv = document.getElementById('userArrow');
+        if (arrowDiv) {
+            // Rotamos solo la flecha si el mapa está quieto
+            arrowDiv.style.transform = `rotate(${position.heading}deg)`;
         }
     }
 
-    // C. Lógica de Rotación (Icono o Mapa)
-    if (position.heading !== null && position.heading !== undefined) {
-        // Si tienes instalado el plugin Leaflet.Rotate
-        if (map.setBearing && seguimientoActivo) {
-            map.setBearing(position.heading); 
-        } else {
-            // Rotar solo la flechita mediante CSS
-            const el = userMarker.getElement();
-            if (el) {
-                // Ajustamos el ángulo (fa-location-arrow apunta a 45° por defecto, 
-                // restamos 45 para que 0° sea el Norte real)
-                el.style.transformOrigin = "center";
-                el.style.transform = `translate3d(${el._leaflet_pos?.x}px, ${el._leaflet_pos?.y}px, 0) rotate(${position.heading - 45}deg)`;
-            }
-        }
+    if (seguimientoActivo) {
+        map.panTo(latlng);
     }
 }
 
@@ -5591,21 +5813,73 @@ function setupCreateAgency(map) {
 ARCHIVO: .\js\map\markers.service.js
 ================================================================================
 export function agencyMarker(agency) {
-    const colors = {
-      verde: 'green',
-      amarillo: 'orange',
-      rojo: 'red'
-    };
-  
-    return L.circleMarker([agency.lat, agency.lng], {
-      radius: 7,
-      color: colors[agency.estado] || 'gray'
-    }).bindPopup(`
-      <strong>${agency.idReal}</strong><br>
-      Visitas: ${agency.contador_visitas}
-    `);
-  }
-  
+  // Mapeo de colores modernos por zona
+  const zonaColors = {
+    A: '#3b82f6', // Azul
+    B: '#a855f7', // Púrpura
+    C: '#f59e0b', // Naranja
+    D: '#06b6d4', // Cian (Turquesa)
+    OTRA: '#64748b' // Gris
+  };
+
+  const color = zonaColors[agency.zona] || '#64748b';
+
+  // Creamos un icono de casa personalizado
+  const houseIcon = L.divIcon({
+    className: 'custom-house-marker',
+    html: `
+      <div style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 34px;
+        height: 34px;
+        background-color: white;
+        border-radius: 8px;
+        border: 2px solid ${color};
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      ">
+        <i class="fas fa-building" style="color: ${color}; font-size: 18px;"></i>
+      </div>
+    `,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+    popupAnchor: [0, -17]
+  });
+
+  // El Popup con diseño "bonito"
+  const popupContent = `
+    <div style="min-width: 180px; font-family: 'Inter', sans-serif; padding: 5px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">
+          ZONA ${agency.zona}
+        </span>
+        <span style="color: #94a3b8; font-size: 10px; font-weight: bold;">ID: ${agency.idReal}</span>
+      </div>
+      
+      <h3 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">
+        ${agency.nombre || 'Agencia Bancaria'}
+      </h3>
+      
+      <p style="margin: 4px 0 10px 0; font-size: 11px; color: #64748b; line-height: 1.4;">
+        <i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i> ${agency.direccion || 'Sin dirección'}
+      </p>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 8px; border-top: 1px solid #f1f5f9;">
+        <span style="font-size: 11px; color: #475569;">Visitas realizadas:</span>
+        <span style="font-size: 13px; font-weight: 800; color: ${color}; bg: ${color}10; padding: 2px 6px; border-radius: 4px;">
+          ${agency.contador_visitas}
+        </span>
+      </div>
+    </div>
+  `;
+
+  return L.marker([agency.lat, agency.lng], { icon: houseIcon })
+    .bindPopup(popupContent, {
+      className: 'modern-popup',
+      maxWidth: 250
+    });
+}
 
 ================================================================================
 ARCHIVO: .\js\observaciones\observaciones.page.js

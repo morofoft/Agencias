@@ -72,7 +72,8 @@ async function addAgency(data) {
     lat: null,
     lng: null,
     estado: 'pendiente',
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    synced:false
   };
 
   await db.add('agencies', agency);

@@ -58,7 +58,8 @@ export async function createAgencyFromMap(latlng, map, formValues) {
       visited: false,
   
       created_at: now,
-      updated_at: now
+      updated_at: now,
+      synced:false
     };
   
     await addAgency(agency);
