@@ -27,14 +27,26 @@ export async function syncAgencies() {
       );
 
       await markAgencySynced(agencia.id);
-
+      alert("Sincronizado");
       console.log("Sincronizado:", docRef.id);
+      Swal.fire({
+        icon: 'success',
+        title: 'Sincronizacion',
+        text: 'Datos sincronizados',
+        timer: 3000,
+        showConfirmButton: false
+      });
 
     }
 
   } catch (err) {
-
-    console.error("Error sincronizando:", err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error sincronizando',
+      text: err,
+      timer: 3000,
+      showConfirmButton: false
+    });
 
   }
 
@@ -60,8 +72,13 @@ export async function syncFromFirebase(){
       });
 
     }
-
-    console.log("Datos descargados desde Firebase");
+    Swal.fire({
+      icon: 'success',
+      title: 'Sincronizacion',
+      text: 'Datos descargados desde Firebase',
+      timer: 3000,
+      showConfirmButton: false
+    });
 
   }catch(err){
 
