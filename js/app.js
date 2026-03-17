@@ -8,13 +8,14 @@ import { onLocationUpdate } from './routes/tracking.service.js';
 import { exportAll } from './export/excel.js';
 import { renderAgenciesList } from './agencies/agencies.list.ui.js';
 import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.routes.js';
+import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 let agencies = [];
 let map = null;
 
 let lastPos = null;
 let lastTimestamp = null;
-
+let speedHistory = [];
 /**
  * Calcula la distancia en metros entre dos coordenadas (Haversine)
  */
@@ -102,12 +103,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             </button>
             
             <button id="copy-abierta" class="p-5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-2xl font-bold text-base border-b-4 border-emerald-300 active:border-b-0 transition-all flex justify-between items-center text-left">
-              <span>Agencia ${idReal} abierta</span>
+              <span>${idReal} abierta</span>
               <i class="fas fa-door-open opacity-30"></i>
             </button>
             
             <button id="copy-cerrada" class="p-5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded-2xl font-bold text-base border-b-4 border-rose-300 active:border-b-0 transition-all flex justify-between items-center text-left">
-              <span>Agencia ${idReal} cerrada</span>
+              <span>${idReal} cerrada</span>
               <i class="fas fa-door-closed opacity-30"></i>
             </button>
           </div>
@@ -120,9 +121,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         didOpen: () => {
           const copy = async (text) => {
             try {
-              await navigator.clipboard.writeText(text);
+              // Método moderno (funciona en la mayoría)
+              if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+              } else {
+                // 🔥 Fallback para móviles problemáticos
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+          
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+          
+                const success = document.execCommand("copy");
+                document.body.removeChild(textarea);
+          
+                if (!success) throw new Error("Fallback copy failed");
+              }
+          
+              // ✅ Éxito
               Swal.close();
-              // Toast de confirmación pequeño abajo
+          
               const Toast = Swal.mixin({
                 toast: true,
                 position: 'bottom',
@@ -130,18 +151,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 timer: 2000,
                 timerProgressBar: true
               });
+          
               Toast.fire({
                 icon: 'success',
                 title: '¡Copiado al portapapeles!'
               });
+          
             } catch (err) {
               console.error('Error al copiar', err);
+          
+              // 🔥 PLAN C (UX pro)
+              Swal.fire({
+                icon: 'info',
+                title: 'Copia manual',
+                html: `
+                  <p class="mb-2">No se pudo copiar automáticamente.</p>
+                  <input value="${text}" class="w-full p-2 border rounded" readonly onclick="this.select()" />
+                  <small>Mantén presionado para copiar</small>
+                `,
+                confirmButtonText: 'OK'
+              });
             }
           };
 
           document.getElementById('copy-only-id').onclick = () => copy(idReal);
-          document.getElementById('copy-abierta').onclick = () => copy(`Agencia ${idReal} abierta`);
-          document.getElementById('copy-cerrada').onclick = () => copy(`Agencia ${idReal} cerrada`);
+          document.getElementById('copy-abierta').onclick = () => copy(`${idReal} abierta`);
+          document.getElementById('copy-cerrada').onclick = () => copy(`${idReal} cerrada`);
         }
       });
     };
@@ -161,16 +196,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   startLocationTracking(async (pos) => {
     // 1. Cálculos de sensores (Velocidad y Precisión)
-    let speedKMH = "0.0";
-    if (pos.speed > 0) {
-        speedKMH = (pos.speed * 3.6).toFixed(1);
-    } else if (lastPos) {
+    let speedKMH = 0;
+
+    if (pos.speed !== null && pos.speed > 0) {
+        speedKMH = pos.speed * 3.6;
+    
+    } else if (lastPos && lastTimestamp) {
+    
         const dist = getDistance(lastPos.lat, lastPos.lng, pos.lat, pos.lng);
         const timeDiff = (Date.now() - lastTimestamp) / 1000;
-        if (timeDiff > 0 && dist > 1) {
-            speedKMH = ((dist / timeDiff) * 3.6).toFixed(1);
+    
+        if (timeDiff > 0 && dist > 5) {
+            speedKMH = (dist / timeDiff) * 3.6;
         }
     }
+    
+    // evitar valores locos
+    if (speedKMH > 150) speedKMH = 0;
+    
+    // formatear al final
+    speedKMH = speedKMH.toFixed(1);
+    speedHistory.push(Number(speedKMH));
+if (speedHistory.length > 5) speedHistory.shift();
+
+const avgSpeed = speedHistory.reduce((a,b)=>a+b,0) / speedHistory.length;
     
     // Guardar estado para el siguiente ciclo
     lastPos = { lat: pos.lat, lng: pos.lng };
@@ -185,15 +234,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 3. Actualización de Interfaz (DOM) con Validaciones "Anti-Crash"
     
     // Velocidad y Precisión
-    if (speedValue) speedValue.textContent = speedKMH;
+    if (speedValue) speedValue.textContent = avgSpeed.toFixed(1);;
     
-    if (accuracyValue && accDot) {
-        const acc = Math.round(pos.accuracy);
-        accuracyValue.textContent = acc;
-        if (acc < 20) accDot.className = "w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]";
-        else if (acc < 70) accDot.className = "w-2 h-2 rounded-full bg-amber-500";
-        else accDot.className = "w-2 h-2 rounded-full bg-red-500 animate-pulse";
-    }
+    if (accuracyValue && accDot && pos.accuracy !== null) {
+
+      const acc = Math.round(pos.accuracy);
+      accuracyValue.textContent = acc;
+  
+      // reset base (pero sin romper todo)
+      accDot.classList.remove(
+          "bg-emerald-500",
+          "bg-amber-500",
+          "bg-red-500",
+          "animate-pulse",
+          "shadow-[0_0_5px_#10b981]"
+      );
+  
+      if (acc < 20) {
+          accDot.classList.add("bg-emerald-500", "shadow-[0_0_5px_#10b981]");
+      } 
+      else if (acc < 70) {
+          accDot.classList.add("bg-amber-500");
+      } 
+      else {
+          accDot.classList.add("bg-red-500", "animate-pulse");
+      }
+  }
 
     // Widget de Agencia Cercana
     const nameEl = document.getElementById('closest-name');
@@ -285,3 +351,4 @@ window.addEventListener("load",()=>{
   }
 
 });
+

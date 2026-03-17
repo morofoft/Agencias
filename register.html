@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <!-- Card -->
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+      Crear Cuenta
+    </h2>
+
+    <!-- Usuario -->
+    <input 
+      type="text" 
+      id="username" 
+      placeholder="Usuario"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Contraseña -->
+    <input 
+      type="password" 
+      id="password" 
+      placeholder="Contraseña"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Confirmar contraseña -->
+    <input 
+      type="password" 
+      id="confirmPassword" 
+      placeholder="Confirmar contraseña"
+      class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Botón -->
+    <button 
+      onclick="register()"
+      class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition duration-200"
+    >
+      Registrarse
+    </button>
+
+    <!-- Login -->
+    <p class="text-sm text-center mt-4">
+      ¿Ya tienes cuenta?
+      <a href="login.html" class="text-blue-500 hover:underline">
+        Iniciar sesión
+      </a>
+    </p>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { auth, db } from "./js/firebase/firebase.init.js";
+
+    import {
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    import {
+      doc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    async function register(){
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+      // Validaciones
+      if(!username || !password || !confirmPassword){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Completa todos los campos",
+          showConfirmButton:false,
+          timer:2000
+        });
+        return;
+      }
+
+      if(password !== confirmPassword){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"error",
+          title:"Las contraseñas no coinciden",
+          showConfirmButton:false,
+          timer:2500
+        });
+        return;
+      }
+
+      if(password.length < 6){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Mínimo 6 caracteres",
+          showConfirmButton:false,
+          timer:2500
+        });
+        return;
+      }
+
+      const fakeEmail = username + "@app.com";
+
+      try{
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          fakeEmail,
+          password
+        );
+
+        const uid = userCredential.user.uid;
+
+        // Guardar en Firestore
+        await setDoc(doc(db,"users",uid),{
+          username: username,
+          enabled: false, // 🔥 tú lo habilitas
+          createdAt: new Date()
+        });
+
+        Swal.fire({
+          icon:"success",
+          title:"Registro exitoso",
+          text:"Espera que el administrador te habilite"
+        });
+
+        // Redirigir al login
+        setTimeout(()=>{
+          window.location.href = "login.html";
+        },1500);
+
+      }catch(err){
+
+        let mensaje = "Error al registrar";
+
+        if(err.code === "auth/email-already-in-use"){
+          mensaje = "El usuario ya existe";
+        }
+
+        Swal.fire({
+          icon:"error",
+          title:"Error",
+          text: mensaje
+        });
+
+      }
+
+    }
+
+    window.register = register;
+
+  </script>
+
+</body>
+</html>

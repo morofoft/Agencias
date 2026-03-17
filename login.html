@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <!-- Card -->
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+      Iniciar Sesión
+    </h2>
+
+    <!-- Usuario -->
+    <input 
+      type="text" 
+      id="username" 
+      placeholder="Usuario"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+
+    <!-- Contraseña -->
+    <input 
+      type="password" 
+      id="password" 
+      placeholder="Contraseña"
+      class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+
+    <!-- Botón -->
+    <button 
+      onclick="login()"
+      class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition duration-200"
+    >
+      Entrar
+    </button>
+
+    <!-- Registro -->
+    <p class="text-sm text-center mt-4">
+      ¿No tienes cuenta?
+      <a href="register.html" class="text-blue-500 hover:underline">
+        Regístrate
+      </a>
+    </p>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { auth, db } from "./js/firebase/firebase.init.js";
+
+    import {
+      signInWithEmailAndPassword,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    import {
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Si ya está logueado → entra directo
+    onAuthStateChanged(auth, (user) => {
+      if(user){
+        window.location.href = "index.html";
+      }
+    });
+
+    async function login(){
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if(!username || !password){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Completa los campos",
+          showConfirmButton:false,
+          timer:2000
+        });
+        return;
+      }
+
+      const fakeEmail = username + "@app.com";
+
+      try{
+
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          fakeEmail,
+          password
+        );
+
+        const uid = userCredential.user.uid;
+
+        const userDoc = await getDoc(doc(db,"users",uid));
+
+        if(!userDoc.exists() || !userDoc.data().enabled){
+
+          Swal.fire({
+            toast:true,
+            position:"top-end",
+            icon:"error",
+            title:"Usuario no habilitado",
+            showConfirmButton:false,
+            timer:2500
+          });
+
+          return;
+        }
+
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"success",
+          title:"Bienvenido 🚀",
+          showConfirmButton:false,
+          timer:2000
+        });
+
+        setTimeout(()=>{
+          window.location.href = "index.html";
+        },1000);
+
+      }catch(err){
+
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"error",
+          title:"Credenciales incorrectas",
+          showConfirmButton:false,
+          timer:2500
+        });
+
+      }
+
+    }
+
+    window.login = login;
+
+  </script>
+
+</body>
+</html>

@@ -13,7 +13,7 @@ export function initMap() {
     // Es vital que el objeto de configuración sea el segundo parámetro
     map = L.map('map', {
         rotate: true,
-        touchRotate: true,
+        touchRotate: false, // 🔥 CLAVE
         bearing: 0,
         zoomControl: false
     }).setView(SAN_JUAN, 17);
@@ -64,6 +64,21 @@ export function initMap() {
 //     }
 // }
 
+let currentAngle = 0;
+
+function smoothRotate(newAngle) {
+
+    let diff = newAngle - currentAngle;
+
+    // evitar saltos tipo 359 → 0
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+
+    currentAngle += diff * 0.15;
+
+    return currentAngle;
+}
+
 let accuracyCircle = null;
 export function updateUserPosition(map, position) {
     if (!map || !position.lat || !position.lng) return;
@@ -107,17 +122,22 @@ export function updateUserPosition(map, position) {
     }
     // Si hay información de hacia dónde apuntas (heading) y NO estás rotando el mapa completo
     if (position.heading !== null && position.heading !== undefined && !seguimientoActivo) {
+
         const arrowDiv = document.getElementById('userArrow');
+    
         if (arrowDiv) {
-            // Rotamos solo la flecha si el mapa está quieto
-            arrowDiv.style.transform = `rotate(${position.heading}deg)`;
+    
+            const smooth = smoothRotate(position.heading);
+    
+            arrowDiv.style.transform = `rotate(${smooth}deg)`;
         }
     }
-
     if (seguimientoActivo) {
         map.panTo(latlng);
     }
 }
+
+
 
 /* 5. AYUDANTES (HELPERS) */
 function setupCreateAgency(map) {

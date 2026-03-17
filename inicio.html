@@ -6,6 +6,10 @@
     <title>Pagina Principal</title>
 </head>
 <body>
-    
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
 </body>
 </html>

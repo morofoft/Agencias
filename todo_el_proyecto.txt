@@ -1,6 +1,237 @@
 
 
 ================================================================================
+ARCHIVO: .\admin.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+  <!-- NAVBAR -->
+  <div class="bg-white shadow p-4 flex justify-between items-center">
+
+    <h1 class="font-bold text-lg">Panel Admin</h1>
+
+    <div class="flex items-center gap-4">
+      <span id="userName" class="text-gray-600"></span>
+
+      <button onclick="logout()"
+        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+        Cerrar sesión
+      </button>
+    </div>
+
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="p-6">
+
+    <!-- BUSCADOR -->
+    <input 
+      type="text" 
+      id="search"
+      placeholder="Buscar usuario..."
+      class="w-full mb-4 p-2 border rounded"
+    >
+
+    <!-- TABLA -->
+    <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
+
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b text-gray-600">
+            <th class="p-2">Usuario</th>
+            <th class="p-2">Estado</th>
+            <th class="p-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+
+      <p id="loading" class="text-center text-gray-400 mt-4">
+        Cargando usuarios...
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- AUTH GUARD -->
+  <script type="module">
+    import { requireAdmin } from "./js/auth.guard.js";
+    requireAdmin();
+  </script>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { db, auth } from "./js/firebase/firebase.init.js";
+
+    import {
+      collection,
+      getDocs,
+      doc,
+      updateDoc,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    import {
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const table = document.getElementById("usersTable");
+    const searchInput = document.getElementById("search");
+    const loading = document.getElementById("loading");
+
+    let users = [];
+
+    // 🔥 Mostrar usuario
+    onAuthStateChanged(auth, (user)=>{
+      if(user){
+        document.getElementById("userName").innerText =
+          user.email.replace("@app.com","");
+      }
+    });
+
+    // 🚀 Cargar usuarios
+    async function loadUsers(){
+
+      loading.style.display = "block";
+      table.innerHTML = "";
+
+      const snapshot = await getDocs(collection(db,"users"));
+
+      users = [];
+
+      snapshot.forEach(docSnap => {
+        users.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+
+      renderUsers(users);
+
+      loading.style.display = "none";
+    }
+
+    // 🎯 Render
+    function renderUsers(list){
+
+      table.innerHTML = "";
+
+      list.forEach(user => {
+
+        table.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-2">${user.username}</td>
+
+            <td class="p-2">
+              <span class="px-2 py-1 rounded text-white text-sm
+                ${user.enabled ? "bg-green-500" : "bg-red-500"}">
+                ${user.enabled ? "Activo" : "Inactivo"}
+              </span>
+            </td>
+
+            <td class="p-2 flex gap-2">
+
+              <button onclick="toggleUser('${user.id}', ${user.enabled})"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
+                ${user.enabled ? "Desactivar" : "Activar"}
+              </button>
+
+              <button onclick="deleteUser('${user.id}')"
+                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+                Eliminar
+              </button>
+
+            </td>
+          </tr>
+        `;
+      });
+
+    }
+
+    // 🔍 BUSCADOR
+    searchInput.addEventListener("input", ()=>{
+
+      const value = searchInput.value.toLowerCase();
+
+      const filtered = users.filter(u =>
+        u.username.toLowerCase().includes(value)
+      );
+
+      renderUsers(filtered);
+    });
+
+    // 🔄 Toggle
+    async function toggleUser(id, current){
+
+      await updateDoc(doc(db,"users",id),{
+        enabled: !current
+      });
+
+      Swal.fire({
+        toast:true,
+        position:"top-end",
+        icon:"success",
+        title:"Usuario actualizado",
+        showConfirmButton:false,
+        timer:2000
+      });
+
+      loadUsers();
+    }
+
+    // ❌ Delete
+    async function deleteUser(id){
+
+      const confirm = await Swal.fire({
+        title:"¿Eliminar usuario?",
+        icon:"warning",
+        showCancelButton:true
+      });
+
+      if(confirm.isConfirmed){
+
+        await deleteDoc(doc(db,"users",id));
+
+        Swal.fire("Eliminado","","success");
+
+        loadUsers();
+      }
+
+    }
+
+    // 🚪 Logout
+    async function logout(){
+      await signOut(auth);
+      window.location.href = "login.html";
+    }
+
+    // GLOBAL
+    window.toggleUser = toggleUser;
+    window.deleteUser = deleteUser;
+    window.logout = logout;
+
+    loadUsers();
+
+  </script>
+
+</body>
+</html>
+
+================================================================================
 ARCHIVO: .\agencies.html
 ================================================================================
 <!DOCTYPE html>
@@ -76,6 +307,12 @@ ARCHIVO: .\agencies.html
         </div>
         <div>&copy; 2026 Dashboard</div>
     </footer>
+
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
 
     <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -290,7 +527,11 @@ input:focus {
       </div>
     </div>
   </main>
-
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
   <script type="module" src="./js/cercana/cercana.page.js"></script>
 </body>
 
@@ -337,6 +578,11 @@ ARCHIVO: .\dashboard.html
 
     <div id="criticalList" class="space-y-3"></div>
   </div>
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script src="js/sw-register.js"></script>
   <script type="module" src="js/dashboard.js"></script>
@@ -407,6 +653,11 @@ ARCHIVO: .\data.html
         <span class="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Sistema de Control v1.0</span>
     </div>
   </div>
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   
@@ -583,6 +834,12 @@ ARCHIVO: .\dataAgencias.html
     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">&copy; 2026 Pedro Garcia &bull; GesAg</p>
   </footer>
 
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script type="module" src="js/dataAgencias.js"></script>
@@ -647,6 +904,12 @@ ARCHIVO: .\hallazgos.html
 </div>
 
 <main class="flex-1 overflow-y-auto p-4 space-y-4" id="findings-list"></main>
+
+<script type="module">
+  import { requireAuth } from "./js/auth.guard.js";
+
+  requireAuth();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 
 
@@ -672,12 +935,34 @@ ARCHIVO: .\index.html
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
+
+  <script type="module">
+
+    import { auth } from "./js/firebase/firebase.init.js";
+
+    import {
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    onAuthStateChanged(auth, (user) => {
+
+      if (!user) {
+        window.location.href = "login.html";
+      }
+
+    });
+
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    #userArrow {
+      transition: transform 0.2s linear;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
@@ -713,95 +998,119 @@ ARCHIVO: .\index.html
     }
 
     /* Quita el borde feo por defecto de Leaflet y suaviza esquinas */
-.leaflet-popup-content-wrapper {
-  border-radius: 12px;
-  padding: 0;
-  overflow: hidden;
-}
-.leaflet-popup-content {
-  margin: 12px;
-}
-.custom-house-marker {
-  background: none !important;
-  border: none !important;
-}
+    .leaflet-popup-content-wrapper {
+      border-radius: 12px;
+      padding: 0;
+      overflow: hidden;
+    }
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden; /* Evita scrolls raros en móvil */
-}
+    .leaflet-popup-content {
+      margin: 12px;
+    }
 
-#map {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0; /* Al fondo */
-}
-/* Contenedor HUD (Velocímetro/Precisión) */
-.hud-container {
-  pointer-events: none; /* Deja que los clics pasen al mapa */
-}
-.hud-container > * {
-  pointer-events: auto; /* Reactiva clics solo para los botones */
-}
-/* Estilo para que el scroll de la lista sea fluido en móvil */
-#agencies-list {
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Oculta scrollbar en Firefox */
-}
-#agencies-list::-webkit-scrollbar {
-  display: none; /* Oculta scrollbar en Chrome/Safari */
-}
+    .custom-house-marker {
+      background: none !important;
+      border: none !important;
+    }
 
-/* Animación de entrada para el widget */
-#closest-agency-widget {
-  animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      /* Evita scrolls raros en móvil */
+    }
 
-@keyframes slideUp {
-  from { transform: translateY(100px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-/* Estado Base: La lista está escondida bajo el borde inferior */
-#collapsible-list {
-    position: fixed; /* Fixed para que no dependa del flujo de otros divs */
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 75vh;
-    z-index: 50;
-    background: white;
-    border-radius: 2.5rem 2.5rem 0 0;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
-    transform: translateY(100%); /* Escondida */
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    visibility: hidden;
-}
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      /* Al fondo */
+    }
 
-/* Estado Activo: La lista sube */
-#collapsible-list.is-active {
-    transform: translateY(0);
-    visibility: visible;
-}
+    /* Contenedor HUD (Velocímetro/Precisión) */
+    .hud-container {
+      pointer-events: none;
+      /* Deja que los clics pasen al mapa */
+    }
 
-/* Botón de cerrar dentro de la lista */
-#btn-close-list {
-    cursor: pointer;
-    active: scale(0.9);
-    transition: transform 0.2s;
-}
+    .hud-container>* {
+      pointer-events: auto;
+      /* Reactiva clics solo para los botones */
+    }
+
+    /* Estilo para que el scroll de la lista sea fluido en móvil */
+    #agencies-list {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      /* Oculta scrollbar en Firefox */
+    }
+
+    #agencies-list::-webkit-scrollbar {
+      display: none;
+      /* Oculta scrollbar en Chrome/Safari */
+    }
+
+    /* Animación de entrada para el widget */
+    #closest-agency-widget {
+      animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Estado Base: La lista está escondida bajo el borde inferior */
+    #collapsible-list {
+      position: fixed;
+      /* Fixed para que no dependa del flujo de otros divs */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 75vh;
+      z-index: 50;
+      background: white;
+      border-radius: 2.5rem 2.5rem 0 0;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+      transform: translateY(100%);
+      /* Escondida */
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      visibility: hidden;
+    }
+
+    /* Estado Activo: La lista sube */
+    #collapsible-list.is-active {
+      transform: translateY(0);
+      visibility: visible;
+    }
+
+    /* Botón de cerrar dentro de la lista */
+    #btn-close-list {
+      cursor: pointer;
+      active: scale(0.9);
+      transition: transform 0.2s;
+    }
   </style>
 </head>
 
 <body class="h-screen flex flex-col bg-slate-50 text-slate-900 antialiased overflow-hidden">
 
-  <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
+  <header
+    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
     <div class="flex items-center gap-3 overflow-hidden">
       <div class="p-1.5 rounded-lg md:rounded-xl shadow-lg shadow-indigo-100 shrink-0">
         <img src="assets/icons/Logo-horizontal-azul.png" alt="logo" class="h-6 md:h-7 w-auto object-contain">
@@ -825,86 +1134,107 @@ html, body {
         <div id="acc-dot" class="w-2 h-2 rounded-full bg-slate-400"></div>
         <div>
           <p class="text-[9px] uppercase font-bold text-slate-400 leading-none">Precisión</p>
-          <p class="text-sm font-bold text-slate-700"><span id="accuracy-value">0</span> <span class="text-[10px] text-slate-400">m</span></p>
+          <p class="text-sm font-bold text-slate-700"><span id="accuracy-value">0</span> <span
+              class="text-[10px] text-slate-400">m</span></p>
         </div>
       </div>
-    
+
       <div class="bg-indigo-600 border border-indigo-400 rounded-2xl p-3 shadow-lg flex items-center gap-3 text-white">
         <i class="fas fa-gauge-high text-indigo-200"></i>
         <div>
           <p class="text-[9px] uppercase font-bold text-indigo-200 leading-none">Velocidad</p>
-          <p class="text-sm font-bold"><span id="speed-value">0.0</span> <span class="text-[10px] text-indigo-200">km/h</span></p>
+          <p class="text-sm font-bold"><span id="speed-value">0.0</span> <span
+              class="text-[10px] text-indigo-200">km/h</span></p>
         </div>
       </div>
     </div>
-  
+
     <nav class="hidden lg:flex items-center gap-1">
-      <a href="dataAgencias.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+      <a href="dataAgencias.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
         <i class="fas fa-database opacity-70 text-xs"></i>
         <span>Sin GPS</span>
       </a>
-      <a href="data.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+      <a href="data.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
         <i class="fas fa-hdd opacity-70 text-xs"></i>
         <span>Backup</span>
       </a>
-      <a href="cercana.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+      <a href="cercana.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
         <i class="fas fa-street-view opacity-70 text-xs"></i>
         <span>Cercana</span>
       </a>
-      <a href="agencies.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+      <a href="agencies.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
         <i class="fas fa-building opacity-70 text-xs"></i>
         <span>Lista</span>
       </a>
     </nav>
-  
+
     <div class="flex items-center gap-2 md:gap-4">
       <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100">
         <i class="fa fa-user text-[10px] text-slate-400"></i>
         <span class="text-xs font-medium text-slate-600 hidden md:block">Pedro</span>
       </div>
-  
+
       <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
         <i class="fas fa-bars text-xl"></i>
       </button>
     </div>
-  
+
     <div id="mobileMenu" class="fixed inset-0 bg-slate-900/60 z-[60] hidden backdrop-blur-sm transition-all">
       <div class="absolute right-0 top-0 h-full w-72 bg-white shadow-2xl p-6 flex flex-col">
         <div class="flex justify-between items-center mb-8">
           <span class="font-bold text-lg text-slate-800">Navegación</span>
-          <button id="closeMenuBtn" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
+          <button id="closeMenuBtn"
+            class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
             <i class="fas fa-times text-xl"></i>
           </button>
         </div>
-        
+
         <nav class="flex flex-col gap-2">
-          <a href="dataAgencias.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="dataAgencias.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-database text-indigo-500 w-5"></i> Agencias Sin GPS
           </a>
-          <a href="data.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="data.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-hdd text-indigo-500 w-5"></i> Backup de Data
           </a>
-          <a href="cercana.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="cercana.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-street-view text-indigo-500 w-5"></i> Agencias Cercanas
           </a>
-          <a href="agencies.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="agencies.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-building text-indigo-500 w-5"></i> Lista Completa
           </a>
 
-          <a href="hallazgos.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="hallazgos.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-building text-indigo-500 w-5"></i> Hallazgos
           </a>
 
-          <a href="dashboard.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="dashboard.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-building text-indigo-500 w-5"></i> Dashboard
           </a>
-  
+
           <hr class="my-4 border-slate-100">
-  
-          <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-            <input type="checkbox" name="seguimiento" id="seguimiento" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+
+          <label
+            class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+            <input type="checkbox" name="seguimiento" id="seguimiento"
+              class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
             <span class="text-sm font-medium text-slate-700">Seguir en el mapa</span>
           </label>
+
+
+          <button onclick="logout()"
+            class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-200">
+            Cerrar sesión
+          </button>
         </nav>
       </div>
     </div>
@@ -912,25 +1242,27 @@ html, body {
 
   <main class="flex-1 flex flex-col overflow-hidden">
     <div class="relative h-screen w-screen overflow-hidden">
-  
+
       <div id="map"></div>
-    
+
       <div class="absolute top-4 left-4 right-4 z-10 pointer-events-none flex justify-between">
         <div class="bg-white/90 backdrop-blur px-3 py-2 rounded-2xl shadow-lg pointer-events-auto border border-white">
           <span class="text-xs font-black text-slate-700"><span id="speed-value">0</span> km/h</span>
         </div>
       </div>
-    
+
       <div class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none flex flex-col">
-        
+
         <div class="flex justify-end p-4">
-          <button id="btn-recenter" class="w-12 h-12 bg-white rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-slate-600 active:bg-slate-100">
+          <button id="btn-recenter"
+            class="w-12 h-12 bg-white rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-slate-600 active:bg-slate-100">
             <i class="fas fa-crosshairs"></i>
           </button>
         </div>
-    
+
         <div class="p-4 pointer-events-auto">
-          <div id="closest-agency-widget" class="bg-white rounded-3xl shadow-2xl p-4 flex items-center justify-between border border-slate-100">
+          <div id="closest-agency-widget"
+            class="bg-white rounded-3xl shadow-2xl p-4 flex items-center justify-between border border-slate-100">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
                 <i class="fas fa-route"></i>
@@ -940,24 +1272,27 @@ html, body {
                 <p id="closest-distance-text" class="text-[10px] font-bold text-indigo-500 uppercase">Calculando...</p>
               </div>
             </div>
-            <button id="btn-toggle-list" class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
+            <button id="btn-toggle-list"
+              class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
               <i class="fas fa-list-ul"></i>
             </button>
           </div>
         </div>
-    
-        <div id="collapsible-list" class="bg-white rounded-t-[2.5rem] shadow-2xl pointer-events-auto transition-transform duration-500 translate-y-full h-[75vh] flex flex-col">
+
+        <div id="collapsible-list"
+          class="bg-white rounded-t-[2.5rem] shadow-2xl pointer-events-auto transition-transform duration-500 translate-y-full h-[75vh] flex flex-col">
           <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-4"></div>
-    
+
           <div class="px-6 pb-4 flex justify-between items-center border-b border-slate-50">
-              <h2 class="text-sm font-black text-slate-800 uppercase tracking-tighter">Listado de Agencias</h2>
-              <button id="btn-close-list" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center">
-                  <i class="fas fa-times"></i>
-              </button>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-tighter">Listado de Agencias</h2>
+            <button id="btn-close-list"
+              class="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
-          
+
           <div id="agencies-list" class="overflow-y-auto flex-1 px-4 py-4">
-              </div>
+          </div>
         </div>
       </div>
     </div>
@@ -981,17 +1316,17 @@ html, body {
     const mobileMenu = document.getElementById('mobileMenu');
     const openBtn = document.getElementById('mobileMenuBtn');
     const closeBtn = document.getElementById('closeMenuBtn');
-  
+
     openBtn.addEventListener('click', () => {
       mobileMenu.classList.remove('hidden');
       document.body.style.overflow = 'hidden'; // Evita scroll al estar abierto
     });
-  
+
     closeBtn.addEventListener('click', () => {
       mobileMenu.classList.add('hidden');
       document.body.style.overflow = 'auto';
     });
-  
+
     // Cerrar al hacer click fuera del contenedor blanco
     mobileMenu.addEventListener('click', (e) => {
       if (e.target === mobileMenu) {
@@ -1008,10 +1343,35 @@ html, body {
   <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
   <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js" defer></script>
-  
+
   <script src="./network.js"></script>
   <script src="js/sw-register.js"></script>
   <script type="module" src="js/app.js"></script>
+
+  <script type="module">
+
+    import { auth } from "./js/firebase/firebase.init.js";
+
+    import {
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      });
+    }
+
+    // 🔥 ESTO ES LO QUE TE FALTA
+    window.logout = logout;
+
+  </script>
+
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+
+    requireAuth();
+  </script>
 
 </body>
 
@@ -1028,7 +1388,173 @@ ARCHIVO: .\inicio.html
     <title>Pagina Principal</title>
 </head>
 <body>
-    
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
+</body>
+</html>
+
+================================================================================
+ARCHIVO: .\login.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <!-- Card -->
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+      Iniciar Sesión
+    </h2>
+
+    <!-- Usuario -->
+    <input 
+      type="text" 
+      id="username" 
+      placeholder="Usuario"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+
+    <!-- Contraseña -->
+    <input 
+      type="password" 
+      id="password" 
+      placeholder="Contraseña"
+      class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+
+    <!-- Botón -->
+    <button 
+      onclick="login()"
+      class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition duration-200"
+    >
+      Entrar
+    </button>
+
+    <!-- Registro -->
+    <p class="text-sm text-center mt-4">
+      ¿No tienes cuenta?
+      <a href="register.html" class="text-blue-500 hover:underline">
+        Regístrate
+      </a>
+    </p>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { auth, db } from "./js/firebase/firebase.init.js";
+
+    import {
+      signInWithEmailAndPassword,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    import {
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Si ya está logueado → entra directo
+    onAuthStateChanged(auth, (user) => {
+      if(user){
+        window.location.href = "index.html";
+      }
+    });
+
+    async function login(){
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if(!username || !password){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Completa los campos",
+          showConfirmButton:false,
+          timer:2000
+        });
+        return;
+      }
+
+      const fakeEmail = username + "@app.com";
+
+      try{
+
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          fakeEmail,
+          password
+        );
+
+        const uid = userCredential.user.uid;
+
+        const userDoc = await getDoc(doc(db,"users",uid));
+
+        if(!userDoc.exists() || !userDoc.data().enabled){
+
+          Swal.fire({
+            toast:true,
+            position:"top-end",
+            icon:"error",
+            title:"Usuario no habilitado",
+            showConfirmButton:false,
+            timer:2500
+          });
+
+          return;
+        }
+
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"success",
+          title:"Bienvenido 🚀",
+          showConfirmButton:false,
+          timer:2000
+        });
+
+        setTimeout(()=>{
+          window.location.href = "index.html";
+        },1000);
+
+      }catch(err){
+
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"error",
+          title:"Credenciales incorrectas",
+          showConfirmButton:false,
+          timer:2500
+        });
+
+      }
+
+    }
+
+    window.login = login;
+
+  </script>
+
 </body>
 </html>
 
@@ -1152,7 +1678,11 @@ ARCHIVO: .\observaciones.html
             </div>
         </div>
     </main>
-
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
     <script type="module" src="./js/observaciones/observaciones.page.js"></script>
 </body>
 </html>
@@ -1184,6 +1714,12 @@ ARCHIVO: .\offline.html
     <h1>📴 Sin conexión</h1>
     <p>La app sigue funcionando offline.</p>
   </div>
+
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
 </body>
 </html>
 
@@ -1192,6 +1728,186 @@ ARCHIVO: .\offline.html
 ARCHIVO: .\README.md
 ================================================================================
 
+
+================================================================================
+ARCHIVO: .\register.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <!-- Card -->
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+      Crear Cuenta
+    </h2>
+
+    <!-- Usuario -->
+    <input 
+      type="text" 
+      id="username" 
+      placeholder="Usuario"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Contraseña -->
+    <input 
+      type="password" 
+      id="password" 
+      placeholder="Contraseña"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Confirmar contraseña -->
+    <input 
+      type="password" 
+      id="confirmPassword" 
+      placeholder="Confirmar contraseña"
+      class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Botón -->
+    <button 
+      onclick="register()"
+      class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition duration-200"
+    >
+      Registrarse
+    </button>
+
+    <!-- Login -->
+    <p class="text-sm text-center mt-4">
+      ¿Ya tienes cuenta?
+      <a href="login.html" class="text-blue-500 hover:underline">
+        Iniciar sesión
+      </a>
+    </p>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { auth, db } from "./js/firebase/firebase.init.js";
+
+    import {
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    import {
+      doc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    async function register(){
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+      // Validaciones
+      if(!username || !password || !confirmPassword){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Completa todos los campos",
+          showConfirmButton:false,
+          timer:2000
+        });
+        return;
+      }
+
+      if(password !== confirmPassword){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"error",
+          title:"Las contraseñas no coinciden",
+          showConfirmButton:false,
+          timer:2500
+        });
+        return;
+      }
+
+      if(password.length < 6){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Mínimo 6 caracteres",
+          showConfirmButton:false,
+          timer:2500
+        });
+        return;
+      }
+
+      const fakeEmail = username + "@app.com";
+
+      try{
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          fakeEmail,
+          password
+        );
+
+        const uid = userCredential.user.uid;
+
+        // Guardar en Firestore
+        await setDoc(doc(db,"users",uid),{
+          username: username,
+          enabled: false, // 🔥 tú lo habilitas
+          createdAt: new Date()
+        });
+
+        Swal.fire({
+          icon:"success",
+          title:"Registro exitoso",
+          text:"Espera que el administrador te habilite"
+        });
+
+        // Redirigir al login
+        setTimeout(()=>{
+          window.location.href = "login.html";
+        },1500);
+
+      }catch(err){
+
+        let mensaje = "Error al registrar";
+
+        if(err.code === "auth/email-already-in-use"){
+          mensaje = "El usuario ya existe";
+        }
+
+        Swal.fire({
+          icon:"error",
+          title:"Error",
+          text: mensaje
+        });
+
+      }
+
+    }
+
+    window.register = register;
+
+  </script>
+
+</body>
+</html>
 
 ================================================================================
 ARCHIVO: .\report.html
@@ -1249,7 +1965,11 @@ ARCHIVO: .\report.html
 <!-- Timeline -->
 <main id="timeline" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
 </main>
+<script type="module">
+  import { requireAuth } from "./js/auth.guard.js";
 
+  requireAuth();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 <script type="module" src="./js/reports/reports.page.js"></script>
 </body>
@@ -1387,6 +2107,237 @@ ARCHIVO: .\todo_el_proyecto.txt
 
 
 ================================================================================
+ARCHIVO: .\admin.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+  <!-- NAVBAR -->
+  <div class="bg-white shadow p-4 flex justify-between items-center">
+
+    <h1 class="font-bold text-lg">Panel Admin</h1>
+
+    <div class="flex items-center gap-4">
+      <span id="userName" class="text-gray-600"></span>
+
+      <button onclick="logout()"
+        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+        Cerrar sesión
+      </button>
+    </div>
+
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="p-6">
+
+    <!-- BUSCADOR -->
+    <input 
+      type="text" 
+      id="search"
+      placeholder="Buscar usuario..."
+      class="w-full mb-4 p-2 border rounded"
+    >
+
+    <!-- TABLA -->
+    <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
+
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b text-gray-600">
+            <th class="p-2">Usuario</th>
+            <th class="p-2">Estado</th>
+            <th class="p-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+
+      <p id="loading" class="text-center text-gray-400 mt-4">
+        Cargando usuarios...
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- AUTH GUARD -->
+  <script type="module">
+    import { requireAdmin } from "./js/auth.guard.js";
+    requireAdmin();
+  </script>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { db, auth } from "./js/firebase/firebase.init.js";
+
+    import {
+      collection,
+      getDocs,
+      doc,
+      updateDoc,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    import {
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const table = document.getElementById("usersTable");
+    const searchInput = document.getElementById("search");
+    const loading = document.getElementById("loading");
+
+    let users = [];
+
+    // 🔥 Mostrar usuario
+    onAuthStateChanged(auth, (user)=>{
+      if(user){
+        document.getElementById("userName").innerText =
+          user.email.replace("@app.com","");
+      }
+    });
+
+    // 🚀 Cargar usuarios
+    async function loadUsers(){
+
+      loading.style.display = "block";
+      table.innerHTML = "";
+
+      const snapshot = await getDocs(collection(db,"users"));
+
+      users = [];
+
+      snapshot.forEach(docSnap => {
+        users.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+
+      renderUsers(users);
+
+      loading.style.display = "none";
+    }
+
+    // 🎯 Render
+    function renderUsers(list){
+
+      table.innerHTML = "";
+
+      list.forEach(user => {
+
+        table.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-2">${user.username}</td>
+
+            <td class="p-2">
+              <span class="px-2 py-1 rounded text-white text-sm
+                ${user.enabled ? "bg-green-500" : "bg-red-500"}">
+                ${user.enabled ? "Activo" : "Inactivo"}
+              </span>
+            </td>
+
+            <td class="p-2 flex gap-2">
+
+              <button onclick="toggleUser('${user.id}', ${user.enabled})"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
+                ${user.enabled ? "Desactivar" : "Activar"}
+              </button>
+
+              <button onclick="deleteUser('${user.id}')"
+                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+                Eliminar
+              </button>
+
+            </td>
+          </tr>
+        `;
+      });
+
+    }
+
+    // 🔍 BUSCADOR
+    searchInput.addEventListener("input", ()=>{
+
+      const value = searchInput.value.toLowerCase();
+
+      const filtered = users.filter(u =>
+        u.username.toLowerCase().includes(value)
+      );
+
+      renderUsers(filtered);
+    });
+
+    // 🔄 Toggle
+    async function toggleUser(id, current){
+
+      await updateDoc(doc(db,"users",id),{
+        enabled: !current
+      });
+
+      Swal.fire({
+        toast:true,
+        position:"top-end",
+        icon:"success",
+        title:"Usuario actualizado",
+        showConfirmButton:false,
+        timer:2000
+      });
+
+      loadUsers();
+    }
+
+    // ❌ Delete
+    async function deleteUser(id){
+
+      const confirm = await Swal.fire({
+        title:"¿Eliminar usuario?",
+        icon:"warning",
+        showCancelButton:true
+      });
+
+      if(confirm.isConfirmed){
+
+        await deleteDoc(doc(db,"users",id));
+
+        Swal.fire("Eliminado","","success");
+
+        loadUsers();
+      }
+
+    }
+
+    // 🚪 Logout
+    async function logout(){
+      await signOut(auth);
+      window.location.href = "login.html";
+    }
+
+    // GLOBAL
+    window.toggleUser = toggleUser;
+    window.deleteUser = deleteUser;
+    window.logout = logout;
+
+    loadUsers();
+
+  </script>
+
+</body>
+</html>
+
+================================================================================
 ARCHIVO: .\agencies.html
 ================================================================================
 <!DOCTYPE html>
@@ -1462,6 +2413,12 @@ ARCHIVO: .\agencies.html
         </div>
         <div>&copy; 2026 Dashboard</div>
     </footer>
+
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
 
     <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1676,7 +2633,11 @@ input:focus {
       </div>
     </div>
   </main>
-
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
   <script type="module" src="./js/cercana/cercana.page.js"></script>
 </body>
 
@@ -1723,6 +2684,11 @@ ARCHIVO: .\dashboard.html
 
     <div id="criticalList" class="space-y-3"></div>
   </div>
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script src="js/sw-register.js"></script>
   <script type="module" src="js/dashboard.js"></script>
@@ -1793,6 +2759,11 @@ ARCHIVO: .\data.html
         <span class="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Sistema de Control v1.0</span>
     </div>
   </div>
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   
@@ -1969,6 +2940,12 @@ ARCHIVO: .\dataAgencias.html
     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">&copy; 2026 Pedro Garcia &bull; GesAg</p>
   </footer>
 
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
   <script type="module" src="js/dataAgencias.js"></script>
@@ -2033,6 +3010,12 @@ ARCHIVO: .\hallazgos.html
 </div>
 
 <main class="flex-1 overflow-y-auto p-4 space-y-4" id="findings-list"></main>
+
+<script type="module">
+  import { requireAuth } from "./js/auth.guard.js";
+
+  requireAuth();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 
 
@@ -2058,12 +3041,34 @@ ARCHIVO: .\index.html
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="assets/icons/Logo-vertical-azul.png" />
 
+
+  <script type="module">
+
+    import { auth } from "./js/firebase/firebase.init.js";
+
+    import {
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    onAuthStateChanged(auth, (user) => {
+
+      if (!user) {
+        window.location.href = "login.html";
+      }
+
+    });
+
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    #userArrow {
+      transition: transform 0.2s linear;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
@@ -2099,95 +3104,119 @@ ARCHIVO: .\index.html
     }
 
     /* Quita el borde feo por defecto de Leaflet y suaviza esquinas */
-.leaflet-popup-content-wrapper {
-  border-radius: 12px;
-  padding: 0;
-  overflow: hidden;
-}
-.leaflet-popup-content {
-  margin: 12px;
-}
-.custom-house-marker {
-  background: none !important;
-  border: none !important;
-}
+    .leaflet-popup-content-wrapper {
+      border-radius: 12px;
+      padding: 0;
+      overflow: hidden;
+    }
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden; /* Evita scrolls raros en móvil */
-}
+    .leaflet-popup-content {
+      margin: 12px;
+    }
 
-#map {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0; /* Al fondo */
-}
-/* Contenedor HUD (Velocímetro/Precisión) */
-.hud-container {
-  pointer-events: none; /* Deja que los clics pasen al mapa */
-}
-.hud-container > * {
-  pointer-events: auto; /* Reactiva clics solo para los botones */
-}
-/* Estilo para que el scroll de la lista sea fluido en móvil */
-#agencies-list {
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Oculta scrollbar en Firefox */
-}
-#agencies-list::-webkit-scrollbar {
-  display: none; /* Oculta scrollbar en Chrome/Safari */
-}
+    .custom-house-marker {
+      background: none !important;
+      border: none !important;
+    }
 
-/* Animación de entrada para el widget */
-#closest-agency-widget {
-  animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      /* Evita scrolls raros en móvil */
+    }
 
-@keyframes slideUp {
-  from { transform: translateY(100px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-/* Estado Base: La lista está escondida bajo el borde inferior */
-#collapsible-list {
-    position: fixed; /* Fixed para que no dependa del flujo de otros divs */
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 75vh;
-    z-index: 50;
-    background: white;
-    border-radius: 2.5rem 2.5rem 0 0;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
-    transform: translateY(100%); /* Escondida */
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    visibility: hidden;
-}
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      /* Al fondo */
+    }
 
-/* Estado Activo: La lista sube */
-#collapsible-list.is-active {
-    transform: translateY(0);
-    visibility: visible;
-}
+    /* Contenedor HUD (Velocímetro/Precisión) */
+    .hud-container {
+      pointer-events: none;
+      /* Deja que los clics pasen al mapa */
+    }
 
-/* Botón de cerrar dentro de la lista */
-#btn-close-list {
-    cursor: pointer;
-    active: scale(0.9);
-    transition: transform 0.2s;
-}
+    .hud-container>* {
+      pointer-events: auto;
+      /* Reactiva clics solo para los botones */
+    }
+
+    /* Estilo para que el scroll de la lista sea fluido en móvil */
+    #agencies-list {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      /* Oculta scrollbar en Firefox */
+    }
+
+    #agencies-list::-webkit-scrollbar {
+      display: none;
+      /* Oculta scrollbar en Chrome/Safari */
+    }
+
+    /* Animación de entrada para el widget */
+    #closest-agency-widget {
+      animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Estado Base: La lista está escondida bajo el borde inferior */
+    #collapsible-list {
+      position: fixed;
+      /* Fixed para que no dependa del flujo de otros divs */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 75vh;
+      z-index: 50;
+      background: white;
+      border-radius: 2.5rem 2.5rem 0 0;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+      transform: translateY(100%);
+      /* Escondida */
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      visibility: hidden;
+    }
+
+    /* Estado Activo: La lista sube */
+    #collapsible-list.is-active {
+      transform: translateY(0);
+      visibility: visible;
+    }
+
+    /* Botón de cerrar dentro de la lista */
+    #btn-close-list {
+      cursor: pointer;
+      active: scale(0.9);
+      transition: transform 0.2s;
+    }
   </style>
 </head>
 
 <body class="h-screen flex flex-col bg-slate-50 text-slate-900 antialiased overflow-hidden">
 
-  <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
+  <header
+    class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 shrink-0 sticky top-0 z-50 shadow-sm">
     <div class="flex items-center gap-3 overflow-hidden">
       <div class="p-1.5 rounded-lg md:rounded-xl shadow-lg shadow-indigo-100 shrink-0">
         <img src="assets/icons/Logo-horizontal-azul.png" alt="logo" class="h-6 md:h-7 w-auto object-contain">
@@ -2211,86 +3240,107 @@ html, body {
         <div id="acc-dot" class="w-2 h-2 rounded-full bg-slate-400"></div>
         <div>
           <p class="text-[9px] uppercase font-bold text-slate-400 leading-none">Precisión</p>
-          <p class="text-sm font-bold text-slate-700"><span id="accuracy-value">0</span> <span class="text-[10px] text-slate-400">m</span></p>
+          <p class="text-sm font-bold text-slate-700"><span id="accuracy-value">0</span> <span
+              class="text-[10px] text-slate-400">m</span></p>
         </div>
       </div>
-    
+
       <div class="bg-indigo-600 border border-indigo-400 rounded-2xl p-3 shadow-lg flex items-center gap-3 text-white">
         <i class="fas fa-gauge-high text-indigo-200"></i>
         <div>
           <p class="text-[9px] uppercase font-bold text-indigo-200 leading-none">Velocidad</p>
-          <p class="text-sm font-bold"><span id="speed-value">0.0</span> <span class="text-[10px] text-indigo-200">km/h</span></p>
+          <p class="text-sm font-bold"><span id="speed-value">0.0</span> <span
+              class="text-[10px] text-indigo-200">km/h</span></p>
         </div>
       </div>
     </div>
-  
+
     <nav class="hidden lg:flex items-center gap-1">
-      <a href="dataAgencias.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+      <a href="dataAgencias.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
         <i class="fas fa-database opacity-70 text-xs"></i>
         <span>Sin GPS</span>
       </a>
-      <a href="data.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+      <a href="data.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
         <i class="fas fa-hdd opacity-70 text-xs"></i>
         <span>Backup</span>
       </a>
-      <a href="cercana.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+      <a href="cercana.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
         <i class="fas fa-street-view opacity-70 text-xs"></i>
         <span>Cercana</span>
       </a>
-      <a href="agencies.html" class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
+      <a href="agencies.html"
+        class="flex items-center gap-2 px-3 py-2 rounded-xl text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-sm font-semibold">
         <i class="fas fa-building opacity-70 text-xs"></i>
         <span>Lista</span>
       </a>
     </nav>
-  
+
     <div class="flex items-center gap-2 md:gap-4">
       <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100">
         <i class="fa fa-user text-[10px] text-slate-400"></i>
         <span class="text-xs font-medium text-slate-600 hidden md:block">Pedro</span>
       </div>
-  
+
       <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
         <i class="fas fa-bars text-xl"></i>
       </button>
     </div>
-  
+
     <div id="mobileMenu" class="fixed inset-0 bg-slate-900/60 z-[60] hidden backdrop-blur-sm transition-all">
       <div class="absolute right-0 top-0 h-full w-72 bg-white shadow-2xl p-6 flex flex-col">
         <div class="flex justify-between items-center mb-8">
           <span class="font-bold text-lg text-slate-800">Navegación</span>
-          <button id="closeMenuBtn" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
+          <button id="closeMenuBtn"
+            class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
             <i class="fas fa-times text-xl"></i>
           </button>
         </div>
-        
+
         <nav class="flex flex-col gap-2">
-          <a href="dataAgencias.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="dataAgencias.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-database text-indigo-500 w-5"></i> Agencias Sin GPS
           </a>
-          <a href="data.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="data.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-hdd text-indigo-500 w-5"></i> Backup de Data
           </a>
-          <a href="cercana.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="cercana.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-street-view text-indigo-500 w-5"></i> Agencias Cercanas
           </a>
-          <a href="agencies.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="agencies.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-building text-indigo-500 w-5"></i> Lista Completa
           </a>
 
-          <a href="hallazgos.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="hallazgos.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-building text-indigo-500 w-5"></i> Hallazgos
           </a>
 
-          <a href="dashboard.html" class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
+          <a href="dashboard.html"
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-indigo-50 text-slate-700 font-semibold transition-colors">
             <i class="fas fa-building text-indigo-500 w-5"></i> Dashboard
           </a>
-  
+
           <hr class="my-4 border-slate-100">
-  
-          <label class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-            <input type="checkbox" name="seguimiento" id="seguimiento" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
+
+          <label
+            class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+            <input type="checkbox" name="seguimiento" id="seguimiento"
+              class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300">
             <span class="text-sm font-medium text-slate-700">Seguir en el mapa</span>
           </label>
+
+
+          <button onclick="logout()"
+            class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg shadow transition duration-200">
+            Cerrar sesión
+          </button>
         </nav>
       </div>
     </div>
@@ -2298,25 +3348,27 @@ html, body {
 
   <main class="flex-1 flex flex-col overflow-hidden">
     <div class="relative h-screen w-screen overflow-hidden">
-  
+
       <div id="map"></div>
-    
+
       <div class="absolute top-4 left-4 right-4 z-10 pointer-events-none flex justify-between">
         <div class="bg-white/90 backdrop-blur px-3 py-2 rounded-2xl shadow-lg pointer-events-auto border border-white">
           <span class="text-xs font-black text-slate-700"><span id="speed-value">0</span> km/h</span>
         </div>
       </div>
-    
+
       <div class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none flex flex-col">
-        
+
         <div class="flex justify-end p-4">
-          <button id="btn-recenter" class="w-12 h-12 bg-white rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-slate-600 active:bg-slate-100">
+          <button id="btn-recenter"
+            class="w-12 h-12 bg-white rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-slate-600 active:bg-slate-100">
             <i class="fas fa-crosshairs"></i>
           </button>
         </div>
-    
+
         <div class="p-4 pointer-events-auto">
-          <div id="closest-agency-widget" class="bg-white rounded-3xl shadow-2xl p-4 flex items-center justify-between border border-slate-100">
+          <div id="closest-agency-widget"
+            class="bg-white rounded-3xl shadow-2xl p-4 flex items-center justify-between border border-slate-100">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
                 <i class="fas fa-route"></i>
@@ -2326,24 +3378,27 @@ html, body {
                 <p id="closest-distance-text" class="text-[10px] font-bold text-indigo-500 uppercase">Calculando...</p>
               </div>
             </div>
-            <button id="btn-toggle-list" class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
+            <button id="btn-toggle-list"
+              class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center">
               <i class="fas fa-list-ul"></i>
             </button>
           </div>
         </div>
-    
-        <div id="collapsible-list" class="bg-white rounded-t-[2.5rem] shadow-2xl pointer-events-auto transition-transform duration-500 translate-y-full h-[75vh] flex flex-col">
+
+        <div id="collapsible-list"
+          class="bg-white rounded-t-[2.5rem] shadow-2xl pointer-events-auto transition-transform duration-500 translate-y-full h-[75vh] flex flex-col">
           <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto my-4"></div>
-    
+
           <div class="px-6 pb-4 flex justify-between items-center border-b border-slate-50">
-              <h2 class="text-sm font-black text-slate-800 uppercase tracking-tighter">Listado de Agencias</h2>
-              <button id="btn-close-list" class="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center">
-                  <i class="fas fa-times"></i>
-              </button>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-tighter">Listado de Agencias</h2>
+            <button id="btn-close-list"
+              class="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
-          
+
           <div id="agencies-list" class="overflow-y-auto flex-1 px-4 py-4">
-              </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2367,17 +3422,17 @@ html, body {
     const mobileMenu = document.getElementById('mobileMenu');
     const openBtn = document.getElementById('mobileMenuBtn');
     const closeBtn = document.getElementById('closeMenuBtn');
-  
+
     openBtn.addEventListener('click', () => {
       mobileMenu.classList.remove('hidden');
       document.body.style.overflow = 'hidden'; // Evita scroll al estar abierto
     });
-  
+
     closeBtn.addEventListener('click', () => {
       mobileMenu.classList.add('hidden');
       document.body.style.overflow = 'auto';
     });
-  
+
     // Cerrar al hacer click fuera del contenedor blanco
     mobileMenu.addEventListener('click', (e) => {
       if (e.target === mobileMenu) {
@@ -2394,10 +3449,35 @@ html, body {
   <link rel="stylesheet" href="assets/lib/leaflet-routing-machine/leaflet-routing-machine.css" defer>
   <script src="assets/lib/leaflet-routing-machine/leaflet-routing-machine.min.js" defer></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js" defer></script>
-  
+
   <script src="./network.js"></script>
   <script src="js/sw-register.js"></script>
   <script type="module" src="js/app.js"></script>
+
+  <script type="module">
+
+    import { auth } from "./js/firebase/firebase.init.js";
+
+    import {
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      });
+    }
+
+    // 🔥 ESTO ES LO QUE TE FALTA
+    window.logout = logout;
+
+  </script>
+
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+
+    requireAuth();
+  </script>
 
 </body>
 
@@ -2414,7 +3494,173 @@ ARCHIVO: .\inicio.html
     <title>Pagina Principal</title>
 </head>
 <body>
-    
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
+</body>
+</html>
+
+================================================================================
+ARCHIVO: .\login.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <!-- Card -->
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+      Iniciar Sesión
+    </h2>
+
+    <!-- Usuario -->
+    <input 
+      type="text" 
+      id="username" 
+      placeholder="Usuario"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+
+    <!-- Contraseña -->
+    <input 
+      type="password" 
+      id="password" 
+      placeholder="Contraseña"
+      class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+
+    <!-- Botón -->
+    <button 
+      onclick="login()"
+      class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition duration-200"
+    >
+      Entrar
+    </button>
+
+    <!-- Registro -->
+    <p class="text-sm text-center mt-4">
+      ¿No tienes cuenta?
+      <a href="register.html" class="text-blue-500 hover:underline">
+        Regístrate
+      </a>
+    </p>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { auth, db } from "./js/firebase/firebase.init.js";
+
+    import {
+      signInWithEmailAndPassword,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    import {
+      doc,
+      getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Si ya está logueado → entra directo
+    onAuthStateChanged(auth, (user) => {
+      if(user){
+        window.location.href = "index.html";
+      }
+    });
+
+    async function login(){
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if(!username || !password){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Completa los campos",
+          showConfirmButton:false,
+          timer:2000
+        });
+        return;
+      }
+
+      const fakeEmail = username + "@app.com";
+
+      try{
+
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          fakeEmail,
+          password
+        );
+
+        const uid = userCredential.user.uid;
+
+        const userDoc = await getDoc(doc(db,"users",uid));
+
+        if(!userDoc.exists() || !userDoc.data().enabled){
+
+          Swal.fire({
+            toast:true,
+            position:"top-end",
+            icon:"error",
+            title:"Usuario no habilitado",
+            showConfirmButton:false,
+            timer:2500
+          });
+
+          return;
+        }
+
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"success",
+          title:"Bienvenido 🚀",
+          showConfirmButton:false,
+          timer:2000
+        });
+
+        setTimeout(()=>{
+          window.location.href = "index.html";
+        },1000);
+
+      }catch(err){
+
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"error",
+          title:"Credenciales incorrectas",
+          showConfirmButton:false,
+          timer:2500
+        });
+
+      }
+
+    }
+
+    window.login = login;
+
+  </script>
+
 </body>
 </html>
 
@@ -2538,7 +3784,11 @@ ARCHIVO: .\observaciones.html
             </div>
         </div>
     </main>
-
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
     <script type="module" src="./js/observaciones/observaciones.page.js"></script>
 </body>
 </html>
@@ -2570,6 +3820,12 @@ ARCHIVO: .\offline.html
     <h1>📴 Sin conexión</h1>
     <p>La app sigue funcionando offline.</p>
   </div>
+
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
 </body>
 </html>
 
@@ -2578,6 +3834,186 @@ ARCHIVO: .\offline.html
 ARCHIVO: .\README.md
 ================================================================================
 
+
+================================================================================
+ARCHIVO: .\register.html
+================================================================================
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <!-- Card -->
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
+      Crear Cuenta
+    </h2>
+
+    <!-- Usuario -->
+    <input 
+      type="text" 
+      id="username" 
+      placeholder="Usuario"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Contraseña -->
+    <input 
+      type="password" 
+      id="password" 
+      placeholder="Contraseña"
+      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Confirmar contraseña -->
+    <input 
+      type="password" 
+      id="confirmPassword" 
+      placeholder="Confirmar contraseña"
+      class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+    >
+
+    <!-- Botón -->
+    <button 
+      onclick="register()"
+      class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition duration-200"
+    >
+      Registrarse
+    </button>
+
+    <!-- Login -->
+    <p class="text-sm text-center mt-4">
+      ¿Ya tienes cuenta?
+      <a href="login.html" class="text-blue-500 hover:underline">
+        Iniciar sesión
+      </a>
+    </p>
+
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { auth, db } from "./js/firebase/firebase.init.js";
+
+    import {
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    import {
+      doc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    async function register(){
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const confirmPassword = document.getElementById("confirmPassword").value.trim();
+
+      // Validaciones
+      if(!username || !password || !confirmPassword){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Completa todos los campos",
+          showConfirmButton:false,
+          timer:2000
+        });
+        return;
+      }
+
+      if(password !== confirmPassword){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"error",
+          title:"Las contraseñas no coinciden",
+          showConfirmButton:false,
+          timer:2500
+        });
+        return;
+      }
+
+      if(password.length < 6){
+        Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Mínimo 6 caracteres",
+          showConfirmButton:false,
+          timer:2500
+        });
+        return;
+      }
+
+      const fakeEmail = username + "@app.com";
+
+      try{
+
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          fakeEmail,
+          password
+        );
+
+        const uid = userCredential.user.uid;
+
+        // Guardar en Firestore
+        await setDoc(doc(db,"users",uid),{
+          username: username,
+          enabled: false, // 🔥 tú lo habilitas
+          createdAt: new Date()
+        });
+
+        Swal.fire({
+          icon:"success",
+          title:"Registro exitoso",
+          text:"Espera que el administrador te habilite"
+        });
+
+        // Redirigir al login
+        setTimeout(()=>{
+          window.location.href = "login.html";
+        },1500);
+
+      }catch(err){
+
+        let mensaje = "Error al registrar";
+
+        if(err.code === "auth/email-already-in-use"){
+          mensaje = "El usuario ya existe";
+        }
+
+        Swal.fire({
+          icon:"error",
+          title:"Error",
+          text: mensaje
+        });
+
+      }
+
+    }
+
+    window.register = register;
+
+  </script>
+
+</body>
+</html>
 
 ================================================================================
 ARCHIVO: .\report.html
@@ -2635,11 +4071,140 @@ ARCHIVO: .\report.html
 <!-- Timeline -->
 <main id="timeline" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
 </main>
+<script type="module">
+  import { requireAuth } from "./js/auth.guard.js";
 
+  requireAuth();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 <script type="module" src="./js/reports/reports.page.js"></script>
 </body>
 </html>
+
+
+================================================================================
+ARCHIVO: .\sw.js
+================================================================================
+const CACHE_NAME = 'agencias-pwa-v4';
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/data.html',
+  '/manifest.json',
+  '/css/app.css',
+  '/js/app.js',
+  '/js/network.js',
+  '/js/sw-register.js',
+  '/js/location.service.js',
+  '/js/agencies/agencies.store.js',
+  '/js/map/map.actions.js'
+];
+
+const EXTERNAL_ASSETS = [
+  'https://cdn.tailwindcss.com',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css',
+  'https://cdn.jsdelivr.net/npm/sweetalert2@11'
+];
+
+// ==========================================
+// INSTALL
+// ==========================================
+self.addEventListener('install', event => {
+  console.log('[SW] Installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll([...STATIC_ASSETS, ...EXTERNAL_ASSETS]))
+  );
+  self.skipWaiting();
+});
+
+// ==========================================
+// ACTIVATE
+// ==========================================
+self.addEventListener('activate', event => {
+  console.log('[SW] Activating...');
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            console.log('[SW] Removing old cache:', key);
+            return caches.delete(key);
+          }
+        })
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// ==========================================
+// FETCH – CACHE FIRST para estáticos, NETWORK FIRST para API / JSON
+// ==========================================
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Si es API o JSON (agencias), NETWORK FIRST
+  if (url.pathname.endsWith('.json') || url.pathname.includes('/agencies')) {
+    event.respondWith(networkFirst(req));
+  } else {
+    // Archivos estáticos, cache primero
+    event.respondWith(cacheFirst(req));
+  }
+});
+
+// Estrategias
+async function cacheFirst(req) {
+  const cacheResp = await caches.match(req);
+  if (cacheResp) return cacheResp;
+
+  try {
+    const networkResp = await fetch(req);
+    if (req.method === 'GET' && networkResp.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(req, networkResp.clone());
+    }
+    return networkResp;
+  } catch (err) {
+    return caches.match('/offline.html');
+  }
+}
+
+async function networkFirst(req) {
+  try {
+    const networkResp = await fetch(req);
+    if (req.method === 'GET' && networkResp.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(req, networkResp.clone());
+    }
+    return networkResp;
+  } catch (err) {
+    const cacheResp = await caches.match(req);
+    return cacheResp || caches.match('/offline.html');
+  }
+}
+
+// ==========================================
+// SYNC – Cola de sincronización
+// ==========================================
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-agencies') {
+    event.waitUntil(syncAgencies());
+  }
+});
+
+async function syncAgencies() {
+  console.log('[SW] Syncing agencies...');
+  // Aquí llamarías a tu cola: queueSync
+  // Ejemplo: enviar cambios pendientes al servidor
+  // fetch('/api/sync', { method: 'POST', body: ... })
+}
+
+// ==========================================
+// PUSH NOTIFICATIONS (opcional)
+// ==========================================
+// self.addEventListener('push', event => {...});
 
 
 ================================================================================
@@ -2690,6 +4255,21 @@ print("✅ Archivos unidos en:", OUTPUT_FILE)
 
 
 ================================================================================
+ARCHIVO: .\usos.txt
+================================================================================
+<script type="module">
+  import { requireAuth } from "./js/auth.guard.js";
+
+  requireAuth();
+</script>
+
+<script type="module">
+  import { requireAdmin } from "./js/auth.guard.js";
+
+  requireAdmin();
+</script>
+
+================================================================================
 ARCHIVO: .\zona.html
 ================================================================================
 <!DOCTYPE html>
@@ -2733,6 +4313,11 @@ ARCHIVO: .\zona.html
             </div>
         </div>
     </main>
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
     <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 
     <script type="module" src="./js/appzones.js"></script>
@@ -2760,6 +4345,7 @@ import { onLocationUpdate } from './routes/tracking.service.js';
 import { exportAll } from './export/excel.js';
 import { renderAgenciesList } from './agencies/agencies.list.ui.js';
 import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.routes.js';
+import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 let agencies = [];
 let map = null;
@@ -3015,6 +4601,30 @@ window.addEventListener('deviceorientationabsolute', (e) => {
 window.exportAll = exportAll;
 
 
+import { syncAgencies } from "./firebase/firebase.sync.js";
+
+window.addEventListener("online",()=>{
+
+  console.log("Internet detectado");
+
+  syncAgencies();
+
+});
+
+// sincronizar al iniciar
+syncAgencies();
+
+import { syncFromFirebase } from "./firebase/firebase.sync.js";
+
+window.addEventListener("load",()=>{
+
+  if(navigator.onLine){
+    syncFromFirebase();
+  }
+
+});
+
+
 
 ================================================================================
 ARCHIVO: .\js\appzones.js
@@ -3072,6 +4682,46 @@ async function renderAgencias(zone) {
         `;
         agenciesList.appendChild(card);
     });
+}
+
+================================================================================
+ARCHIVO: .\js\auth.guard.js
+================================================================================
+import { auth } from "./firebase/firebase.init.js";
+
+import {
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// 🔐 PROTEGER RUTA
+export function requireAuth(redirect = "login.html") {
+
+  onAuthStateChanged(auth, (user) => {
+
+    if (!user) {
+      window.location.href = redirect;
+    }
+
+  });
+
+}
+
+// 👑 SOLO ADMIN
+export function requireAdmin(adminUser = "admin@app.com") {
+
+  onAuthStateChanged(auth, (user) => {
+
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    if (user.email !== adminUser) {
+      window.location.href = "index.html";
+    }
+
+  });
+
 }
 
 ================================================================================
@@ -3229,7 +4879,8 @@ async function addAgency(data) {
     lat: null,
     lng: null,
     estado: 'pendiente',
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    synced:false
   };
 
   await db.add('agencies', agency);
@@ -3538,7 +5189,8 @@ export async function createAgencyFromGPS(coords, formValues) {
     visited: false,
 
     created_at: now,
-    updated_at: now
+    updated_at: now,
+    synced:false
   };
 
 
@@ -4116,7 +5768,8 @@ export async function createAgencyFromMap(latlng, map, formValues) {
       visited: false,
   
       created_at: now,
-      updated_at: now
+      updated_at: now,
+      synced:false
     };
   
     await addAgency(agency);
@@ -4662,10 +6315,48 @@ inputSearch?.addEventListener('input', (e) => {
 });
 
 ================================================================================
+ARCHIVO: .\js\db\agencies.db.js
+================================================================================
+import { dbPromise } from "./db.js";
+
+
+export async function getAllPendingAgencies() {
+
+    const db = await dbPromise;
+
+    const agencies = await db.getAll("agencies");
+
+    // filtrar manualmente
+    return agencies.filter(a => !a.synced);
+
+}
+export async function markAgencySynced(id) {
+
+    const db = await dbPromise;
+
+    const agencia = await db.get("agencies", id);
+
+    if (!agencia) return;
+
+    agencia.synced = true;
+
+    await db.put("agencies", agencia);
+
+}
+
+export async function saveAgency(agencia){
+
+    const db = await dbPromise;
+  
+    await db.put("agencies", agencia);
+  
+  }
+
+================================================================================
 ARCHIVO: .\js\db\db.js
 ================================================================================
 const DB_NAME = 'control_agencias_db';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
   upgrade(db) {
@@ -4674,6 +6365,10 @@ export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
       const store = db.createObjectStore('agencies', { keyPath: 'id' });
       store.createIndex('estado', 'estado');
       store.createIndex('zona', 'zona');
+
+
+      // 🔥 necesario para Firebase sync
+      store.createIndex('synced', 'synced');
     }
 
     if (!db.objectStoreNames.contains('visits')) {
@@ -4688,9 +6383,9 @@ export const dbPromise = idb.openDB(DB_NAME, DB_VERSION, {
     }
 
     if (!db.objectStoreNames.contains('observaciones')) {
-      const store = db.createObjectStore('observaciones', { 
-        keyPath: 'id', 
-        autoIncrement: true 
+      const store = db.createObjectStore('observaciones', {
+        keyPath: 'id',
+        autoIncrement: true
       });
       store.createIndex('agenciaId', 'agenciaId');
       store.createIndex('timestamp', 'timestamp');
@@ -4762,7 +6457,8 @@ export async function queueSync(action, storeName, data) {
     action,
     storeName,
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    synced:false
   };
 
   await db.put(SYNC_STORE, item);
@@ -5123,7 +6819,8 @@ btnNew.addEventListener('click', async () => {
 
         creado_por: 'Pedro Garcia',
         synced: false,
-        created_at: Date.now()
+        created_at: Date.now(),
+        synced:false
       };
     }
   });
@@ -5205,6 +6902,144 @@ export async function getCriticalPendingFindings() {
     const db = dbPromise;
     await db.put('findings', finding)
   }
+
+================================================================================
+ARCHIVO: .\js\firebase\firebase.init.js
+================================================================================
+// js/firebase/firebase.init.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// CONFIG DE TU PROYECTO FIREBASE
+const firebaseConfig = {
+    apiKey: "AIzaSyA9wJ-vgcwG-MJ6gqQz3byolJP6DwrjnVw",
+    authDomain: "agencias-v2.firebaseapp.com",
+    projectId: "agencias-v2",
+    storageBucket: "agencias-v2.firebasestorage.app",
+    messagingSenderId: "896099760213",
+    appId: "1:896099760213:web:969ffa8363d51c0a8bbcdc"
+  };
+  
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+export { db, auth };
+
+================================================================================
+ARCHIVO: .\js\firebase\firebase.sync.js
+================================================================================
+// js/firebase/firebase.sync.js
+
+import { db } from "./firebase.init.js";
+
+import {
+  collection,
+  addDoc,
+  getDocs
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import { getAllPendingAgencies, markAgencySynced } from "../db/agencies.db.js";
+
+export async function syncAgencies() {
+
+  if (!navigator.onLine) return;
+
+  try {
+
+    const agencias = await getAllPendingAgencies();
+
+    for (const agencia of agencias) {
+
+      const docRef = await addDoc(
+        collection(db, "agencias"),
+        agencia
+      );
+
+      await markAgencySynced(agencia.id);
+      alert("Sincronizado");
+      console.log("Sincronizado:", docRef.id);
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "success", // success, error, warning, info
+        title: "Datos sincronizadoso",
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true
+      });
+
+    }
+
+  } catch (err) {
+
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "error", // success, error, warning, info
+      title: "Error sincronizando",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
+    
+
+    console.error("Error sincronizando:",err);
+
+  }
+
+}
+
+import { saveAgency } from "../db/agencies.db.js";
+
+export async function syncFromFirebase(){
+
+  try{
+
+    const snapshot = await getDocs(
+      collection(db,"agencias")
+    );
+
+    for(const doc of snapshot.docs){
+
+      const agencia = doc.data();
+
+      await saveAgency({
+        ...agencia,
+        synced:true
+      });
+
+    }
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success", // success, error, warning, info
+      title: "Datos descargados desde Firebase",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
+
+  }catch(err){
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "error", // success, error, warning, info
+      title: "Error leyendo Firebase",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
+
+    console.error("Error leyendo Firebase:",err);
+
+  }
+
+}
 
 ================================================================================
 ARCHIVO: .\js\gps\geofence.service.js
@@ -5654,7 +7489,7 @@ export function initMap() {
     // Es vital que el objeto de configuración sea el segundo parámetro
     map = L.map('map', {
         rotate: true,
-        touchRotate: true,
+        touchRotate: false, // 🔥 CLAVE
         bearing: 0,
         zoomControl: false
     }).setView(SAN_JUAN, 17);
@@ -5705,6 +7540,21 @@ export function initMap() {
 //     }
 // }
 
+let currentAngle = 0;
+
+function smoothRotate(newAngle) {
+
+    let diff = newAngle - currentAngle;
+
+    // evitar saltos tipo 359 → 0
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+
+    currentAngle += diff * 0.15;
+
+    return currentAngle;
+}
+
 let accuracyCircle = null;
 export function updateUserPosition(map, position) {
     if (!map || !position.lat || !position.lng) return;
@@ -5748,17 +7598,22 @@ export function updateUserPosition(map, position) {
     }
     // Si hay información de hacia dónde apuntas (heading) y NO estás rotando el mapa completo
     if (position.heading !== null && position.heading !== undefined && !seguimientoActivo) {
+
         const arrowDiv = document.getElementById('userArrow');
+    
         if (arrowDiv) {
-            // Rotamos solo la flecha si el mapa está quieto
-            arrowDiv.style.transform = `rotate(${position.heading}deg)`;
+    
+            const smooth = smoothRotate(position.heading);
+    
+            arrowDiv.style.transform = `rotate(${smooth}deg)`;
         }
     }
-
     if (seguimientoActivo) {
         map.panTo(latlng);
     }
 }
+
+
 
 /* 5. AYUDANTES (HELPERS) */
 function setupCreateAgency(map) {

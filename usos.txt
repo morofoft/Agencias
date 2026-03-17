@@ -1,0 +1,11 @@
+<script type="module">
+  import { requireAuth } from "./js/auth.guard.js";
+
+  requireAuth();
+</script>
+
+<script type="module">
+  import { requireAdmin } from "./js/auth.guard.js";
+
+  requireAdmin();
+</script>

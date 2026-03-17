@@ -29,24 +29,33 @@ export async function syncAgencies() {
       await markAgencySynced(agencia.id);
       alert("Sincronizado");
       console.log("Sincronizado:", docRef.id);
+
       Swal.fire({
-        icon: 'success',
-        title: 'Sincronizacion',
-        text: 'Datos sincronizados',
-        timer: 3000,
-        showConfirmButton: false
+        toast: true,
+        position: "top-end",
+        icon: "success", // success, error, warning, info
+        title: "Datos sincronizadoso",
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true
       });
 
     }
 
   } catch (err) {
+
     Swal.fire({
-      icon: 'error',
-      title: 'Error sincronizando',
-      text: err,
-      timer: 3000,
-      showConfirmButton: false
+      toast: true,
+      position: "top-end",
+      icon: "error", // success, error, warning, info
+      title: "Error sincronizando",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
     });
+    
+
+    console.error("Error sincronizando:",err);
 
   }
 
@@ -73,14 +82,25 @@ export async function syncFromFirebase(){
 
     }
     Swal.fire({
-      icon: 'success',
-      title: 'Sincronizacion',
-      text: 'Datos descargados desde Firebase',
-      timer: 3000,
-      showConfirmButton: false
+      toast: true,
+      position: "top-end",
+      icon: "success", // success, error, warning, info
+      title: "Datos descargados desde Firebase",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
     });
 
   }catch(err){
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "error", // success, error, warning, info
+      title: "Error leyendo Firebase",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true
+    });
 
     console.error("Error leyendo Firebase:",err);
 

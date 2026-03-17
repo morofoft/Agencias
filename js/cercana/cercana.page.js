@@ -177,11 +177,11 @@ function renderNearest(a) {
                     <i class="fa fa-copy mr-2"></i> Copiar
                 </button>
 
-                <button onclick="copiar('Agencia ' + ${a.idReal} + ' abierta')" 
+                <button onclick="copiar(${a.idReal} + ' abierta')" 
                     class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
                     <i class="fa fa-door-open mr-2"></i> AG Open</button>
 
-                <button onclick="copiar('Agencia ' + ${a.idReal} + ' cerrada')" 
+                <button onclick="copiar(${a.idReal} + ' cerrada')" 
                     class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
                     <i class="fa fa-door-closed mr-2"></i> AG Close</button>
 

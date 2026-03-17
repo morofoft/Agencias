@@ -22,5 +22,11 @@
     <h1>📴 Sin conexión</h1>
     <p>La app sigue funcionando offline.</p>
   </div>
+
+  <script type="module">
+    import { requireAuth } from "./js/auth.guard.js";
+  
+    requireAuth();
+  </script>
 </body>
 </html>

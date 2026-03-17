@@ -53,6 +53,12 @@
 </div>
 
 <main class="flex-1 overflow-y-auto p-4 space-y-4" id="findings-list"></main>
+
+<script type="module">
+  import { requireAuth } from "./js/auth.guard.js";
+
+  requireAuth();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 
 

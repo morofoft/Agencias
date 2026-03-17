@@ -72,6 +72,12 @@
         <div>&copy; 2026 Dashboard</div>
     </footer>
 
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
+
     <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="js/network.js"></script>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+  <!-- NAVBAR -->
+  <div class="bg-white shadow p-4 flex justify-between items-center">
+
+    <h1 class="font-bold text-lg">Panel Admin</h1>
+
+    <div class="flex items-center gap-4">
+      <span id="userName" class="text-gray-600"></span>
+
+      <button onclick="logout()"
+        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+        Cerrar sesión
+      </button>
+    </div>
+
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="p-6">
+
+    <!-- BUSCADOR -->
+    <input 
+      type="text" 
+      id="search"
+      placeholder="Buscar usuario..."
+      class="w-full mb-4 p-2 border rounded"
+    >
+
+    <!-- TABLA -->
+    <div class="bg-white rounded-xl shadow p-4 overflow-x-auto">
+
+      <table class="w-full text-left">
+        <thead>
+          <tr class="border-b text-gray-600">
+            <th class="p-2">Usuario</th>
+            <th class="p-2">Estado</th>
+            <th class="p-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+
+      <p id="loading" class="text-center text-gray-400 mt-4">
+        Cargando usuarios...
+      </p>
+
+    </div>
+
+  </div>
+
+  <!-- AUTH GUARD -->
+  <script type="module">
+    import { requireAdmin } from "./js/auth.guard.js";
+    requireAdmin();
+  </script>
+
+  <!-- SCRIPT -->
+  <script type="module">
+
+    import { db, auth } from "./js/firebase/firebase.init.js";
+
+    import {
+      collection,
+      getDocs,
+      doc,
+      updateDoc,
+      deleteDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    import {
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const table = document.getElementById("usersTable");
+    const searchInput = document.getElementById("search");
+    const loading = document.getElementById("loading");
+
+    let users = [];
+
+    // 🔥 Mostrar usuario
+    onAuthStateChanged(auth, (user)=>{
+      if(user){
+        document.getElementById("userName").innerText =
+          user.email.replace("@app.com","");
+      }
+    });
+
+    // 🚀 Cargar usuarios
+    async function loadUsers(){
+
+      loading.style.display = "block";
+      table.innerHTML = "";
+
+      const snapshot = await getDocs(collection(db,"users"));
+
+      users = [];
+
+      snapshot.forEach(docSnap => {
+        users.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+
+      renderUsers(users);
+
+      loading.style.display = "none";
+    }
+
+    // 🎯 Render
+    function renderUsers(list){
+
+      table.innerHTML = "";
+
+      list.forEach(user => {
+
+        table.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-2">${user.username}</td>
+
+            <td class="p-2">
+              <span class="px-2 py-1 rounded text-white text-sm
+                ${user.enabled ? "bg-green-500" : "bg-red-500"}">
+                ${user.enabled ? "Activo" : "Inactivo"}
+              </span>
+            </td>
+
+            <td class="p-2 flex gap-2">
+
+              <button onclick="toggleUser('${user.id}', ${user.enabled})"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
+                ${user.enabled ? "Desactivar" : "Activar"}
+              </button>
+
+              <button onclick="deleteUser('${user.id}')"
+                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded">
+                Eliminar
+              </button>
+
+            </td>
+          </tr>
+        `;
+      });
+
+    }
+
+    // 🔍 BUSCADOR
+    searchInput.addEventListener("input", ()=>{
+
+      const value = searchInput.value.toLowerCase();
+
+      const filtered = users.filter(u =>
+        u.username.toLowerCase().includes(value)
+      );
+
+      renderUsers(filtered);
+    });
+
+    // 🔄 Toggle
+    async function toggleUser(id, current){
+
+      await updateDoc(doc(db,"users",id),{
+        enabled: !current
+      });
+
+      Swal.fire({
+        toast:true,
+        position:"top-end",
+        icon:"success",
+        title:"Usuario actualizado",
+        showConfirmButton:false,
+        timer:2000
+      });
+
+      loadUsers();
+    }
+
+    // ❌ Delete
+    async function deleteUser(id){
+
+      const confirm = await Swal.fire({
+        title:"¿Eliminar usuario?",
+        icon:"warning",
+        showCancelButton:true
+      });
+
+      if(confirm.isConfirmed){
+
+        await deleteDoc(doc(db,"users",id));
+
+        Swal.fire("Eliminado","","success");
+
+        loadUsers();
+      }
+
+    }
+
+    // 🚪 Logout
+    async function logout(){
+      await signOut(auth);
+      window.location.href = "login.html";
+    }
+
+    // GLOBAL
+    window.toggleUser = toggleUser;
+    window.deleteUser = deleteUser;
+    window.logout = logout;
+
+    loadUsers();
+
+  </script>
+
+</body>
+</html>

@@ -39,6 +39,11 @@
             </div>
         </div>
     </main>
+    <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
     <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
 
     <script type="module" src="./js/appzones.js"></script>
