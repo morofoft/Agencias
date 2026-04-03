@@ -27,7 +27,7 @@ export async function syncAgencies() {
       );
 
       await markAgencySynced(agencia.id);
-      alert("Sincronizado");
+    
       console.log("Sincronizado:", docRef.id);
 
       Swal.fire({

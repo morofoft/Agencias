@@ -93,22 +93,12 @@ export async function exportAgenciesAdvanced() {
       const existing = await db.get('agencies', agency.id);
   
       if (existing) {
-        // Preguntar si se quiere sobrescribir
-        const result = await Swal.fire({
-          title: `Agencia ${agency.idReal} ya existe`,
-          text: '¿Deseas sobrescribirla?',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, sobrescribir',
-          cancelButtonText: 'No, mantener original'
-        });
-  
-        if (result.isConfirmed) {
+        
           agency.updated_at = now();
           await db.put('agencies', agency);
           await queueSync('UPDATE', 'agencies', agency);
           count++;
-        }
+        
       } else {
         // Crear nueva
         agency.created_at = now();
