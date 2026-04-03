@@ -44,7 +44,7 @@ export function agencyMarker(agency) {
       </div>
       
       <h3 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">
-        ${agency.nombre || 'Agencia Bancaria'}
+        ID viejo: ${agency.id_loteka || 'Agencia Bancaria'}
       </h3>
       
       <p style="margin: 4px 0 10px 0; font-size: 11px; color: #64748b; line-height: 1.4;">
