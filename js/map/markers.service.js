@@ -4,8 +4,23 @@ export function agencyMarker(agency) {
     A: '#3b82f6', // Azul
     B: '#a855f7', // Púrpura
     C: '#f59e0b', // Naranja
-    D: '#06b6d4', // Cian (Turquesa)
-    OTRA: '#64748b' // Gris
+    OTRA: '#64748b', // Gris
+    'PEDRO CORTO': '#3b82f6',
+    'SAN JUAN CENTRO': '#f59e0b',
+    'Los Corbano': '#3b82f6',
+    'VALLEJUELO': '#3b82f6',
+    'Luis Edwardo Luciano': '#3b82f6',
+    'LAS MATAS DE FARFAN': '#3b82f6',
+    'EL CARRIL': '#3b82f6',
+    'EL ROSARIO': '#3b82f6',
+    'Rafael Baez': '#3b82f6',
+    'KM.11': '#3b82f6',
+    'CUENDA': '#3b82f6',
+    'ELIAS PIÑA': '#3b82f6',
+    'CARDON': '#3b82f6',
+    'LA CUALTA': '#3b82f6',
+    'EL CERCADO': '#3b82f6',
+    'JUAN SANTIAGO': '#3b82f6'
   };
 
   const color = zonaColors[agency.zona] || '#64748b';
@@ -44,7 +59,7 @@ export function agencyMarker(agency) {
       </div>
       
       <h3 style="margin: 0; font-size: 14px; color: #1e293b; font-weight: 700;">
-        ID viejo: ${agency.id_loteka || 'Agencia Bancaria'}
+        Viejo: ${agency.id_loteka || 'ID Loteka'} Nuevo: ${agency.id_nuevo || 'ID Real'}
       </h3>
       
       <p style="margin: 4px 0 10px 0; font-size: 11px; color: #64748b; line-height: 1.4;">
