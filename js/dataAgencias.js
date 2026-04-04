@@ -49,7 +49,7 @@ async function init() {
     cachedAgencies = await getAllAgencies();
     renderCounter(cachedAgencies);
     renderResultsCounter(cachedAgencies.length, cachedAgencies.length);
-    renderAgencies(cachedAgencies);
+    // renderAgencies(cachedAgencies);
     
   }
   
@@ -216,7 +216,7 @@ function applyFilters() {
     renderResultsCounter(cachedAgencies.length, filtered.length);
   
     // 🖼 Render
-    renderAgencies(filtered);
+    // renderAgencies(filtered);
   }
   
   

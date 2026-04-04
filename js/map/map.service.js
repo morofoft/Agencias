@@ -29,7 +29,7 @@ export function initMap() {
     // Forzar el renderizado correcto
     setTimeout(() => { map.invalidateSize(); }, 400);
 
-    renderAgencies(map);
+    // renderAgencies(map);
     setupCreateAgency(map);
     setMapInstance(map);
 

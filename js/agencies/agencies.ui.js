@@ -63,6 +63,6 @@ export async function createAgencyFromMap(latlng, map, formValues) {
     };
   
     await addAgency(agency);
-    await renderAgencies(map);
+    // await renderAgencies(map);
     await renderAgenciesList();
   }
