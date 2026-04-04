@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       icon: 'info',
       title: 'Filtrando agencias!',
       text: `Se filtro a ${valor}`,
-      timer: 1500,
+      timer: 1000,
       showConfirmButton: false,
       customClass: { popup: 'rounded-3xl' }
     });
