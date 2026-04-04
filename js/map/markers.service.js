@@ -1,26 +1,23 @@
 export function agencyMarker(agency) {
   // Mapeo de colores modernos por zona
   const zonaColors = {
-    A: '#3b82f6', // Azul
-    B: '#a855f7', // Púrpura
-    C: '#f59e0b', // Naranja
     OTRA: '#64748b', // Gris
-    'PEDRO CORTO': '#3b82f6',
+    'PEDRO CORTO': '#a855f7',
     'SAN JUAN CENTRO': '#f59e0b',
-    'Los Corbano': '#3b82f6',
-    'VALLEJUELO': '#3b82f6',
+    'Los Corbano': '#f59e0b',
+    'VALLEJUELO': '#a855f7',
     'Luis Edwardo Luciano': '#3b82f6',
-    'LAS MATAS DE FARFAN': '#3b82f6',
-    'EL CARRIL': '#3b82f6',
-    'EL ROSARIO': '#3b82f6',
+    'LAS MATAS DE FARFAN': '#a855f7',
+    'EL CARRIL': '#a855f7',
+    'EL ROSARIO': '#a855f7',
     'Rafael Baez': '#3b82f6',
-    'KM.11': '#3b82f6',
-    'CUENDA': '#3b82f6',
-    'ELIAS PIÑA': '#3b82f6',
-    'CARDON': '#3b82f6',
-    'LA CUALTA': '#3b82f6',
-    'EL CERCADO': '#3b82f6',
-    'JUAN SANTIAGO': '#3b82f6'
+    'KM.11': '#a855f7',
+    'CUENDA': '#a855f7',
+    'ELIAS PIÑA': '#a855f7',
+    'CARDON': '#a855f7',
+    'LA CUALTA': '#a855f7',
+    'EL CERCADO': '#a855f7',
+    'JUAN SANTIAGO': '#a855f7'
   };
 
   const color = zonaColors[agency.zona] || '#64748b';

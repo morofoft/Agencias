@@ -21,6 +21,7 @@ export async function syncAgencies() {
 
     for (const agencia of agencias) {
 
+      console.log("AG:", agencia)
       const docRef = await addDoc(
         collection(db, "agencias"),
         agencia
@@ -75,11 +76,13 @@ export async function syncFromFirebase(){
 
       const agencia = doc.data();
 
-      await saveAgency({
-        ...agencia,
-        synced:true
-      });
-
+      if(agencia.id_nuevo) {
+        await saveAgency({
+          ...agencia,
+          synced:true
+        });
+      }
+      
     }
     Swal.fire({
       toast: true,

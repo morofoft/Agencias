@@ -10,6 +10,8 @@ import { renderAgenciesList } from './agencies/agencies.list.ui.js';
 import { generateRouteByZone, stopRoute, startRouteByZone } from './map/map.routes.js';
 import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+
+
 let agencies = [];
 let map = null;
 

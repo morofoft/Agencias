@@ -14,7 +14,7 @@ export async function renderAgencies(map) {
 
   agencies.forEach(agency => {
 
-    if (markers.has(agency.id)) {
+    if (markers.has(agency.id_nuevo)) {
       const marker = markers.get(agency.id);
       marker.setStyle({ color: colorByState(agency.estado) });
       return;
@@ -66,4 +66,3 @@ export async function createAgencyFromMap(latlng, map, formValues) {
     await renderAgencies(map);
     await renderAgenciesList();
   }
-  

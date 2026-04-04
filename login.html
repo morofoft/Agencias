@@ -57,6 +57,15 @@
 
   <!-- SCRIPT -->
   <script type="module">
+localStorage.clear()
+Swal.fire({
+          toast:true,
+          position:"top-end",
+          icon:"warning",
+          title:"Se limpio el almaccenamiento local",
+          showConfirmButton:false,
+          timer:2000
+        });
 
     import { auth, db } from "./js/firebase/firebase.init.js";
 
