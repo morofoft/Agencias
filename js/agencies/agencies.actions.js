@@ -6,6 +6,8 @@ export async function createAgencyFromGPS(coords, formValues) {
   const agency = {
     id: crypto.randomUUID(),
     idReal: formValues.codigo,
+    id_nuevo: formValues.codigo,
+    id_loteka: 812000000,
     direccion: formValues.direccion || '',
     zona: formValues.zona,
 
