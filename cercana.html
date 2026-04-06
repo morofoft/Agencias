@@ -27,16 +27,6 @@
       content: '';
       position: absolute;
       left: 7px;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background: #e2e8f0;
-    }
-
-    .timeline-line::before {
-      content: '';
-      position: absolute;
-      left: 7px;
       top: 5px;
       /* Ajustado para que empiece en el primer círculo */
       bottom: 20px;
@@ -200,6 +190,9 @@ input:focus {
       </div>
     </div>
   </main>
+  <noscript>
+    <p class="text-center text-red-500">Debes activar JavaScript</p>
+  </noscript>
   <script type="module">
     import { requireAuth } from "./js/auth.guard.js";
   

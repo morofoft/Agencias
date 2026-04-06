@@ -72,7 +72,9 @@ async function loadNearby() {
   const agencies = await getAllAgencies();
 
   // Guardamos en la variable global
-  allEnrichedAgencies = agencies.map(a => ({
+  allEnrichedAgencies = agencies
+  .filter(a => a.lat && a.lng) // 👈 FILTRAR
+  .map(a => ({
     ...a,
     distance: distanceMeters(
       currentPos.latitude,
@@ -80,7 +82,9 @@ async function loadNearby() {
       a.lat,
       a.lng
     )
-  })).sort((a, b) => a.distance - b.distance);
+  }))
+  .filter(a => !isNaN(a.distance)) // 👈 EXTRA SEGURIDAD
+  .sort((a, b) => a.distance - b.distance);
 
   if (!allEnrichedAgencies.length) {
     nearestBox.innerHTML = `<div class="bg-white rounded-3xl p-6 shadow text-center opacity-60">
@@ -419,9 +423,14 @@ btnAdd?.addEventListener('click', async () => {
   });
 });
 
-
+let lastUpdate = 0;
 navigator.geolocation.watchPosition(
   pos => {
+    const now = Date.now();
+
+    if (now - lastUpdate < 3000) return; // 👈 cada 3 segundos
+
+    lastUpdate = now;
     currentPos = pos.coords;
     loadNearby();
   },
@@ -526,7 +535,7 @@ inputSearch?.addEventListener('input', (e) => {
     return idReal.includes(term) || direccion.includes(term);
   });
 
-  renderList(filtered);
+  renderList(filtered.filter(a => a.id !== allEnrichedAgencies[0].id));
   const container = document.getElementById('scrollContainer');
   if (container) container.scrollTop = 0;
 });
