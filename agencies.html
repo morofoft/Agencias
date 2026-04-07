@@ -80,7 +80,25 @@
 
     <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="js/network.js"></script>
+    <!-- En index.html, reemplaza la importación del módulo con este script -->
+<script>
+    (function() {
+      const statusEl = document.getElementById('networkStatus');
+      if (!statusEl) return;
+      
+      function updateNetworkStatus() {
+        if (navigator.onLine) {
+          statusEl.innerHTML = '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Online';
+        } else {
+          statusEl.innerHTML = '<span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span> Offline';
+        }
+      }
+      
+      window.addEventListener('online', updateNetworkStatus);
+      window.addEventListener('offline', updateNetworkStatus);
+      updateNetworkStatus();
+    })();
+  </script>
     <script type="module" src="js/agencies/agencies.page.js"></script>
 </body>
 </html>
