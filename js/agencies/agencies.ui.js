@@ -39,30 +39,3 @@ export async function renderAgencies(map) {
   });
   
 }
-
-export async function createAgencyFromMap(latlng, map, formValues) {
-    const now = Date.now();
-  
-    const agency = {
-      id: crypto.randomUUID(),          // id local
-      idReal: formValues.codigo,        // AG00001      // luego editable
-      direccion: formValues.direccion || '',
-      zona: formValues.zona,
-  
-      lat: latlng.lat,
-      lng: latlng.lng,
-      estado: 'verde',
-  
-      contador_visitas: 0,
-      fecha_ultima_visita: null,
-      visited: false,
-  
-      created_at: now,
-      updated_at: now,
-      synced:false
-    };
-  
-    await addAgency(agency);
-    // await renderAgencies(map);
-    await renderAgenciesList();
-  }

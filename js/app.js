@@ -6,9 +6,16 @@ import { agencyMarker } from './map/markers.service.js';
 import { startLocationTracking } from './gps/location.service.js';
 import { checkAgencies } from './gps/geofence.service.js';
 import { renderAgenciesList } from './agencies/agencies.list.ui.js';
+import { openRouteSelector } from './map/route-selector.js';
 
 // Esperar a que el DOM esté listo
 document.addEventListener('DOMContentLoaded', async () => {
+  const btnSelectRoute = document.getElementById('btn-select-route');
+if (btnSelectRoute) {
+  btnSelectRoute.addEventListener('click', () => {
+    openRouteSelector();
+  });
+}
   console.log('🚀 Iniciando aplicación...');
   
   // Verificar que el contenedor del mapa existe

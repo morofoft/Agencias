@@ -191,6 +191,18 @@
 
     <!-- CONTROLES FLOTANTES -->
     <div class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none flex flex-col">
+      <!-- Agregar dentro del div de controles flotantes, junto al botón de recenter -->
+<div class="flex justify-end p-3 gap-2">
+  <button id="btn-select-route" 
+    class="w-10 h-10 bg-indigo-600 rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-white active:bg-indigo-700">
+    <i class="fas fa-route text-sm"></i>
+  </button>
+  <button id="btn-recenter" 
+    class="w-10 h-10 bg-white rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-slate-600 active:bg-slate-100">
+    <i class="fas fa-crosshairs text-sm"></i>
+  </button>
+</div>
+      
       <div class="flex justify-end p-3">
         <button id="btn-recenter" class="w-10 h-10 bg-white rounded-full shadow-lg pointer-events-auto flex items-center justify-center text-slate-600 active:bg-slate-100">
           <i class="fas fa-crosshairs text-sm"></i>
@@ -363,5 +375,6 @@
   </script>
 
 <script type="module" src="js/clean-agencies.js"></script>
+<script type="module" src="js/clean-firebase.js"></script>
 </body>
 </html>
