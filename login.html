@@ -2,71 +2,126 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Login | Control de Agencias</title>
 
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .login-card { animation: fadeInUp 0.6s ease-out; }
+    
+    .input-focus:focus {
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      border-color: #4f46e5;
+    }
+    
+    .loader {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 
-<body class="bg-gray-100 flex items-center justify-center h-screen">
+<body class="flex items-center justify-center p-4">
+  <div class="login-card w-full max-w-md">
+    
+    <div class="text-center mb-8">
+      <div class="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur">
+        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-white mb-1">Control de Agencias</h1>
+      <p class="text-indigo-200 text-sm">Inicia sesión para continuar</p>
+    </div>
 
-  <!-- Card -->
-  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm">
+    <div class="bg-white rounded-2xl shadow-2xl p-8">
+      <h2 class="text-2xl font-bold text-gray-800 text-center mb-6">Bienvenido</h2>
 
-    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">
-      Iniciar Sesión
-    </h2>
+      <form id="loginForm" class="space-y-5">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-user mr-2 text-indigo-500"></i>
+            Usuario
+          </label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username"
+            autocomplete="username"
+            placeholder="Ingresa tu usuario"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none input-focus transition-all text-gray-700"
+            autofocus
+          >
+        </div>
 
-    <!-- Usuario -->
-    <input 
-      type="text" 
-      id="username" 
-      placeholder="Usuario"
-      class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-lock mr-2 text-indigo-500"></i>
+            Contraseña
+          </label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="password" 
+              name="password"
+              autocomplete="current-password"
+              placeholder="••••••"
+              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none input-focus transition-all text-gray-700 pr-12"
+            >
+            <button type="button" id="togglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-600 transition-colors">
+              <i class="fas fa-eye-slash" id="toggleIcon"></i>
+            </button>
+          </div>
+        </div>
 
-    <!-- Contraseña -->
-    <input 
-      type="password" 
-      id="password" 
-      placeholder="Contraseña"
-      class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
+        <button type="submit" id="loginBtn" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold py-3 rounded-xl transition-all transform active:scale-95 shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>Iniciar Sesión</span>
+        </button>
 
-    <!-- Botón -->
-    <button 
-      onclick="login()"
-      class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition duration-200"
-    >
-      Entrar
-    </button>
+        <div class="relative my-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-200"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-4 bg-white text-gray-400">¿Nuevo usuario?</span>
+          </div>
+        </div>
 
-    <!-- Registro -->
-    <p class="text-sm text-center mt-4">
-      ¿No tienes cuenta?
-      <a href="register.html" class="text-blue-500 hover:underline">
-        Regístrate
-      </a>
-    </p>
+        <a href="register.html" class="block text-center text-indigo-600 hover:text-indigo-700 font-semibold transition-colors">
+          Crear una cuenta
+        </a>
+      </form>
+    </div>
 
+    <p class="text-center text-indigo-200 text-xs mt-6">Sistema de Control de Agencias v2.5</p>
   </div>
 
-  <!-- SCRIPT -->
   <script type="module">
-localStorage.clear()
-Swal.fire({
-          toast:true,
-          position:"top-end",
-          icon:"warning",
-          title:"Se limpio el almaccenamiento local",
-          showConfirmButton:false,
-          timer:2000
-        });
-
     import { auth, db } from "./js/firebase/firebase.init.js";
 
     import {
@@ -79,89 +134,273 @@ Swal.fire({
       getDoc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Si ya está logueado → entra directo
+    // ============================================
+    // 🧹 LIMPIEZA INTELIGENTE DE DATOS LOCALES
+    // ============================================
+    async function limpiarDatosLocales() {
+      console.log('🧹 Limpiando cachés locales...');
+      
+      // 1. Limpiar localStorage (excepto configuraciones importantes)
+      const keepKeys = ['user_preferences', 'theme']; // Cosas que queremos conservar
+      const keysToDelete = [];
+      
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!keepKeys.includes(key)) {
+          keysToDelete.push(key);
+        }
+      }
+      
+      keysToDelete.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`   - Eliminado localStorage: ${key}`);
+      });
+      
+      // 2. Limpiar sessionStorage completamente
+      if (sessionStorage.length > 0) {
+        sessionStorage.clear();
+        console.log('   - SessionStorage limpiado');
+      }
+      
+      // 3. Limpiar IndexedDB (solo cachés, NO datos de agencias)
+      try {
+        // Abrir la base de datos
+        const request = indexedDB.open('control_agencias_db');
+        
+        request.onsuccess = (event) => {
+          const db = event.target.result;
+          
+          // Lista de stores a limpiar (NO 'agencies' ni 'observaciones')
+          const storesToClear = ['sync_queue', 'findings', 'reports', 'visits', 'observations', 'routes'];
+          
+          storesToClear.forEach(storeName => {
+            if (db.objectStoreNames.contains(storeName)) {
+              const transaction = db.transaction(storeName, 'readwrite');
+              const store = transaction.objectStore(storeName);
+              const clearRequest = store.clear();
+              
+              clearRequest.onsuccess = () => {
+                console.log(`   - IndexedDB: ${storeName} limpiado`);
+              };
+              clearRequest.onerror = (err) => {
+                console.warn(`   - Error limpiando ${storeName}:`, err);
+              };
+            }
+          });
+          
+          db.close();
+        };
+        
+        request.onerror = (err) => {
+          console.warn('   - Error abriendo IndexedDB:', err);
+        };
+      } catch (err) {
+        console.warn('   - IndexedDB no disponible:', err);
+      }
+      
+      // 4. Limpiar caché de mapas (si existe)
+      if ('caches' in window) {
+        try {
+          const cacheNames = await caches.keys();
+          for (const cacheName of cacheNames) {
+            if (cacheName.includes('leaflet') || cacheName.includes('tile')) {
+              await caches.delete(cacheName);
+              console.log(`   - Caché de mapas eliminado: ${cacheName}`);
+            }
+          }
+        } catch (err) {
+          console.warn('   - Error limpiando cachés:', err);
+        }
+      }
+      
+      console.log('✅ Limpieza de cachés completada');
+    }
+    
+    // Ejecutar limpieza al cargar la página
+    await limpiarDatosLocales();
+    
+    // Mostrar mensaje de confirmación (opcional, solo si hay algo que limpiar)
+    const toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true
+    });
+    
+    toast.fire({
+      icon: 'info',
+      title: 'Caché limpiado',
+      text: 'Datos temporales eliminados'
+    });
+    
+    // ============================================
+    // LOGIN NORMAL
+    // ============================================
+    
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginForm = document.getElementById('loginForm');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    let isLoading = false;
+
     onAuthStateChanged(auth, (user) => {
-      if(user){
+      if (user && !isLoading) {
         window.location.href = "index.html";
       }
     });
 
-    async function login(){
+    togglePasswordBtn?.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      toggleIcon.className = type === 'password' ? 'fas fa-eye-slash' : 'fas fa-eye';
+    });
 
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if(!username || !password){
-        Swal.fire({
-          toast:true,
-          position:"top-end",
-          icon:"warning",
-          title:"Completa los campos",
-          showConfirmButton:false,
-          timer:2000
-        });
-        return;
-      }
-
-      const fakeEmail = username + "@app.com";
-
-      try{
-
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          fakeEmail,
-          password
-        );
-
-        const uid = userCredential.user.uid;
-
-        const userDoc = await getDoc(doc(db,"users",uid));
-
-        if(!userDoc.exists() || !userDoc.data().enabled){
-
-          Swal.fire({
-            toast:true,
-            position:"top-end",
-            icon:"error",
-            title:"Usuario no habilitado",
-            showConfirmButton:false,
-            timer:2500
-          });
-
-          return;
-        }
-
-        Swal.fire({
-          toast:true,
-          position:"top-end",
-          icon:"success",
-          title:"Bienvenido 🚀",
-          showConfirmButton:false,
-          timer:2000
-        });
-
-        setTimeout(()=>{
-          window.location.href = "index.html";
-        },1000);
-
-      }catch(err){
-
-        Swal.fire({
-          toast:true,
-          position:"top-end",
-          icon:"error",
-          title:"Credenciales incorrectas",
-          showConfirmButton:false,
-          timer:2500
-        });
-
-      }
-
+    function sanitizeInput(str) {
+      if (!str) return '';
+      return str.trim().replace(/[<>]/g, '');
     }
 
-    window.login = login;
+    function setLoading(loading) {
+      isLoading = loading;
+      if (loading) {
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<span class="loader"></span><span class="ml-2">Verificando...</span>';
+      } else {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i><span>Iniciar Sesión</span>';
+      }
+    }
 
+    function showToast(icon, title) {
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: icon,
+        title: title,
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true
+      });
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      if (isLoading) return;
+      
+      let username = sanitizeInput(usernameInput.value);
+      let password = sanitizeInput(passwordInput.value);
+      
+      if (!username) {
+        showToast('warning', 'Ingresa tu usuario');
+        usernameInput.focus();
+        return;
+      }
+      
+      if (!password) {
+        showToast('warning', 'Ingresa tu contraseña');
+        passwordInput.focus();
+        return;
+      }
+      
+      if (password.length < 6) {
+        showToast('warning', 'La contraseña debe tener al menos 6 caracteres');
+        passwordInput.focus();
+        return;
+      }
+      
+      const fakeEmail = username + "@app.com";
+      setLoading(true);
+      
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, fakeEmail, password);
+        const uid = userCredential.user.uid;
+        const userDoc = await getDoc(doc(db, "users", uid));
+        
+        if (!userDoc.exists()) {
+          showToast('error', 'Usuario no registrado');
+          setLoading(false);
+          return;
+        }
+        
+        const userData = userDoc.data();
+        
+        if (!userData.enabled) {
+          showToast('error', 'Usuario no habilitado. Contacta al administrador');
+          setLoading(false);
+          return;
+        }
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Bienvenido!',
+          text: `Hola ${userData.username || username}`,
+          timer: 1500,
+          showConfirmButton: false
+        });
+        
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1500);
+        
+      } catch (err) {
+        console.error('Login error:', err);
+        
+        let errorMessage = 'Credenciales incorrectas';
+        
+        switch (err.code) {
+          case 'auth/user-not-found':
+            errorMessage = 'Usuario no encontrado';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Contraseña incorrecta';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Formato de usuario inválido';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = 'Demasiados intentos. Espera un momento';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Error de conexión. Verifica internet';
+            break;
+          default:
+            errorMessage = 'Error al iniciar sesión';
+        }
+        
+        showToast('error', errorMessage);
+        setLoading(false);
+        passwordInput.value = '';
+      }
+    }
+    
+    loginForm.addEventListener('submit', handleLogin);
+    
+    usernameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (usernameInput.value && !passwordInput.value) {
+          passwordInput.focus();
+        } else if (usernameInput.value && passwordInput.value) {
+          handleLogin(e);
+        }
+      }
+    });
+    
+    passwordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (usernameInput.value && passwordInput.value) {
+          handleLogin(e);
+        }
+      }
+    });
+    
+    console.log('%c🚀 Sistema de Control de Agencias v2.5', 'color: #4f46e5; font-size: 14px; font-weight: bold;');
   </script>
-
 </body>
 </html>

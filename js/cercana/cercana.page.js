@@ -1,541 +1,492 @@
-import { saveObservation, getAllAgencies, updateAgency } from '../agencies/agencies.store.js';
+// js/cercana/cercana.page.js - VERSIÓN ULTRA RÁPIDA
+
+import { getAllAgencies, updateAgency } from '../agencies/agencies.store.js';
 import { createAgencyFromGPS } from '../agencies/agencies.actions.js';
 import { decir } from '../speech/speech.js';
 
+// ============================================
+// CONFIGURACIÓN DE RENDIMIENTO
+// ============================================
+const UPDATE_INTERVAL = 5000; // 5 segundos entre actualizaciones
+const MIN_DISTANCE_CHANGE = 3; // Solo actualizar si cambió más de 3 metros
+const MAX_AGENCIES_TO_RENDER = 50; // Máximo de agencias a mostrar
+
+// Cache de datos
+let agenciesLight = []; // Solo datos necesarios: { id, idReal, zona, lat, lng }
+let currentPos = null;
+let lastRenderDistance = null;
+let lastUpdateTime = 0;
+let renderTimeout = null;
+let searchTimeout = null;
+let isFirstLoad = true;
+let lastClosestId = null;
+
+// Cache de distancias para evitar recálculos
+const distanceCache = new Map();
+const CACHE_MAX_SIZE = 500;
+
+// Toast config
 const Toast = Swal.mixin({
   toast: true,
   position: 'top-end',
   showConfirmButton: false,
-  timer: 3000,
-  timerProgressBar: true,
-  didOpen: (toast) => {
-    toast.addEventListener('mouseenter', Swal.stopTimer)
-    toast.addEventListener('mouseleave', Swal.resumeTimer)
-  }
+  timer: 2500,
+  timerProgressBar: true
 });
 
-const nearestBox = document.getElementById('closestAgency');
-const list = document.getElementById('agencyList');
-const btnAdd = document.getElementById('btnAddAgency');
-
-let allEnrichedAgencies = [];
-const inputSearch = document.getElementById('inputSearch');
-
-const avisosDados = {};
-let currentPos = null;
-let isFirstLoad = true;
-// MOSTRAR LOADING INICIAL
-Swal.fire({
-  title: 'Localizando...',
-  text: 'Esperando señal de GPS para calcular distancias.',
-  allowOutsideClick: false,
-  didOpen: () => {
-    Swal.showLoading();
+// ============================================
+// FUNCIONES DE DISTANCIA OPTIMIZADAS
+// ============================================
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const cacheKey = `${lat1.toFixed(4)},${lon1.toFixed(4)}-${lat2.toFixed(4)},${lon2.toFixed(4)}`;
+  
+  if (distanceCache.has(cacheKey)) {
+    return distanceCache.get(cacheKey);
   }
-});
-function distanceMeters(lat1, lon1, lat2, lon2) {
+  
   const R = 6371e3;
   const φ1 = lat1 * Math.PI / 180;
   const φ2 = lat2 * Math.PI / 180;
   const Δφ = (lat2 - lat1) * Math.PI / 180;
   const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-  const a = Math.sin(Δφ / 2) ** 2 +
-    Math.cos(φ1) * Math.cos(φ2) *
-    Math.sin(Δλ / 2) ** 2;
-
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-}
-
-function isVisitedToday(a) {
-  if (!a.fecha_ultima_visita) return false;
-
-  const visitDate = new Date(a.fecha_ultima_visita);
-  const today = new Date();
-
-  return (
-    visitDate.getFullYear() === today.getFullYear() &&
-    visitDate.getMonth() === today.getMonth() &&
-    visitDate.getDate() === today.getDate()
-  );
-}
-
-
-async function loadNearby() {
-  if (!currentPos) return;
-
-  if (isFirstLoad) {
-    Swal.close();
-    isFirstLoad = false;
+  
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  const distance = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  
+  // Cache solo distancias menores a 2km
+  if (distance < 2000 && distanceCache.size < CACHE_MAX_SIZE) {
+    distanceCache.set(cacheKey, distance);
   }
+  
+  return distance;
+}
 
-  const agencies = await getAllAgencies();
+// Limpiar caché periódicamente
+setInterval(() => {
+  if (distanceCache.size > CACHE_MAX_SIZE) {
+    const keys = Array.from(distanceCache.keys());
+    const toDelete = keys.slice(0, CACHE_MAX_SIZE / 2);
+    toDelete.forEach(key => distanceCache.delete(key));
+  }
+}, 60000);
 
-  // Guardamos en la variable global
-  allEnrichedAgencies = agencies
-  .filter(a => a.lat && a.lng) // 👈 FILTRAR
-  .map(a => ({
-    ...a,
-    distance: distanceMeters(
-      currentPos.latitude,
-      currentPos.longitude,
-      a.lat,
-      a.lng
+// ============================================
+// CARGA LIGERA DE AGENCIAS (solo datos necesarios)
+// ============================================
+async function loadAgenciesLight() {
+  const fullAgencies = await getAllAgencies();
+  
+  // Filtrar y mapear solo lo necesario
+  agenciesLight = fullAgencies
+    .filter(a => a.lat && a.lng && a.idReal)
+    .map(a => ({
+      id: a.id,
+      idReal: a.idReal,
+      zona: a.zona || 'Sin zona',
+      lat: a.lat,
+      lng: a.lng,
+      // Datos adicionales solo para la agencia más cercana
+      direccion: a.direccion,
+      estado: a.estado,
+      contador_visitas: a.contador_visitas,
+      ultima_nota: a.ultima_nota,
+      ultimo_estado: a.ultimo_estado,
+      fecha_ultima_visita: a.fecha_ultima_visita
+    }));
+  
+  console.log(`📋 ${agenciesLight.length} agencias cargadas (modo ligero)`);
+  return agenciesLight;
+}
+
+// ============================================
+// CÁLCULO DE DISTANCIAS (solo para las necesarias)
+// ============================================
+function calculateDistances() {
+  if (!currentPos) return [];
+  
+  // Calcular distancias solo para las primeras N agencias (optimización)
+  const withDistances = agenciesLight.map(agency => ({
+    ...agency,
+    distance: haversineDistance(
+      currentPos.latitude, currentPos.longitude,
+      agency.lat, agency.lng
     )
-  }))
-  .filter(a => !isNaN(a.distance)) // 👈 EXTRA SEGURIDAD
-  .sort((a, b) => a.distance - b.distance);
-
-  if (!allEnrichedAgencies.length) {
-    nearestBox.innerHTML = `<div class="bg-white rounded-3xl p-6 shadow text-center opacity-60">
-        <i class="fa fa-location-dot text-4xl mb-2"></i>
-        <p>No hay agencias registradas</p>
-      </div>`;
-    return;
-  }
-
-  renderNearest(allEnrichedAgencies[0]);
-
-  // Si el buscador está vacío, renderiza normal, si no, mantén el filtro
-  const term = inputSearch?.value.toLowerCase() || '';
-  if (!term) {
-    renderList(allEnrichedAgencies.slice(1));
-  } else {
-    // Si ya había algo escrito, mantén el filtro aplicado
-    const filtered = allEnrichedAgencies.slice(1).filter(a =>
-      a.idReal.toString().toLowerCase().includes(term) ||
-      (a.direccion && a.direccion.toLowerCase().includes(term))
-    );
-    renderList(filtered);
-  }
-
-  renderObservations(allEnrichedAgencies);
+  }));
+  
+  // Ordenar y limitar
+  withDistances.sort((a, b) => a.distance - b.distance);
+  
+  return withDistances;
 }
 
-function renderNearest(a) {
-  const isNear = a.distance <= 75;
+// ============================================
+// RENDERIZADO ULTRARÁPIDO (solo lo visible)
+// ============================================
+function renderNearest(agency) {
+  const nearestBox = document.getElementById('closestAgency');
+  if (!nearestBox || !agency) return;
+  
+  const isNear = agency.distance <= 75;
   const colorClass = isNear ? 'from-emerald-500 to-teal-600' : 'from-slate-400 to-slate-500';
-
-  const id = a.idReal;
-
-  // 1. INICIALIZACIÓN: Si no existe la agencia en el registro, la creamos
-  if (!avisosDados[id]) {
-    avisosDados[id] = [];
-  }
-
-  // 2. REINICIO: Si la distancia es > 200m, vaciamos sus avisos previos
-  if (a.distance > 200) {
-    if (avisosDados[id].length > 0) {
-      console.log(`Reseteando avisos para agencia ${id} por distancia (>200m)`);
-      avisosDados[id] = [];
-    }
-  }
-
-  // 3. LÓGICA DE AVISOS (Solo si está a menos de 200m)
-  // Usamos una pequeña función para evitar repetir código
-  const dispararAviso = (metros) => {
-    if (a.distance <= metros && !avisosDados[id].includes(metros)) {
-      decir(id, `está a ${metros} metros o menos`);
-      avisosDados[id].push(metros);
-      return true;
-    }
-    return false;
-  };
-
-  // Evaluamos de menor a mayor distancia para que el aviso sea preciso
-  if (!dispararAviso(10)) {
-    if (!dispararAviso(30)) {
-      if (!dispararAviso(50)) {
-        dispararAviso(75);
-      }
-    }
-  }
-
-  nearestBox.classList.remove('hidden');
+  
   nearestBox.innerHTML = `
-      <div class="bg-gradient-to-br ${colorClass} text-white rounded-[2rem] p-6 shadow-xl shadow-emerald-200/50 relative overflow-hidden group">
-        <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-        
-        <div class="relative z-10">
-            <div class="flex justify-between items-start mb-6">
-                <span class="bg-white/20 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Destacada</span>
-                <div class="text-right">
-                    <p class="text-2xl font-black">${Math.round(a.distance)}m</p>
-                    <p class="text-[10px] opacity-70 uppercase font-bold leading-none">de distancia</p>
-                </div>
-            </div>
-
-            <h2 class="text-3xl font-black leading-tight mb-1">AG ${a.idReal}</h2>
-            <div class="flex items-center gap-2 opacity-90 text-sm mb-8">
-                <i class="fa-solid fa-location-dot"></i>
-                <span>Zona ${a.zona || 'Zona'} | ${a.direccion || 'Direccion fisica!'}</span>
-            </div>
-
-            <div class="grid grid-cols-4 gap-3">
-                <button onclick="goTo(${a.lat}, ${a.lng})" 
-                    class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
-                    <i class="fa fa-map-location-dot mr-2"></i> Mapa
-                </button>
-                <button onclick="copiar(${a.idReal})" 
-                    class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
-                    <i class="fa fa-copy mr-2"></i> Copiar
-                </button>
-
-                <button onclick="copiar(${a.idReal} + ' abierta')" 
-                    class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
-                    <i class="fa fa-door-open mr-2"></i> AG Open</button>
-
-                <button onclick="copiar(${a.idReal} + ' cerrada')" 
-                    class="bg-white/20 hover:bg-white/30 backdrop-blur-md py-4 rounded-2xl font-bold text-sm transition">
-                    <i class="fa fa-door-closed mr-2"></i> AG Close</button>
-
-                <button onclick="registrarVisita('${a.id}')" 
-                    ${!isNear ? 'disabled' : ''}
-                    class="bg-white text-emerald-600 py-4 rounded-2xl font-black text-sm shadow-lg active:scale-95 transition flex items-center justify-center gap-2">
-                    ${isNear ? 'Visitar' : '<i class="fa fa-lock"></i> Bloqueo'}
-                </button>
-            </div>
+    <div class="bg-gradient-to-br ${colorClass} text-white rounded-[2rem] p-5 shadow-xl relative overflow-hidden">
+      <div class="relative z-10">
+        <div class="flex justify-between items-start mb-4">
+          <span class="bg-white/20 text-[10px] font-black px-3 py-1 rounded-full">DESTACADA</span>
+          <div class="text-right">
+            <p class="text-2xl font-black">${Math.round(agency.distance)}<span class="text-sm">m</span></p>
+          </div>
         </div>
-      </div>`;
+        <h2 class="text-2xl font-black mb-1">AG ${agency.idReal}</h2>
+        <div class="flex items-center gap-2 text-xs opacity-90 mb-5">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>Zona ${agency.zona}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="window.goTo(${agency.lat}, ${agency.lng})" 
+            class="bg-white/20 hover:bg-white/30 py-3 rounded-xl text-sm font-bold transition">
+            <i class="fa fa-map"></i> Mapa
+          </button>
+          <button onclick="window.copiar('${agency.idReal}')" 
+            class="bg-white/20 hover:bg-white/30 py-3 rounded-xl text-sm font-bold transition">
+            <i class="fa fa-copy"></i> Copiar
+          </button>
+          <button onclick="window.registrarVisita('${agency.id}')" 
+            ${!isNear ? 'disabled' : ''}
+            class="col-span-2 bg-white text-emerald-600 py-3 rounded-xl font-black text-sm transition active:scale-95 ${!isNear ? 'opacity-50' : ''}">
+            ${isNear ? '📝 Registrar Visita' : '🔒 Demasiado lejos'}
+          </button>
+        </div>
+      </div>
+    </div>`;
 }
 
-function renderList(data) {
-  list.innerHTML = '';
-
-  if (data.length === 0) {
-    list.innerHTML = `
+function renderList(agencies) {
+  const listContainer = document.getElementById('agencyList');
+  if (!listContainer) return;
+  
+  // Limitar cantidad de agencias a mostrar
+  const toShow = agencies.slice(0, MAX_AGENCIES_TO_RENDER);
+  
+  if (toShow.length === 0) {
+    listContainer.innerHTML = `
       <div class="text-center py-10 opacity-50">
         <i class="fa fa-magnifying-glass text-2xl mb-2"></i>
-        <p class="text-xs font-bold uppercase tracking-widest">No hay coincidencias</p>
+        <p class="text-xs font-bold">No hay agencias cercanas</p>
       </div>`;
     return;
   }
-
-  // USAMOS 'data' directamente, sin .slice(1)
-  data.forEach(a => {
-    // Dentro del data.forEach de renderList
-    list.innerHTML += `
-  <div class="bg-white rounded-2xl p-5 shadow-md border-2 border-slate-100 flex justify-between items-center active:bg-slate-50">
-      <div class="flex items-center gap-4">
-          <div class="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-inner">
-              <i class="fa-solid fa-building text-xl"></i>
+  
+  // Build HTML de forma eficiente
+  let html = '';
+  for (const a of toShow) {
+    html += `
+      <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-100 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+            <i class="fa-solid fa-building text-sm"></i>
           </div>
           <div>
-              <h4 class="font-extrabold text-lg text-slate-900">${a.idReal}</h4>
-              <p class="text-[11px] font-black text-slate-600 uppercase">
-                Zona ${a.zona || 'D'}
-              </p>
+            <h4 class="font-bold text-base">${a.idReal}</h4>
+            <p class="text-[10px] font-bold text-slate-500">Zona ${a.zona}</p>
           </div>
-      </div>
-      <div class="text-right">
-          <p class="font-black text-xl text-indigo-700">${Math.round(a.distance)}m</p>
-          <button onclick="goTo(${a.lat}, ${a.lng})"
-            class="mt-1 px-4 py-2 text-xs font-black rounded-lg bg-slate-900 text-white shadow-md">
+        </div>
+        <div class="text-right">
+          <p class="font-black text-lg text-indigo-700">${Math.round(a.distance)}<span class="text-xs">m</span></p>
+          <button onclick="window.goTo(${a.lat}, ${a.lng})" class="mt-1 px-3 py-1.5 text-[10px] font-black rounded-lg bg-slate-900 text-white">
             RUTA
           </button>
-      </div>
-  </div>`;
-  });
+        </div>
+      </div>`;
+  }
+  
+  listContainer.innerHTML = html;
 }
 
 function renderObservations(agencies) {
   const panel = document.getElementById('observationsPanel');
   if (!panel) return;
-
-  const today = new Date();
-
-  // Filtrar solo las agencias con notas de hoy
+  
+  const today = new Date().toDateString();
+  
   const withNotes = agencies.filter(a => {
     if (!a.ultima_nota || !a.fecha_ultima_visita) return false;
-    const visitDate = new Date(a.fecha_ultima_visita);
-    if (isNaN(visitDate)) return false;
-
-    return (
-      visitDate.getFullYear() === today.getFullYear() &&
-      visitDate.getMonth() === today.getMonth() &&
-      visitDate.getDate() === today.getDate()
-    );
+    const visitDate = new Date(a.fecha_ultima_visita).toDateString();
+    return visitDate === today;
   });
-
-  // CASO: No hay reportes
+  
   if (withNotes.length === 0) {
     panel.innerHTML = `
-      <div class="text-center py-10 opacity-70 fade-in">
-        <i class="fa-solid fa-clipboard-check text-3xl mb-3 text-slate-300"></i>
-        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">
-          Sin reportes registrados hoy
-        </p>
+      <div class="text-center py-8 opacity-60">
+        <i class="fa-solid fa-clipboard-list text-2xl mb-2 text-slate-300"></i>
+        <p class="text-[10px] text-slate-400 font-bold">Sin reportes hoy</p>
       </div>`;
     return;
   }
-
-  // CASO: Renderizar Notas
-  panel.innerHTML = withNotes.map(a => {
+  
+  let html = '';
+  for (const a of withNotes.slice(0, 5)) { // Máximo 5 observaciones
     const estado = a.ultimo_estado || 'Regular';
-
-    // Mapeo de colores basado en el estado
-    const config = {
-      'Excelente': { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-500' },
-      'Regular': { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-500' },
-      'Crítico': { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-500' }
-    };
-
-    const style = config[estado] || config['Regular'];
-    const hora = new Date(a.fecha_ultima_visita).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    return `
-      <div class="relative pl-10 transition-all duration-700 fade-in">
-        <div class="absolute left-0 top-1 w-4 h-4 rounded-full bg-white border-4 ${style.border} z-10 shadow-sm"></div>
-
-        <div class="bg-white rounded-[1.5rem] p-5 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
-          <div class="flex justify-between items-start mb-3">
-            <div class="flex-1">
-              <h4 class="font-black text-slate-800 text-sm leading-tight">
-                AG ${a.idReal}
-              </h4>
-              <p class="text-[9px] text-slate-400 font-bold uppercase">
-                <i class="fa fa-clock mr-1"></i> ${hora} | ${a.zona}
-              </p>
-            </div>
-
-            <span class="text-[9px] font-black px-2 py-1 rounded-lg ${style.bg} ${style.text} uppercase border">
-              ${estado}
-            </span>
+    const color = estado === 'Excelente' ? 'emerald' : (estado === 'Crítico' ? 'rose' : 'amber');
+    const hora = new Date(a.fecha_ultima_visita).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    html += `
+      <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-${color}-500">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <h4 class="font-bold text-sm">AG ${a.idReal}</h4>
+            <p class="text-[9px] text-slate-400">${hora} • Zona ${a.zona}</p>
           </div>
-
-          <p class="text-slate-600 text-xs leading-relaxed border-l-2 border-slate-100 pl-3 italic">
-            "${a.ultima_nota}"
-          </p>
+          <span class="text-[9px] font-bold px-2 py-1 rounded-full bg-${color}-50 text-${color}-600">
+            ${estado}
+          </span>
         </div>
-      </div>
-    `;
-  }).join('');
+        <p class="text-xs text-slate-600 italic">"${a.ultima_nota.substring(0, 80)}${a.ultima_nota.length > 80 ? '...' : ''}"</p>
+      </div>`;
+  }
+  
+  panel.innerHTML = html;
 }
 
-
-window.goTo = function (lat, lng) {
-  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
-};
-
-window.copiar = async function (texto) {
-  try {
-    await navigator.clipboard.writeText(texto);
-
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      title: `Agencia ${texto} copiada`,
-      showConfirmButton: false,
-      timer: 3000,
-      timerProgressBar: true
-    });
-
-  } catch (error) {
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'error',
-      title: 'No se pudo copiar',
-      showConfirmButton: false,
-      timer: 3000
-    });
+// ============================================
+// ACTUALIZACIÓN PRINCIPAL (con throttle)
+// ============================================
+async function updateNearby(force = false) {
+  if (!currentPos) return;
+  
+  const now = Date.now();
+  if (!force && (now - lastUpdateTime) < UPDATE_INTERVAL) return;
+  lastUpdateTime = now;
+  
+  // Calcular distancias
+  const agenciesWithDist = calculateDistances();
+  if (agenciesWithDist.length === 0) return;
+  
+  const closest = agenciesWithDist[0];
+  const closestDistance = Math.round(closest.distance);
+  
+  // Verificar si hubo cambio significativo
+  const needsUpdate = force || 
+    lastClosestId !== closest.id ||
+    Math.abs((lastRenderDistance || 0) - closestDistance) > MIN_DISTANCE_CHANGE;
+  
+  if (!needsUpdate && !force) return;
+  
+  lastClosestId = closest.id;
+  lastRenderDistance = closestDistance;
+  
+  // Renderizar
+  renderNearest(closest);
+  renderList(agenciesWithDist.slice(1));
+  renderObservations(agenciesWithDist);
+  
+  // Aviso de voz (solo si cambió significativamente)
+  if (needsUpdate && closestDistance <= 75) {
+    const thresholds = [10, 30, 50, 75];
+    for (const t of thresholds) {
+      if (closestDistance <= t && !window[`avisado_${closest.id}_${t}`]) {
+        decir(closest.idReal, `está a ${t} metros`);
+        window[`avisado_${closest.id}_${t}`] = true;
+        break;
+      }
+    }
+  }
+  
+  // Cerrar loading inicial
+  if (isFirstLoad) {
+    Swal.close();
+    isFirstLoad = false;
   }
 }
 
+// ============================================
+// BÚSQUEDA CON DEBOUNCE
+// ============================================
+function setupSearch() {
+  const input = document.getElementById('inputSearch');
+  if (!input) return;
+  
+  input.addEventListener('input', (e) => {
+    if (searchTimeout) clearTimeout(searchTimeout);
+    
+    searchTimeout = setTimeout(() => {
+      const term = e.target.value.toLowerCase().trim();
+      if (!term) {
+        const agencies = calculateDistances();
+        renderList(agencies.slice(1));
+        return;
+      }
+      
+      const agencies = calculateDistances();
+      const filtered = agencies.slice(1).filter(a => 
+        a.idReal.toLowerCase().includes(term) ||
+        a.zona.toLowerCase().includes(term)
+      );
+      renderList(filtered);
+    }, 300);
+  });
+}
 
-btnAdd?.addEventListener('click', async () => {
+// ============================================
+// GPS WATCH (optimizado)
+// ============================================
+let lastGpsUpdate = 0;
+let lastValidLat = null;
+let lastValidLng = null;
 
+function startGpsWatch() {
+  if (!navigator.geolocation) {
+    Swal.fire('Error', 'GPS no disponible', 'error');
+    return;
+  }
+  
+  // Mostrar loading inicial
   Swal.fire({
-    title: 'Obteniendo ubicación...',
+    title: 'Localizando...',
+    text: 'Esperando señal GPS',
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading()
   });
-
-  navigator.geolocation.getCurrentPosition(async pos => {
-    Swal.close();
-
-    const { value: form } = await Swal.fire({
-      title: '<span class="text-indigo-600">Nueva Agencia</span>',
-      html: `
-          <div class="p-1">
-            <input id="codigo" class="swal2-input !m-2 !w-full" placeholder="Código de Agencia">
-            <select id="zona" class="swal2-select !m-2 !w-full">
-              <option value="">Seleccione zona</option>
-              <option value="A">Zona A</option>
-              <option value="B">Zona B</option>
-              <option value="C">Zona C</option>
-              <option value="D">Zona D</option>
-              <option value="OTRA">OTRA</option>
-            </select>
-            <input id="direccion" class="swal2-input !m-2 !w-full" placeholder="Dirección (Opcional)">
-          </div>
-        `,
-      showCancelButton: true,
-      confirmButtonText: 'Guardar Agencia',
-      confirmButtonColor: '#4f46e5',
-      cancelButtonText: 'Cancelar',
-      preConfirm: () => {
-        const codigo = document.getElementById('codigo').value;
-        const zona = document.getElementById('zona').value;
-
-        if (!codigo || !zona) {
-          Swal.showValidationMessage('Código y zona son obligatorios');
-          return false;
-        }
-
-        return {
-          codigo: codigo,
-          zona: zona,
-          direccion: document.getElementById('direccion').value
-        };
-      }
-    });
-
-    if (!form) return;
-
-    try {
-      await createAgencyFromGPS(pos.coords, form);
-
+  
+  navigator.geolocation.watchPosition(
+    (pos) => {
+      const now = Date.now();
+      const { latitude, longitude, accuracy } = pos.coords;
+      
+      // Filtrar lecturas de baja precisión
+      if (accuracy > 100) return;
+      
+      // Verificar si la posición cambió significativamente
+      const hasChanged = !lastValidLat || 
+        Math.abs(latitude - lastValidLat) > 0.0001 ||
+        Math.abs(longitude - lastValidLng) > 0.0001;
+      
+      if (!hasChanged && (now - lastGpsUpdate) < UPDATE_INTERVAL) return;
+      
+      lastGpsUpdate = now;
+      lastValidLat = latitude;
+      lastValidLng = longitude;
+      currentPos = { latitude, longitude, accuracy };
+      
+      updateNearby();
+    },
+    (err) => {
+      console.error('GPS error:', err);
       Swal.fire({
-        icon: 'success',
-        title: '¡Agencia Guardada!',
-        text: 'Se registró en tu ubicación actual.',
-        timer: 1500,
-        showConfirmButton: false
-      });
+        icon: 'error',
+        title: 'GPS no disponible',
+        text: 'Activa la ubicación para ver agencias cercanas',
+        confirmButtonText: 'Reintentar'
+      }).then(() => location.reload());
+    },
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+  );
+}
 
-      await loadNearby();
+// ============================================
+// FUNCIONES GLOBALES
+// ============================================
+window.goTo = (lat, lng) => {
+  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+};
 
-    } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'No se pudo guardar la agencia', 'error');
-    }
-
-  }, () => {
-    Swal.fire('Error', 'No se pudo obtener tu ubicación precisa', 'error');
-  }, {
-    enableHighAccuracy: true,
-    timeout: 10000
-  });
-});
-
-let lastUpdate = 0;
-navigator.geolocation.watchPosition(
-  pos => {
-    const now = Date.now();
-
-    if (now - lastUpdate < 3000) return; // 👈 cada 3 segundos
-
-    lastUpdate = now;
-    currentPos = pos.coords;
-    loadNearby();
-  },
-  err => {
-    console.error(err);
-    Swal.fire({
-      icon: 'error',
-      title: 'GPS no detectado',
-      text: 'Activa la ubicación para ver las agencias cercanas.',
-      confirmButtonText: 'Reintentar'
-    }).then(() => location.reload());
-  },
-  { enableHighAccuracy: true }
-);
-
-
-window.registrarVisita = async function (id) {
-  const agencies = await getAllAgencies();
-  const agency = agencies.find(a => a.id === id);
-
-  if (!agency) return;
-
-  const { value: formValues } = await Swal.fire({
-    title: `Visita: ${agency.idReal}`,
-    html: `
-        <div class="text-left">
-          <label class="block text-xs font-bold mb-1">ESTADO DE AGENCIA</label>
-          <select id="swal-estado" class="swal2-input w-full m-0 mb-4">
-            <option value="Excelente">Excelente</option>
-            <option value="Regular">Regular</option>
-            <option value="Crítico">Crítico</option>
-          </select>
-          
-          <label class="block text-xs font-bold mb-1">OBSERVACIONES</label>
-          <textarea id="swal-notas" class="swal2-textarea w-full m-0" placeholder="Escribe aquí..."></textarea>
-        </div>
-      `,
-    focusConfirm: false,
-    showCancelButton: true,
-    confirmButtonText: 'Guardar Visita',
-    confirmButtonColor: '#10b981',
-    preConfirm: () => {
-      return {
-        estado_visita: document.getElementById('swal-estado').value,
-        notas: document.getElementById('swal-notas').value,
-        fecha: new Date().toISOString()
-      }
-    }
-  });
-
-  if (formValues) {
-    const ahora = new Date();
-
-
-    const nuevaObservacion = {
-      agenciaId: id, // ID de la agencia
-      idReal: agency.idReal, // El código AG-XXXX
-      descripcion: formValues.notas,
-      fecha: ahora.toLocaleDateString(), // Ejemplo: "18/01/2026"
-      hora: ahora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), // "12:15 PM"
-      estado: formValues.estado_visita,
-      timestamp: ahora.getTime() // Útil para ordenar por fecha real
-    };
-
-    await saveObservation(nuevaObservacion);
-    const updatedAgency = {
-      ...agency,
-      fecha_ultima_visita: formValues.fecha,
-      ultimo_estado: formValues.estado_visita,
-      ultima_nota: formValues.notas,
-      contador_visitas: (agency.contador_visitas || 0) + 1
-    };
-
-
-    await updateAgency(updatedAgency);
-
-    Toast.fire({
-      icon: 'success',
-      title: '¡Visita Registrada!',
-      text: `Agencia ${agency.idReal} actualizada`
-    });
-
-    loadNearby();
+window.copiar = async (texto) => {
+  try {
+    await navigator.clipboard.writeText(texto);
+    Toast.fire({ icon: 'success', title: `Copiado: ${texto}` });
+  } catch {
+    Toast.fire({ icon: 'error', title: 'No se pudo copiar' });
   }
 };
 
-inputSearch?.addEventListener('input', (e) => {
-  const term = e.target.value.toLowerCase().trim();
-
-  if (term === "") {
-    // Si está vacío, mostramos la lista normal (quitando la primera que ya se ve arriba)
-    renderList(allEnrichedAgencies.slice(1));
-    return;
-  }
-
-  // Buscamos en TODAS las agencias (sin slice) para que encuentre incluso la que tienes cerca
-  const filtered = allEnrichedAgencies.filter(a => {
-    const idReal = String(a.idReal).toLowerCase();
-    const direccion = a.direccion ? String(a.direccion).toLowerCase() : "";
-
-    // Comprobamos si el término está incluido en el ID o la dirección
-    return idReal.includes(term) || direccion.includes(term);
+window.registrarVisita = async (id) => {
+  const agency = agenciesLight.find(a => a.id === id);
+  if (!agency) return;
+  
+  const { value: form } = await Swal.fire({
+    title: `Visita: AG ${agency.idReal}`,
+    html: `
+      <div class="text-left">
+        <label class="block text-xs font-bold mb-1">ESTADO</label>
+        <select id="estado" class="swal2-input w-full mb-3">
+          <option value="Excelente">✅ Excelente</option>
+          <option value="Regular">⚠️ Regular</option>
+          <option value="Crítico">🔴 Crítico</option>
+        </select>
+        <label class="block text-xs font-bold mb-1">OBSERVACIÓN</label>
+        <textarea id="notas" class="swal2-textarea w-full" placeholder="Escribe aquí..." rows="3"></textarea>
+      </div>
+    `,
+    confirmButtonText: 'Guardar',
+    confirmButtonColor: '#10b981',
+    preConfirm: () => ({
+      estado: document.getElementById('estado').value,
+      notas: document.getElementById('notas').value
+    })
   });
+  
+  if (form) {
+    const fullAgency = await (await getAllAgencies()).find(a => a.id === id);
+    if (fullAgency) {
+      fullAgency.fecha_ultima_visita = new Date().toISOString();
+      fullAgency.ultimo_estado = form.estado;
+      fullAgency.ultima_nota = form.notas;
+      fullAgency.contador_visitas = (fullAgency.contador_visitas || 0) + 1;
+      await updateAgency(fullAgency);
+      
+      // Recargar datos ligeros
+      await loadAgenciesLight();
+      
+      Toast.fire({ icon: 'success', title: 'Visita registrada' });
+      updateNearby(true);
+    }
+  }
+};
 
-  renderList(filtered.filter(a => a.id !== allEnrichedAgencies[0].id));
-  const container = document.getElementById('scrollContainer');
-  if (container) container.scrollTop = 0;
+// ============================================
+// BOTÓN AGREGAR AGENCIA
+// ============================================
+document.getElementById('btnAddAgency')?.addEventListener('click', async () => {
+  Swal.fire({ title: 'Obteniendo ubicación...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+  
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    Swal.close();
+    
+    const { value: form } = await Swal.fire({
+      title: 'Nueva Agencia',
+      html: `
+        <input id="codigo" class="swal2-input" placeholder="Código (ej: 8125001)">
+        <select id="zona" class="swal2-select">
+          <option value="">Seleccione zona</option>
+          <option value="A">Zona A</option><option value="B">Zona B</option>
+          <option value="C">Zona C</option><option value="D">Zona D</option>
+        </select>
+        <input id="direccion" class="swal2-input" placeholder="Dirección">
+      `,
+      confirmButtonText: 'Guardar',
+      preConfirm: () => {
+        const codigo = document.getElementById('codigo').value;
+        const zona = document.getElementById('zona').value;
+        if (!codigo || !zona) return Swal.showValidationMessage('Código y zona requeridos');
+        return { codigo, zona, direccion: document.getElementById('direccion').value };
+      }
+    });
+    
+    if (form) {
+      await createAgencyFromGPS(pos.coords, form);
+      await loadAgenciesLight();
+      Toast.fire({ icon: 'success', title: 'Agencia creada' });
+      updateNearby(true);
+    }
+  }, () => Swal.fire('Error', 'No se pudo obtener ubicación', 'error'));
 });
+
+// ============================================
+// INICIALIZACIÓN
+// ============================================
+(async function init() {
+  await loadAgenciesLight();
+  setupSearch();
+  startGpsWatch();
+})();
