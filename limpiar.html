@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Panel de Limpieza | Control de Agencias</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+  <!-- Chart.js para gráficos de calidad -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%); min-height: 100vh; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    
+    .btn-danger { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+    .btn-danger:hover { background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); transform: scale(0.98); }
+    .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .btn-warning:hover { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); transform: scale(0.98); }
+    .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .btn-success:hover { background: linear-gradient(135deg, #059669 0%, #047857 100%); transform: scale(0.98); }
+    .btn-primary { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); }
+    .btn-primary:hover { background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%); transform: scale(0.98); }
+    .btn-info { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+    .btn-info:hover { background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); transform: scale(0.98); }
+    
+    button { transition: all 0.2s ease; }
+    button:active { transform: scale(0.97); }
+    
+    .card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+    
+    .log-container {
+      background: #1e1e2f;
+      color: #a5f3fc;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 11px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .quality-bar {
+      height: 8px;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    .zone-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      margin: 2px;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+<div id="app" class="w-full max-w-6xl">
+  
+  <!-- PANTALLA DE LOGIN -->
+  <div id="loginScreen" class="fade-in">
+    <div class="bg-white/95 backdrop-blur rounded-3xl shadow-2xl p-8 max-w-md mx-auto">
+      <div class="text-center mb-6">
+        <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+          <i class="fas fa-shield-alt text-3xl text-white"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800">Panel de Limpieza</h1>
+        <p class="text-sm text-slate-500 mt-1">Área restringida - Acceso autorizado</p>
+      </div>
+      
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <i class="fas fa-key mr-2 text-red-500"></i>
+            Contraseña de acceso
+          </label>
+          <input type="password" id="password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Ingrese la contraseña" autofocus>
+        </div>
+        <button type="submit" class="w-full btn-danger text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+          <i class="fas fa-unlock-alt"></i>
+          Acceder al Panel
+        </button>
+      </form>
+      
+      <div class="mt-6 text-center">
+        <a href="index.html" class="text-sm text-slate-400 hover:text-slate-600 transition">
+          <i class="fas fa-arrow-left mr-1"></i> Volver al inicio
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA PRINCIPAL (oculta por defecto) -->
+  <div id="mainScreen" class="hidden fade-in">
+    <!-- Header -->
+    <div class="bg-white/95 backdrop-blur rounded-3xl shadow-xl p-6 mb-6">
+      <div class="flex justify-between items-center flex-wrap gap-4">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-700 rounded-xl flex items-center justify-center">
+              <i class="fas fa-broom text-white text-xl"></i>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold text-slate-800">Panel de Limpieza</h1>
+              <p class="text-sm text-slate-500">Herramientas de mantenimiento y limpieza de datos</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnRefresh" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+            <i class="fas fa-sync-alt"></i> Refrescar
+          </button>
+          <button id="btnLogout" class="px-4 py-2 bg-slate-100 hover:bg-red-100 text-red-600 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+            <i class="fas fa-sign-out-alt"></i> Salir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN DE CALIDAD DE DATOS (destacada) -->
+    <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden mb-6">
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4">
+        <h2 class="text-white font-bold flex items-center gap-2">
+          <i class="fas fa-chart-line"></i> Calidad de Datos
+        </h2>
+      </div>
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Puntaje General -->
+          <div class="text-center border-r border-slate-100">
+            <div class="text-5xl font-bold" id="qualityScore">--%</div>
+            <div class="text-sm text-slate-500 mt-1">Puntaje General</div>
+            <div class="w-full bg-slate-200 rounded-full h-2 mt-3">
+              <div id="qualityBar" class="quality-bar bg-emerald-500 rounded-full" style="width: 0%"></div>
+            </div>
+            <div id="qualityGrade" class="text-xs font-bold mt-2"></div>
+          </div>
+          
+          <!-- Métricas rápidas -->
+          <div class="col-span-2">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="bg-slate-50 rounded-xl p-3 text-center">
+                <div class="text-2xl font-bold text-indigo-600" id="validIdsPercent">--%</div>
+                <div class="text-xs text-slate-500">IDs válidos (812*)</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3 text-center">
+                <div class="text-2xl font-bold text-emerald-600" id="gpsPercent">--%</div>
+                <div class="text-xs text-slate-500">Con GPS</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3 text-center">
+                <div class="text-2xl font-bold text-amber-600" id="addressPercent">--%</div>
+                <div class="text-xs text-slate-500">Con dirección</div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3 text-center">
+                <div class="text-2xl font-bold text-purple-600" id="zonePercent">--%</div>
+                <div class="text-xs text-slate-500">Zona válida</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Gráfico de calidad -->
+        <div class="mt-6">
+          <canvas id="qualityChart" height="80"></canvas>
+        </div>
+        
+        <div class="flex justify-end mt-4">
+          <button id="btnCalculateQuality" class="btn-info text-white font-semibold py-2 px-4 rounded-xl text-sm flex items-center gap-2">
+            <i class="fas fa-chart-simple"></i> Recalcular calidad
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- COLUMNA IZQUIERDA: Limpieza Local -->
+      <div class="space-y-6">
+        
+        <!-- Limpieza Local -->
+        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+          <div class="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4">
+            <h2 class="text-white font-bold flex items-center gap-2">
+              <i class="fas fa-database"></i> Datos Locales (IndexedDB)
+            </h2>
+          </div>
+          <div class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <button id="btnCleanCache" class="btn-warning text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-trash-alt"></i> Limpiar Caché
+              </button>
+              <button id="btnCleanInvalidLocal" class="btn-danger text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-filter"></i> Eliminar IDs inválidos
+              </button>
+            </div>
+            <button id="btnCleanDuplicatesLocal" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+              <i class="fas fa-copy"></i> Eliminar Duplicados (por idReal)
+            </button>
+            <button id="btnCleanNoGps" class="w-full bg-slate-500 hover:bg-slate-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+              <i class="fas fa-map-marker-alt-slash"></i> Eliminar agencias sin GPS
+            </button>
+          </div>
+        </div>
+
+        <!-- Normalización de Zonas -->
+        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+          <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
+            <h2 class="text-white font-bold flex items-center gap-2">
+              <i class="fas fa-layer-group"></i> Normalización de Zonas
+            </h2>
+          </div>
+          <div class="p-6 space-y-4">
+            <button id="btnNormalizeZones" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+              <i class="fas fa-magic"></i> Normalizar nombres de zonas
+            </button>
+            <button id="btnFixIds" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+              <i class="fas fa-wrench"></i> Corregir IDs sin prefijo 812
+            </button>
+            <div id="zoneDistribution" class="mt-3 text-sm">
+              <p class="text-xs font-bold text-slate-500 mb-2">Distribución de zonas:</p>
+              <div id="zoneList" class="max-h-32 overflow-y-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: Firebase + Estadísticas -->
+      <div class="space-y-6">
+        
+        <!-- Limpieza Firebase -->
+        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+          <div class="bg-gradient-to-r from-red-700 to-red-800 px-6 py-4">
+            <h2 class="text-white font-bold flex items-center gap-2">
+              <i class="fas fa-cloud-upload-alt"></i> Firebase Cloud
+            </h2>
+          </div>
+          <div class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <button id="btnSyncFromFirebase" class="btn-primary text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-download"></i> Sincronizar desde Cloud
+              </button>
+              <button id="btnCleanFirebaseInvalid" class="btn-danger text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-fire"></i> Eliminar IDs inválidos
+              </button>
+            </div>
+            <button id="btnSyncToFirebase" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+              <i class="fas fa-upload"></i> Sincronizar todo a Firebase
+            </button>
+          </div>
+        </div>
+
+        <!-- Estadísticas Locales -->
+        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+          <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
+            <h2 class="text-white font-bold flex items-center gap-2">
+              <i class="fas fa-chart-bar"></i> Estadísticas Locales
+            </h2>
+          </div>
+          <div class="p-6">
+            <div id="localStats" class="space-y-2 text-sm">
+              <div class="flex justify-between py-2 border-b border-slate-100">
+                <span class="text-slate-500">Total agencias:</span>
+                <span class="font-bold text-indigo-600">--</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-slate-100">
+                <span class="text-slate-500">IDs inválidos (no 812):</span>
+                <span class="font-bold text-red-600">--</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-slate-100">
+                <span class="text-slate-500">Agencias sin GPS:</span>
+                <span class="font-bold text-amber-600">--</span>
+              </div>
+              <div class="flex justify-between py-2">
+                <span class="text-slate-500">Duplicados:</span>
+                <span class="font-bold text-red-600">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG DE ACTIVIDAD -->
+    <div class="mt-6 bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4">
+        <h2 class="text-white font-bold flex items-center gap-2">
+          <i class="fas fa-terminal"></i> Registro de Actividad
+        </h2>
+      </div>
+      <div class="log-container p-4" id="logContainer">
+        <div class="text-slate-400">Listo para ejecutar acciones...</div>
+      </div>
+      <div class="p-3 bg-slate-50 flex justify-between">
+        <button id="btnClearLog" class="text-xs text-slate-400 hover:text-red-500 transition px-3 py-1 rounded">
+          <i class="fas fa-eraser"></i> Limpiar log
+        </button>
+        <button id="btnExportLog" class="text-xs text-slate-400 hover:text-emerald-500 transition px-3 py-1 rounded">
+          <i class="fas fa-download"></i> Exportar log
+        </button>
+      </div>
+    </div>
+
+    <!-- BOTONES DE ACCIÓN RÁPIDA -->
+    <div class="mt-6 grid grid-cols-2 gap-4">
+      <button id="btnFullClean" class="btn-danger text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 text-lg">
+        <i class="fas fa-bomb"></i> LIMPIEZA COMPLETA
+      </button>
+      <button id="btnFullSync" class="btn-success text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 text-lg">
+        <i class="fas fa-cloud-upload-alt"></i> SINCRONIZAR TODO
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { auth, db } from "./js/firebase/firebase.init.js";
+  import { getAllAgencies, deleteAgency, addAgency, updateAgency } from "./js/agencies/agencies.store.js";
+  import { collection, getDocs, deleteDoc, doc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ============================================
+  // CONTRASEÑA
+  // ============================================
+  const ADMIN_PASSWORD = "admin123";
+  
+  // Elementos del DOM
+  const loginScreen = document.getElementById('loginScreen');
+  const mainScreen = document.getElementById('mainScreen');
+  const logContainer = document.getElementById('logContainer');
+  
+  let isRunning = false;
+  let qualityChart = null;
+  
+  // Mapa de normalización de zonas
+  const ZONE_NORMALIZATION_MAP = {
+    // Variantes de SAN JUAN CENTRO
+    'san juan centro': 'SAN JUAN CENTRO',
+    'centro': 'SAN JUAN CENTRO',
+    'sanjuan centro': 'SAN JUAN CENTRO',
+    's.j. centro': 'SAN JUAN CENTRO',
+    
+    // Variantes de LOS CORBANO
+    'los corbano': 'LOS CORBANO',
+    'corbano': 'LOS CORBANO',
+    'corbano sur': 'LOS CORBANO',
+    'corbano norte': 'LOS CORBANO',
+    'corbano sur': 'LOS CORBANO',
+    
+    // Variantes de VALLEJUELO
+    'vallejuelo': 'VALLEJUELO',
+    'valle juelo': 'VALLEJUELO',
+    
+    // Variantes de LAS MATAS DE FARFAN
+    'las matas de farfan': 'LAS MATAS DE FARFAN',
+    'las matas': 'LAS MATAS DE FARFAN',
+    'matas de farfan': 'LAS MATAS DE FARFAN',
+    
+    // Variantes de RAFAEL BAEZ
+    'rafael baez': 'RAFAEL BAEZ',
+    'rafael báez': 'RAFAEL BAEZ',
+    'r. baez': 'RAFAEL BAEZ',
+    
+    // Variantes de LUIS EDWARDO LUCIANO
+    'luis edwardo luciano': 'LUIS EDWARDO LUCIANO',
+    'luis edwardo': 'LUIS EDWARDO LUCIANO',
+    'l. edwardo': 'LUIS EDWARDO LUCIANO',
+    
+    // Variantes de EL ROSARIO
+    'el rosario': 'EL ROSARIO',
+    'rosario': 'EL ROSARIO',
+    
+    // Variantes de PEDRO CORTO
+    'pedro corto': 'PEDRO CORTO',
+    'p. corto': 'PEDRO CORTO',
+    
+    // Variantes de ELIAS PIÑA
+    'elias piña': 'ELIAS PIÑA',
+    'elías piña': 'ELIAS PIÑA',
+    'e. piña': 'ELIAS PIÑA',
+    
+    // Variantes de EL CERCADO
+    'el cercado': 'EL CERCADO',
+    'cercado': 'EL CERCADO',
+    
+    // Otras zonas
+    'a': 'ZONA A',
+    'b': 'ZONA B',
+    'c': 'ZONA C',
+    'd': 'ZONA D',
+    'km.11': 'KM.11',
+    'cuenda': 'CUENDA',
+    'cardon': 'CARDON',
+    'la cualta': 'LA CUALTA',
+    'juan santiago': 'JUAN SANTIAGO'
+  };
+  
+  // ============================================
+  // FUNCIONES DE LOG
+  // ============================================
+  function addLog(message, type = 'info') {
+    const colors = {
+      info: 'text-blue-400',
+      success: 'text-green-400',
+      warning: 'text-yellow-400',
+      error: 'text-red-400'
+    };
+    
+    const icon = {
+      info: 'ℹ️',
+      success: '✅',
+      warning: '⚠️',
+      error: '❌'
+    };
+    
+    const logDiv = document.createElement('div');
+    logDiv.className = `text-xs font-mono py-1 border-b border-slate-700/50 ${colors[type]}`;
+    logDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${icon[type]} ${message}`;
+    logContainer.appendChild(logDiv);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    console.log(`[${type.toUpperCase()}] ${message}`);
+  }
+  
+  function clearLog() {
+    logContainer.innerHTML = '<div class="text-slate-400">Log limpiado...</div>';
+    addLog('Log reiniciado', 'info');
+  }
+  
+  function exportLog() {
+    const logs = Array.from(logContainer.children).map(div => div.innerText).join('\n');
+    const blob = new Blob([logs], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `limpieza_log_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addLog('Log exportado', 'success');
+  }
+  
+  // ============================================
+  // CALIDAD DE DATOS
+  // ============================================
+  async function calculateQuality() {
+    addLog('📊 Calculando calidad de datos...', 'info');
+    
+    try {
+      const agencies = await getAllAgencies();
+      if (agencies.length === 0) {
+        addLog('No hay agencias para calcular calidad', 'warning');
+        return;
+      }
+      
+      const total = agencies.length;
+      
+      // 1. IDs válidos (comienzan con 812)
+      const validIds = agencies.filter(a => String(a.idReal || '').startsWith('812'));
+      const validIdsPercent = (validIds.length / total) * 100;
+      
+      // 2. Con GPS
+      const hasGps = agencies.filter(a => a.lat && a.lng);
+      const gpsPercent = (hasGps.length / total) * 100;
+      
+      // 3. Con dirección (más de 10 caracteres)
+      const hasAddress = agencies.filter(a => a.direccion && a.direccion.length > 10);
+      const addressPercent = (hasAddress.length / total) * 100;
+      
+      // 4. Zona válida (en el mapa de normalización o con formato correcto)
+      const validZones = agencies.filter(a => {
+        const zone = (a.zona || '').toLowerCase();
+        return zone.length > 2 && (ZONE_NORMALIZATION_MAP[zone] || zone.toUpperCase() === zone);
+      });
+      const zonePercent = (validZones.length / total) * 100;
+      
+      // Calcular puntaje general (promedio ponderado)
+      const score = Math.round(
+        (validIdsPercent * 0.35) + 
+        (gpsPercent * 0.35) + 
+        (addressPercent * 0.15) + 
+        (zonePercent * 0.15)
+      );
+      
+      // Actualizar UI
+      document.getElementById('qualityScore').textContent = `${score}%`;
+      document.getElementById('qualityBar').style.width = `${score}%`;
+      
+      // Color según puntaje
+      const qualityBar = document.getElementById('qualityBar');
+      const qualityGrade = document.getElementById('qualityGrade');
+      if (score >= 80) {
+        qualityBar.className = 'quality-bar bg-emerald-500 rounded-full';
+        qualityGrade.innerHTML = '🎉 EXCELENTE - Datos de alta calidad';
+        qualityGrade.className = 'text-xs font-bold text-emerald-600 mt-2';
+      } else if (score >= 60) {
+        qualityBar.className = 'quality-bar bg-amber-500 rounded-full';
+        qualityGrade.innerHTML = '⚠️ ACEPTABLE - Requiere mejoras';
+        qualityGrade.className = 'text-xs font-bold text-amber-600 mt-2';
+      } else {
+        qualityBar.className = 'quality-bar bg-red-500 rounded-full';
+        qualityGrade.innerHTML = '🔴 CRÍTICO - Se necesita limpieza urgente';
+        qualityGrade.className = 'text-xs font-bold text-red-600 mt-2';
+      }
+      
+      document.getElementById('validIdsPercent').textContent = `${Math.round(validIdsPercent)}%`;
+      document.getElementById('gpsPercent').textContent = `${Math.round(gpsPercent)}%`;
+      document.getElementById('addressPercent').textContent = `${Math.round(addressPercent)}%`;
+      document.getElementById('zonePercent').textContent = `${Math.round(zonePercent)}%`;
+      
+      // Actualizar gráfico
+      if (qualityChart) {
+        qualityChart.destroy();
+      }
+      
+      const ctx = document.getElementById('qualityChart').getContext('2d');
+      qualityChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['IDs Válidos', 'Con GPS', 'Con Dirección', 'Zona Válida'],
+          datasets: [{
+            label: 'Porcentaje',
+            data: [validIdsPercent, gpsPercent, addressPercent, zonePercent],
+            backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#06b6d4'],
+            borderRadius: 8,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 10 } } }
+          },
+          scales: {
+            y: { max: 100, beginAtZero: true, grid: { color: '#e2e8f0' } },
+            x: { ticks: { font: { size: 10 } } }
+          }
+        }
+      });
+      
+      addLog(`Calidad de datos: ${score}% (${validIds.length}/${total} IDs válidos, ${hasGps.length}/${total} con GPS)`, score >= 80 ? 'success' : 'warning');
+      
+      return { score, validIdsPercent, gpsPercent, addressPercent, zonePercent };
+      
+    } catch (err) {
+      addLog(`Error calculando calidad: ${err.message}`, 'error');
+      return null;
+    }
+  }
+  
+  // ============================================
+  // NORMALIZACIÓN DE ZONAS
+  // ============================================
+  async function normalizeZones() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🏷️ Normalizando nombres de zonas...', 'info');
+    
+    try {
+      const agencies = await getAllAgencies();
+      let normalized = 0;
+      const changes = [];
+      
+      for (const agency of agencies) {
+        const currentZone = (agency.zona || '').toLowerCase().trim();
+        const newZone = ZONE_NORMALIZATION_MAP[currentZone];
+        
+        if (newZone && agency.zona !== newZone) {
+          const oldZone = agency.zona;
+          agency.zona = newZone;
+          agency.updated_at = Date.now();
+          await updateAgency(agency);
+          changes.push(`${agency.idReal}: ${oldZone} → ${newZone}`);
+          addLog(`Normalizado: ${agency.idReal} - ${oldZone} → ${newZone}`, 'success');
+          normalized++;
+        }
+      }
+      
+      if (normalized === 0) {
+        addLog('No se encontraron zonas para normalizar', 'info');
+      } else {
+        addLog(`✅ Normalizadas ${normalized} zonas`, 'success');
+      }
+      
+      await loadLocalStats();
+      await updateZoneDistribution();
+      await calculateQuality();
+      
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  async function updateZoneDistribution() {
+    try {
+      const agencies = await getAllAgencies();
+      const zoneCount = {};
+      
+      agencies.forEach(a => {
+        const zone = a.zona || 'Sin zona';
+        zoneCount[zone] = (zoneCount[zone] || 0) + 1;
+      });
+      
+      const zoneListDiv = document.getElementById('zoneList');
+      if (zoneListDiv) {
+        const sortedZones = Object.entries(zoneCount).sort((a, b) => b[1] - a[1]);
+        zoneListDiv.innerHTML = sortedZones.map(([zone, count]) => `
+          <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100">
+            <span class="zone-badge bg-indigo-100 text-indigo-700">${zone}</span>
+            <span class="font-bold">${count}</span>
+          </div>
+        `).join('');
+        
+        if (sortedZones.length === 0) {
+          zoneListDiv.innerHTML = '<p class="text-xs text-slate-400">No hay zonas registradas</p>';
+        }
+      }
+    } catch (err) {
+      console.error('Error actualizando distribución de zonas:', err);
+    }
+  }
+  
+  // ============================================
+  // CORREGIR IDs
+  // ============================================
+  async function fixInvalidIds() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🔧 Corrigiendo IDs sin prefijo 812...', 'info');
+    
+    try {
+      const agencies = await getAllAgencies();
+      let fixed = 0;
+      
+      for (const agency of agencies) {
+        const idReal = String(agency.idReal || '');
+        if (!idReal.startsWith('812') && /^\d+$/.test(idReal) && idReal.length >= 4) {
+          const newId = '812' + idReal;
+          agency.idReal = newId;
+          agency.id_nuevo = newId;
+          agency.updated_at = Date.now();
+          await updateAgency(agency);
+          addLog(`Corregido: ${idReal} → ${newId}`, 'success');
+          fixed++;
+        }
+      }
+      
+      addLog(`✅ Corregidos ${fixed} IDs`, 'success');
+      await loadLocalStats();
+      await calculateQuality();
+      
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  // ============================================
+  // ESTADÍSTICAS
+  // ============================================
+  async function loadLocalStats() {
+    try {
+      const agencies = await getAllAgencies();
+      const invalid = agencies.filter(a => !String(a.idReal || '').startsWith('812'));
+      const noGps = agencies.filter(a => !a.lat || !a.lng);
+      
+      const seen = new Map();
+      const duplicates = [];
+      agencies.forEach(a => {
+        if (seen.has(a.idReal)) {
+          duplicates.push(a);
+        } else {
+          seen.set(a.idReal, a);
+        }
+      });
+      
+      document.getElementById('localStats').innerHTML = `
+        <div class="flex justify-between py-2 border-b border-slate-100">
+          <span class="text-slate-500">Total agencias:</span>
+          <span class="font-bold text-indigo-600">${agencies.length}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b border-slate-100">
+          <span class="text-slate-500">IDs inválidos (no 812):</span>
+          <span class="font-bold text-red-600">${invalid.length}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b border-slate-100">
+          <span class="text-slate-500">Agencias sin GPS:</span>
+          <span class="font-bold text-amber-600">${noGps.length}</span>
+        </div>
+        <div class="flex justify-between py-2">
+          <span class="text-slate-500">Duplicados:</span>
+          <span class="font-bold text-red-600">${duplicates.length}</span>
+        </div>
+      `;
+      
+      await updateZoneDistribution();
+      
+    } catch (err) {
+      addLog(`Error cargando estadísticas locales: ${err.message}`, 'error');
+    }
+  }
+  
+  async function loadFirebaseStats() {
+    try {
+      const agenciesRef = collection(db, "agencias");
+      const snapshot = await getDocs(agenciesRef);
+      const agencies = [];
+      snapshot.forEach(docSnap => {
+        agencies.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      
+      const invalid = agencies.filter(a => !String(a.idReal || a.id_nuevo || '').startsWith('812'));
+      
+      const seen = new Map();
+      const duplicates = [];
+      agencies.forEach(a => {
+        const idReal = a.idReal || a.id_nuevo;
+        if (seen.has(idReal)) {
+          duplicates.push(a);
+        } else {
+          seen.set(idReal, a);
+        }
+      });
+      
+      document.getElementById('firebaseStats').innerHTML = `
+        <div class="flex justify-between py-2 border-b border-slate-100">
+          <span class="text-slate-500">Total agencias:</span>
+          <span class="font-bold text-red-600">${agencies.length}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b border-slate-100">
+          <span class="text-slate-500">IDs inválidos (no 812):</span>
+          <span class="font-bold text-red-600">${invalid.length}</span>
+        </div>
+        <div class="flex justify-between py-2">
+          <span class="text-slate-500">Duplicados:</span>
+          <span class="font-bold text-red-600">${duplicates.length}</span>
+        </div>
+      `;
+      
+    } catch (err) {
+      addLog(`Error cargando estadísticas Firebase: ${err.message}`, 'error');
+    }
+  }
+  
+  // ============================================
+  // ACCIONES LOCALES
+  // ============================================
+  async function cleanInvalidLocalIds() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🔍 Buscando IDs inválidos localmente...', 'info');
+    
+    try {
+      const agencies = await getAllAgencies();
+      const invalid = agencies.filter(a => !String(a.idReal || '').startsWith('812'));
+      
+      if (invalid.length === 0) {
+        addLog('No se encontraron IDs inválidos', 'success');
+        isRunning = false;
+        return;
+      }
+      
+      addLog(`Encontrados ${invalid.length} IDs inválidos`, 'warning');
+      
+      for (const agency of invalid) {
+        await deleteAgency(agency.id, false);
+        addLog(`Eliminado: ${agency.idReal || 'sin ID'}`, 'success');
+      }
+      
+      addLog(`✅ Eliminados ${invalid.length} IDs inválidos`, 'success');
+      await loadLocalStats();
+      await calculateQuality();
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  async function cleanDuplicatesLocal() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🔍 Buscando duplicados localmente...', 'info');
+    
+    try {
+      const agencies = await getAllAgencies();
+      const seen = new Map();
+      const toDelete = [];
+      
+      agencies.forEach(agency => {
+        const idReal = agency.idReal;
+        if (seen.has(idReal)) {
+          toDelete.push(agency);
+        } else {
+          seen.set(idReal, agency);
+        }
+      });
+      
+      if (toDelete.length === 0) {
+        addLog('No se encontraron duplicados', 'success');
+        isRunning = false;
+        return;
+      }
+      
+      addLog(`Encontrados ${toDelete.length} duplicados`, 'warning');
+      
+      for (const agency of toDelete) {
+        await deleteAgency(agency.id, false);
+        addLog(`Eliminado duplicado: ${agency.idReal}`, 'success');
+      }
+      
+      addLog(`✅ Eliminados ${toDelete.length} duplicados`, 'success');
+      await loadLocalStats();
+      await calculateQuality();
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  async function cleanNoGpsLocal() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🔍 Buscando agencias sin GPS...', 'info');
+    
+    try {
+      const agencies = await getAllAgencies();
+      const noGps = agencies.filter(a => !a.lat || !a.lng);
+      
+      if (noGps.length === 0) {
+        addLog('No se encontraron agencias sin GPS', 'success');
+        isRunning = false;
+        return;
+      }
+      
+      addLog(`Encontradas ${noGps.length} agencias sin GPS`, 'warning');
+      
+      for (const agency of noGps) {
+        await deleteAgency(agency.id, false);
+        addLog(`Eliminada: ${agency.idReal} (sin GPS)`, 'success');
+      }
+      
+      addLog(`✅ Eliminadas ${noGps.length} agencias sin GPS`, 'success');
+      await loadLocalStats();
+      await calculateQuality();
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  async function cleanCacheLocal() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🧹 Limpiando cachés locales...', 'info');
+    
+    try {
+      const keepKeys = ['user_preferences', 'theme', 'cleaner_auth'];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!keepKeys.includes(key)) {
+          localStorage.removeItem(key);
+        }
+      }
+      
+      sessionStorage.clear();
+      
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const cacheName of cacheNames) {
+          if (cacheName.includes('leaflet') || cacheName.includes('tile')) {
+            await caches.delete(cacheName);
+          }
+        }
+      }
+      
+      addLog('✅ Cachés limpiados correctamente', 'success');
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  // ============================================
+  // ACCIONES FIREBASE
+  // ============================================
+  async function syncFromFirebase() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('📥 Sincronizando desde Firebase...', 'info');
+    
+    try {
+      const agenciesRef = collection(db, "agencias");
+      const snapshot = await getDocs(agenciesRef);
+      let count = 0;
+      
+      for (const docSnap of snapshot) {
+        const data = docSnap.data();
+        if (data.idReal && data.idReal.toString().startsWith('812')) {
+          await addAgency({ ...data, synced: true });
+          count++;
+        }
+      }
+      
+      addLog(`✅ Sincronizados ${count} registros desde Firebase`, 'success');
+      await loadLocalStats();
+      await calculateQuality();
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  async function cleanFirebaseInvalid() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🔥 Limpiando IDs inválidos en Firebase...', 'info');
+    
+    try {
+      const agenciesRef = collection(db, "agencias");
+      const snapshot = await getDocs(agenciesRef);
+      let deleted = 0;
+      
+      for (const docSnap of snapshot) {
+        const data = docSnap.data();
+        const idReal = data.idReal || data.id_nuevo || '';
+        
+        if (!idReal.toString().startsWith('812')) {
+          await deleteDoc(doc(db, "agencias", docSnap.id));
+          addLog(`Eliminado de Firebase: ${idReal || 'sin ID'}`, 'success');
+          deleted++;
+        }
+      }
+      
+      addLog(`✅ Eliminados ${deleted} registros inválidos de Firebase`, 'success');
+      await loadFirebaseStats();
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  async function syncToFirebase() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('📤 Sincronizando todo a Firebase...', 'info');
+    
+    try {
+      const agencies = await getAllAgencies();
+      const agenciesRef = collection(db, "agencias");
+      
+      const snapshot = await getDocs(agenciesRef);
+      for (const docSnap of snapshot) {
+        await deleteDoc(doc(db, "agencias", docSnap.id));
+      }
+      addLog('Firebase limpiado', 'info');
+      
+      let uploaded = 0;
+      for (const agency of agencies) {
+        if (agency.idReal && agency.idReal.toString().startsWith('812')) {
+          const { id, ...dataToUpload } = agency;
+          await addDoc(agenciesRef, { ...dataToUpload, synced: true });
+          uploaded++;
+        }
+      }
+      
+      addLog(`✅ Subidas ${uploaded} agencias a Firebase`, 'success');
+      await loadFirebaseStats();
+    } catch (err) {
+      addLog(`Error: ${err.message}`, 'error');
+    } finally {
+      isRunning = false;
+    }
+  }
+  
+  async function fullClean() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🚨 INICIANDO LIMPIEZA COMPLETA...', 'warning');
+    
+    await cleanInvalidLocalIds();
+    await cleanDuplicatesLocal();
+    await cleanNoGpsLocal();
+    await cleanCacheLocal();
+    await cleanFirebaseInvalid();
+    await normalizeZones();
+    
+    addLog('🎉 LIMPIEZA COMPLETA FINALIZADA', 'success');
+    isRunning = false;
+  }
+  
+  async function fullSync() {
+    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+    isRunning = true;
+    addLog('🔄 INICIANDO SINCRONIZACIÓN COMPLETA...', 'warning');
+    
+    await syncToFirebase();
+    
+    addLog('🎉 SINCRONIZACIÓN COMPLETA FINALIZADA', 'success');
+    isRunning = false;
+  }
+  
+  // ============================================
+  // LOGIN
+  // ============================================
+  function login(password) {
+    if (password === ADMIN_PASSWORD) {
+      localStorage.setItem('cleaner_auth', 'true');
+      loginScreen.classList.add('hidden');
+      mainScreen.classList.remove('hidden');
+      addLog('✅ Acceso concedido al panel de limpieza', 'success');
+      loadLocalStats();
+      loadFirebaseStats();
+      calculateQuality();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Acceso denegado',
+        text: 'Contraseña incorrecta',
+        confirmButtonColor: '#dc2626'
+      });
+    }
+  }
+  
+  function logout() {
+    localStorage.removeItem('cleaner_auth');
+    loginScreen.classList.remove('hidden');
+    mainScreen.classList.add('hidden');
+    document.getElementById('password').value = '';
+    clearLog();
+  }
+  
+  // ============================================
+  // INICIALIZACIÓN
+  // ============================================
+  function init() {
+    if (localStorage.getItem('cleaner_auth') === 'true') {
+      loginScreen.classList.add('hidden');
+      mainScreen.classList.remove('hidden');
+      loadLocalStats();
+      loadFirebaseStats();
+      calculateQuality();
+    }
+    
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      login(document.getElementById('password').value);
+    });
+    
+    document.getElementById('btnLogout').addEventListener('click', logout);
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+      loadLocalStats();
+      loadFirebaseStats();
+      calculateQuality();
+      addLog('Estadísticas actualizadas', 'info');
+    });
+    document.getElementById('btnClearLog').addEventListener('click', clearLog);
+    document.getElementById('btnExportLog').addEventListener('click', exportLog);
+    
+    // Acciones locales
+    document.getElementById('btnCleanInvalidLocal').addEventListener('click', cleanInvalidLocalIds);
+    document.getElementById('btnCleanDuplicatesLocal').addEventListener('click', cleanDuplicatesLocal);
+    document.getElementById('btnCleanNoGps').addEventListener('click', cleanNoGpsLocal);
+    document.getElementById('btnCleanCache').addEventListener('click', cleanCacheLocal);
+    
+    // Normalización
+    document.getElementById('btnNormalizeZones').addEventListener('click', normalizeZones);
+    document.getElementById('btnFixIds').addEventListener('click', fixInvalidIds);
+    document.getElementById('btnCalculateQuality').addEventListener('click', calculateQuality);
+    
+    // Acciones Firebase
+    document.getElementById('btnSyncFromFirebase').addEventListener('click', syncFromFirebase);
+    document.getElementById('btnCleanFirebaseInvalid').addEventListener('click', cleanFirebaseInvalid);
+    document.getElementById('btnSyncToFirebase').addEventListener('click', syncToFirebase);
+    
+    // Acciones completas
+    document.getElementById('btnFullClean').addEventListener('click', fullClean);
+    document.getElementById('btnFullSync').addEventListener('click', fullSync);
+  }
+  
+  init();
+</script>
+</body>
+</html>
