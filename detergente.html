@@ -2,13 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Control de Entregas | Tech Logística</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        /* Estilo para ocultar el checkbox real y usar el label como botón */
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+        
         .product-check:checked + .product-card {
             border-color: #2563eb;
             background-color: #eff6ff;
@@ -16,6 +19,33 @@
         }
         .product-check:checked + .product-card .check-icon {
             opacity: 1;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Estilo para selects */
+        .custom-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em;
+            appearance: none;
         }
     </style>
 </head>
@@ -35,14 +65,44 @@
 
         <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 overflow-hidden border border-slate-100">
             <div class="bg-slate-900 p-6 text-white text-center">
-                <h1 class="text-2xl font-bold tracking-tight">Control de detergente</h1>
+                <h1 class="text-2xl font-bold tracking-tight">Control de Detergente</h1>
                 <p class="text-slate-400 text-sm mt-1">Gestión de suministros por agencia</p>
             </div>
 
             <div class="p-6">
+                <!-- Selector de Zona -->
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">
+                        <i class="fas fa-map-marker-alt mr-1"></i> Seleccionar Zona
+                    </label>
+                    <select id="zonaSelect" class="custom-select w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:ring-0 transition-all outline-none text-base font-medium text-slate-700">
+                        <option value="">-- Cargando zonas... --</option>
+                    </select>
+                </div>
+
+                <!-- Selector de Agencia -->
                 <div class="mb-6">
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Identificación de Agencia</label>
-                    <input id="agencia" type="text" placeholder="Ej: Agencia Central 01"
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">
+                        <i class="fas fa-building mr-1"></i> Seleccionar Agencia
+                    </label>
+                    <select id="agenciaSelect" class="custom-select w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:ring-0 transition-all outline-none text-base font-medium text-slate-700">
+                        <option value="">-- Primero selecciona una zona --</option>
+                    </select>
+                </div>
+
+                <!-- Input manual (alternativa) -->
+                <div class="relative mb-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-xs">
+                        <span class="px-3 bg-white text-slate-400">O ingresar manualmente</span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Código de Agencia</label>
+                    <input id="agencia" type="text" placeholder="Ej: 8127001" autocomplete="off"
                         class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 focus:ring-0 transition-all outline-none text-lg font-medium">
                 </div>
 
@@ -86,7 +146,7 @@
                     </label>
                 </div>
 
-                <button onclick="guardar()" 
+                <button id="btnGuardar" 
                     class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -118,164 +178,510 @@
             </div>
         </div>
 
-        <h3 class="text-xs font-bold text-slate-500 uppercase mt-8 mb-4 ml-1">Actividad Reciente</h3>
+        <div class="flex justify-between items-center mt-8 mb-4">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">📋 Actividad Reciente</h3>
+            <button id="btnClearAll" class="text-xs text-red-500 hover:text-red-600 transition px-2 py-1 rounded">
+                <i class="fas fa-trash-alt"></i> Limpiar todo
+            </button>
+        </div>
         <div id="lista" class="space-y-3">
-            </div>
+            <div class="skeleton h-20 rounded-2xl"></div>
+            <div class="skeleton h-20 rounded-2xl"></div>
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
-let registros = JSON.parse(localStorage.getItem("entregas")) || [];
-let editIndex = null; // Para saber si estamos editando o creando
+    <script type="module">
+        // ============================================
+        // IMPORTAR FUNCIONES DE AGENCIAS
+        // ============================================
+        import { getAllAgencies } from './js/agencies/agencies.store.js';
 
-async function guardar() {
-    const agenciaInput = document.getElementById("agencia");
-    const agencia = agenciaInput.value;
+        // ============================================
+        // CONFIGURACIÓN INDEXEDDB PARA ENTREGAS
+        // ============================================
+        const DB_NAME = 'detergente_db';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'entregas';
 
-    const data = {
-        agencia,
-        mistolin: document.getElementById("mistolin").checked,
-        cloro: document.getElementById("cloro").checked,
-        ace: document.getElementById("ace").checked,
-        toallita: document.getElementById("toallita").checked,
-        fecha: new Date().toLocaleString('es-DO', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })
-    };
+        let db = null;
+        let registros = [];
+        let editId = null;
+        let isLoading = true;
+        let agencies = [];
+        let zonas = [];
 
-    // Validación con SweetAlert2
-    if (!agencia) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Faltan datos',
-            text: 'Por favor, ingresa el nombre de la agencia.',
-            confirmButtonColor: '#4f46e5'
-        });
-        return;
-    }
-
-    if (!data.mistolin && !data.cloro && !data.ace && !data.toallita) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Carrito vacío',
-            text: 'Selecciona al menos un producto para registrar.',
-            confirmButtonColor: '#4f46e5'
-        });
-        return;
-    }
-
-    // Lógica para Guardar o Actualizar
-    if (editIndex !== null) {
-        registros[editIndex] = data;
-        editIndex = null;
-        Swal.fire({
-            icon: 'success',
-            title: '¡Actualizado!',
-            text: 'El registro se modificó correctamente.',
-            timer: 1500,
-            showConfirmButton: false
-        });
-    } else {
-        registros.push(data);
-        Swal.fire({
-            icon: 'success',
-            title: '¡Registrado!',
-            text: 'La entrega ha sido guardada.',
-            timer: 1500,
-            showConfirmButton: false
-        });
-    }
-
-    localStorage.setItem("entregas", JSON.stringify(registros));
-    render();
-    limpiar();
-}
-
-function prepararEdicion(index) {
-    // Buscamos el registro (considerando que el render está invertido)
-    const actualIndex = registros.length - 1 - index;
-    const r = registros[actualIndex];
-
-    document.getElementById("agencia").value = r.agencia;
-    document.getElementById("mistolin").checked = r.mistolin;
-    document.getElementById("cloro").checked = r.cloro;
-    document.getElementById("ace").checked = r.ace;
-    document.getElementById("toallita").checked = r.toallita;
-
-    editIndex = actualIndex;
-    
-    // Scroll hacia arriba para que el usuario vea que está editando
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function eliminarRegistro(index) {
-    const actualIndex = registros.length - 1 - index;
-    
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: "No podrás revertir esta acción",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            registros.splice(actualIndex, 1);
-            localStorage.setItem("entregas", JSON.stringify(registros));
-            render();
-            Swal.fire('Eliminado', 'El registro ha sido borrado.', 'success');
+        // Inicializar IndexedDB
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const store = db.createObjectStore(STORE_NAME, { 
+                            keyPath: 'id', 
+                            autoIncrement: true 
+                        });
+                        store.createIndex('fecha', 'fecha');
+                        store.createIndex('agencia', 'agencia');
+                        store.createIndex('timestamp', 'timestamp');
+                    }
+                };
+            });
         }
-    });
-}
 
-function render() {
-    const lista = document.getElementById("lista");
-    lista.innerHTML = "";
-    let total = { mistolin: 0, cloro: 0, ace: 0, toallita: 0, kits: 0 };
+        // Cargar todos los registros
+        async function loadRegistros() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('DB no inicializada'));
+                    return;
+                }
+                
+                const transaction = db.transaction(STORE_NAME, 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    registros = request.result || [];
+                    registros.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    resolve(registros);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
 
-    registros.slice().reverse().forEach((r, index) => {
-        if (r.mistolin) total.mistolin++;
-        if (r.cloro) total.cloro++;
-        if (r.ace) total.ace++;
-        if (r.toallita) total.toallita++;
-        if (r.mistolin && r.cloro && r.ace && r.toallita) total.kits++;
+        // Guardar registro
+        async function saveRegistro(data) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('DB no inicializada'));
+                    return;
+                }
+                
+                const transaction = db.transaction(STORE_NAME, 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                if (editId !== null) {
+                    data.id = editId;
+                    const request = store.put(data);
+                    request.onsuccess = () => resolve(data);
+                    request.onerror = () => reject(request.error);
+                } else {
+                    const { id, ...newData } = data;
+                    const request = store.add(newData);
+                    request.onsuccess = () => resolve({ ...newData, id: request.result });
+                    request.onerror = () => reject(request.error);
+                }
+            });
+        }
 
-        lista.innerHTML += `
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
-                <div onclick="prepararEdicion(${index})" class="cursor-pointer flex-1">
-                    <div class="font-bold text-slate-800">${r.agencia} <span class="text-indigo-500 text-[10px] ml-2">✎ Editar</span></div>
-                    <div class="text-[10px] text-slate-400 font-medium uppercase mt-1">${r.fecha}</div>
-                    <div class="flex gap-1 mt-2">
-                        ${r.mistolin ? "<span>🧴</span>" : ""} 
-                        ${r.cloro ? "<span>🧪</span>" : ""} 
-                        ${r.ace ? "<span>🧺</span>" : ""} 
-                        ${r.toallita ? "<span>🧻</span>" : ""}
+        // Eliminar registro
+        async function deleteRegistro(id) {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('DB no inicializada'));
+                    return;
+                }
+                
+                const transaction = db.transaction(STORE_NAME, 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.delete(id);
+                
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Eliminar todos
+        async function deleteAllRegistros() {
+            return new Promise((resolve, reject) => {
+                if (!db) {
+                    reject(new Error('DB no inicializada'));
+                    return;
+                }
+                
+                const transaction = db.transaction(STORE_NAME, 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.clear();
+                
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // ============================================
+        // CARGAR AGENCIAS Y ZONAS
+        // ============================================
+        async function loadAgencies() {
+            try {
+                agencies = await getAllAgencies();
+                // Filtrar solo agencias con coordenadas y ID válido
+                agencies = agencies.filter(a => a.lat && a.lng && a.idReal);
+                
+                // Obtener zonas únicas
+                const zonasSet = new Set();
+                agencies.forEach(a => {
+                    if (a.zona) zonasSet.add(a.zona);
+                });
+                zonas = Array.from(zonasSet).sort();
+                
+                return { agencies, zonas };
+            } catch (err) {
+                console.error('Error cargando agencias:', err);
+                return { agencies: [], zonas: [] };
+            }
+        }
+
+        // Actualizar selector de zonas
+        function updateZonaSelect() {
+            const zonaSelect = document.getElementById('zonaSelect');
+            if (!zonaSelect) return;
+            
+            if (zonas.length === 0) {
+                zonaSelect.innerHTML = '<option value="">-- No hay zonas disponibles --</option>';
+                return;
+            }
+            
+            zonaSelect.innerHTML = '<option value="">-- Selecciona una zona --</option>' +
+                zonas.map(z => `<option value="${z}">${z}</option>`).join('');
+        }
+
+        // Actualizar selector de agencias según zona seleccionada
+        function updateAgenciaSelect(zona) {
+            const agenciaSelect = document.getElementById('agenciaSelect');
+            const manualInput = document.getElementById('agencia');
+            
+            if (!agenciaSelect) return;
+            
+            if (!zona) {
+                agenciaSelect.innerHTML = '<option value="">-- Primero selecciona una zona --</option>';
+                return;
+            }
+            
+            const agenciasFiltradas = agencies.filter(a => a.zona === zona);
+            
+            if (agenciasFiltradas.length === 0) {
+                agenciaSelect.innerHTML = '<option value="">-- No hay agencias en esta zona --</option>';
+                return;
+            }
+            
+            agenciaSelect.innerHTML = '<option value="">-- Selecciona una agencia --</option>' +
+                agenciasFiltradas.map(a => `<option value="${a.idReal}">${a.idReal} - ${a.direccion?.substring(0, 40) || 'Sin dirección'}</option>`).join('');
+            
+            // Limpiar input manual cuando se selecciona una agencia del select
+            agenciaSelect.onchange = () => {
+                if (agenciaSelect.value) {
+                    manualInput.value = agenciaSelect.value;
+                    // Efecto visual
+                    manualInput.classList.add('border-green-400', 'bg-green-50');
+                    setTimeout(() => {
+                        manualInput.classList.remove('border-green-400', 'bg-green-50');
+                    }, 500);
+                }
+            };
+        }
+
+        // ============================================
+        // FUNCIONES DE UI
+        // ============================================
+        function limpiarFormulario() {
+            document.getElementById("agencia").value = "";
+            document.getElementById("zonaSelect").value = "";
+            document.getElementById("agenciaSelect").innerHTML = '<option value="">-- Primero selecciona una zona --</option>';
+            document.querySelectorAll(".product-check").forEach(c => c.checked = false);
+            editId = null;
+        }
+
+        function showToast(icon, title, timer = 2000) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: icon,
+                title: title,
+                showConfirmButton: false,
+                timer: timer,
+                timerProgressBar: true
+            });
+        }
+
+        async function guardar() {
+            const agenciaInput = document.getElementById("agencia");
+            const agencia = agenciaInput.value.trim();
+
+            const data = {
+                agencia,
+                mistolin: document.getElementById("mistolin").checked,
+                cloro: document.getElementById("cloro").checked,
+                ace: document.getElementById("ace").checked,
+                toallita: document.getElementById("toallita").checked,
+                fecha: new Date().toLocaleString('es-DO', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    day: '2-digit', 
+                    month: 'short',
+                    year: 'numeric'
+                }),
+                timestamp: Date.now()
+            };
+
+            if (!agencia) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Faltan datos',
+                    text: 'Por favor, ingresa o selecciona el código de la agencia.',
+                    confirmButtonColor: '#4f46e5'
+                });
+                agenciaInput.focus();
+                return;
+            }
+
+            if (!data.mistolin && !data.cloro && !data.ace && !data.toallita) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Carrito vacío',
+                    text: 'Selecciona al menos un producto para registrar.',
+                    confirmButtonColor: '#4f46e5'
+                });
+                return;
+            }
+
+            const btn = document.getElementById('btnGuardar');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner-border animate-spin w-5 h-5 border-2 border-white rounded-full border-t-transparent"></div> Guardando...';
+            btn.disabled = true;
+
+            try {
+                await saveRegistro(data);
+                await loadRegistros();
+                render();
+                limpiarFormulario();
+                
+                if (editId !== null) {
+                    showToast('success', '¡Actualizado correctamente!');
+                } else {
+                    showToast('success', '¡Entrega registrada!');
+                }
+                editId = null;
+            } catch (err) {
+                console.error('Error guardando:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo guardar el registro',
+                    confirmButtonColor: '#ef4444'
+                });
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function prepararEdicion(id) {
+            const registro = registros.find(r => r.id === id);
+            if (!registro) return;
+
+            document.getElementById("agencia").value = registro.agencia;
+            document.getElementById("mistolin").checked = registro.mistolin;
+            document.getElementById("cloro").checked = registro.cloro;
+            document.getElementById("ace").checked = registro.ace;
+            document.getElementById("toallita").checked = registro.toallita;
+
+            editId = registro.id;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast('info', 'Editando registro...', 1500);
+        }
+
+        async function eliminarRegistro(id, agencia) {
+            const result = await Swal.fire({
+                title: '¿Eliminar registro?',
+                text: `Eliminar entrega de "${agencia}"`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+            
+            if (result.isConfirmed) {
+                try {
+                    await deleteRegistro(id);
+                    await loadRegistros();
+                    render();
+                    showToast('success', 'Registro eliminado');
+                } catch (err) {
+                    console.error('Error eliminando:', err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo eliminar el registro',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            }
+        }
+
+        async function limpiarTodo() {
+            const result = await Swal.fire({
+                title: '¿Limpiar todo?',
+                text: 'Esta acción eliminará TODOS los registros. No se puede deshacer.',
+                icon: 'error',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Sí, limpiar todo',
+                cancelButtonText: 'Cancelar'
+            });
+            
+            if (result.isConfirmed) {
+                try {
+                    await deleteAllRegistros();
+                    await loadRegistros();
+                    render();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Todo limpiado',
+                        text: 'Se eliminaron todos los registros',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                } catch (err) {
+                    console.error('Error limpiando:', err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudieron eliminar los registros',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function render() {
+            const lista = document.getElementById("lista");
+            if (!lista) return;
+            
+            if (registros.length === 0) {
+                lista.innerHTML = `
+                    <div class="text-center py-10 opacity-50">
+                        <i class="fas fa-box-open text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-xs font-bold uppercase tracking-widest text-slate-400">No hay entregas registradas</p>
+                    </div>`;
+                
+                document.getElementById("r_mistolin").textContent = "0";
+                document.getElementById("r_cloro").textContent = "0";
+                document.getElementById("r_ace").textContent = "0";
+                document.getElementById("r_toallita").textContent = "0";
+                document.getElementById("r_kits").textContent = "0";
+                return;
+            }
+
+            let total = { mistolin: 0, cloro: 0, ace: 0, toallita: 0, kits: 0 };
+            let html = '';
+
+            for (const r of registros) {
+                if (r.mistolin) total.mistolin++;
+                if (r.cloro) total.cloro++;
+                if (r.ace) total.ace++;
+                if (r.toallita) total.toallita++;
+                if (r.mistolin && r.cloro && r.ace && r.toallita) total.kits++;
+
+                html += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center fade-in">
+                        <div class="cursor-pointer flex-1" onclick="prepararEdicion(${r.id})">
+                            <div class="font-bold text-slate-800">${escapeHtml(r.agencia)} <span class="text-indigo-500 text-[10px] ml-2">✎ Editar</span></div>
+                            <div class="text-[10px] text-slate-400 font-medium uppercase mt-1">${escapeHtml(r.fecha)}</div>
+                            <div class="flex gap-1 mt-2">
+                                ${r.mistolin ? "<span class='text-lg'>🧴</span>" : ""} 
+                                ${r.cloro ? "<span class='text-lg'>🧪</span>" : ""} 
+                                ${r.ace ? "<span class='text-lg'>🧺</span>" : ""} 
+                                ${r.toallita ? "<span class='text-lg'>🧻</span>" : ""}
+                            </div>
+                        </div>
+                        <button onclick="eliminarRegistro(${r.id}, '${escapeHtml(r.agencia)}')" class="ml-4 text-slate-300 hover:text-red-500 transition-colors p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
                     </div>
-                </div>
-                <button onclick="eliminarRegistro(${index})" class="ml-4 text-slate-300 hover:text-red-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
-            </div>
-        `;
-    });
+                `;
+            }
 
-    // Actualizar números del dashboard
-    document.getElementById("r_mistolin").textContent = total.mistolin;
-    document.getElementById("r_cloro").textContent = total.cloro;
-    document.getElementById("r_ace").textContent = total.ace;
-    document.getElementById("r_toallita").textContent = total.toallita;
-    document.getElementById("r_kits").textContent = total.kits;
-}
+            lista.innerHTML = html;
 
-function limpiar() {
-    document.getElementById("agencia").value = "";
-    document.querySelectorAll(".product-check").forEach(c => c.checked = false);
-    editIndex = null;
-}
+            document.getElementById("r_mistolin").textContent = total.mistolin;
+            document.getElementById("r_cloro").textContent = total.cloro;
+            document.getElementById("r_ace").textContent = total.ace;
+            document.getElementById("r_toallita").textContent = total.toallita;
+            document.getElementById("r_kits").textContent = total.kits;
+        }
 
-render();
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        async function init() {
+            try {
+                // Inicializar DB de entregas
+                await initDB();
+                await loadRegistros();
+                
+                // Cargar agencias y zonas
+                await loadAgencies();
+                updateZonaSelect();
+                
+                // Event listener para cambio de zona
+                const zonaSelect = document.getElementById('zonaSelect');
+                zonaSelect.addEventListener('change', (e) => {
+                    updateAgenciaSelect(e.target.value);
+                });
+                
+                render();
+            } catch (err) {
+                console.error('Error inicializando:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo inicializar la base de datos',
+                    confirmButtonColor: '#ef4444'
+                });
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Event listeners
+        document.getElementById('btnGuardar').addEventListener('click', guardar);
+        document.getElementById('btnClearAll').addEventListener('click', limpiarTodo);
+        
+        document.getElementById('agencia').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                guardar();
+            }
+        });
+
+        // Exponer funciones globales
+        window.prepararEdicion = prepararEdicion;
+        window.eliminarRegistro = eliminarRegistro;
+
+        init();
     </script>
 </body>
 </html>

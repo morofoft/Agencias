@@ -1,4 +1,4 @@
-// js/agencies/agencies.page.js - VERSIÓN OPTIMIZADA
+// js/agencies/agencies.page.js - VERSIÓN CORREGIDA
 
 import { createAgencyFromGPS } from './agencies.actions.js';
 import { getAllAgencies, deleteAgency, updateAgency } from './agencies.store.js';
@@ -56,7 +56,7 @@ function renderCurrentPage() {
   }, 50);
 }
 
-// 🎨 Renderizado optimizado (usando DocumentFragment)
+// 🎨 Renderizado optimizado
 function renderListOptimized(data) {
   if (!list) return;
   
@@ -80,7 +80,6 @@ function renderListOptimized(data) {
     card.className = 'bg-white rounded-2xl shadow-md p-4 space-y-3 transition-all hover:shadow-lg hover:-translate-y-0.5';
     card.setAttribute('data-id', a.id);
     
-    // Determinar color de estado
     let estadoColor = '';
     let estadoText = '';
     switch (a.estado) {
@@ -140,7 +139,6 @@ function renderListOptimized(data) {
     fragment.appendChild(card);
   });
   
-  // Reemplazar contenido de forma eficiente
   list.innerHTML = '';
   list.appendChild(fragment);
 }
@@ -149,19 +147,14 @@ function renderListOptimized(data) {
 function renderPagination() {
   const totalPages = Math.ceil(filteredAgencies.length / ITEMS_PER_PAGE);
   
-  if (totalPages <= 1) {
-    const existingPag = document.querySelector('.pagination-container');
-    if (existingPag) existingPag.remove();
-    return;
-  }
+  // Eliminar paginación anterior si existe
+  const existingPag = document.querySelector('.pagination-container');
+  if (existingPag) existingPag.remove();
   
-  let pagContainer = document.querySelector('.pagination-container');
-  if (!pagContainer) {
-    pagContainer = document.createElement('div');
-    pagContainer.className = 'pagination-container flex justify-center gap-2 mt-6 mb-4';
-    list.parentNode.insertBefore(pagContainer, list.nextSibling);
-  }
+  if (totalPages <= 1) return;
   
+  const pagContainer = document.createElement('div');
+  pagContainer.className = 'pagination-container flex justify-center gap-2 mt-6 mb-4';
   pagContainer.innerHTML = `
     <button class="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
       ${currentPage === 1 ? 'disabled' : ''} data-page="prev">
@@ -174,27 +167,20 @@ function renderPagination() {
     </button>
   `;
   
-  // Event listeners para paginación
+  list.parentNode.insertBefore(pagContainer, list.nextSibling);
+  
   pagContainer.querySelectorAll('[data-page]').forEach(btn => {
-    btn.removeEventListener('click', handlePagination);
-    btn.addEventListener('click', handlePagination);
+    btn.addEventListener('click', (e) => {
+      const direction = btn.dataset.page;
+      if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+      } else if (direction === 'next' && currentPage < totalPages) {
+        currentPage++;
+      }
+      renderCurrentPage();
+      list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   });
-}
-
-function handlePagination(e) {
-  const btn = e.currentTarget;
-  const direction = btn.dataset.page;
-  const totalPages = Math.ceil(filteredAgencies.length / ITEMS_PER_PAGE);
-  
-  if (direction === 'prev' && currentPage > 1) {
-    currentPage--;
-  } else if (direction === 'next' && currentPage < totalPages) {
-    currentPage++;
-  }
-  
-  renderCurrentPage();
-  // Scroll suave al inicio de la lista
-  list.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function updateCounters() {
@@ -203,10 +189,10 @@ function updateCounters() {
   }
 }
 
-// 🚀 Cargar agencias (con cache)
+// 🚀 Cargar agencias
 let agenciesCache = null;
 let lastLoadTime = 0;
-const CACHE_DURATION = 30000; // 30 segundos
+const CACHE_DURATION = 30000;
 
 async function loadAgencies(force = false) {
   if (isLoading) return;
@@ -220,8 +206,6 @@ async function loadAgencies(force = false) {
   }
   
   isLoading = true;
-  
-  // Mostrar skeleton loading
   showSkeleton();
   
   try {
@@ -253,21 +237,11 @@ function showSkeleton() {
     skeleton.className = 'bg-white rounded-2xl shadow-md p-4 space-y-3 animate-pulse';
     skeleton.innerHTML = `
       <div class="flex justify-between items-start">
-        <div>
-          <div class="h-5 bg-slate-200 rounded w-32 mb-1"></div>
-          <div class="h-3 bg-slate-100 rounded w-20"></div>
-        </div>
+        <div><div class="h-5 bg-slate-200 rounded w-32 mb-1"></div><div class="h-3 bg-slate-100 rounded w-20"></div></div>
         <div class="h-6 bg-slate-200 rounded-full w-16"></div>
       </div>
-      <div class="space-y-2">
-        <div class="h-4 bg-slate-100 rounded w-full"></div>
-        <div class="h-4 bg-slate-100 rounded w-3/4"></div>
-      </div>
-      <div class="flex justify-between pt-2">
-        <div class="h-6 bg-slate-200 rounded w-12"></div>
-        <div class="h-6 bg-slate-200 rounded w-12"></div>
-        <div class="h-6 bg-slate-200 rounded w-12"></div>
-      </div>
+      <div class="space-y-2"><div class="h-4 bg-slate-100 rounded w-full"></div><div class="h-4 bg-slate-100 rounded w-3/4"></div></div>
+      <div class="flex justify-between pt-2"><div class="h-6 bg-slate-200 rounded w-12"></div><div class="h-6 bg-slate-200 rounded w-12"></div><div class="h-6 bg-slate-200 rounded w-12"></div><div class="h-6 bg-slate-200 rounded w-12"></div></div>
     `;
     fragment.appendChild(skeleton);
   }
@@ -281,10 +255,7 @@ async function editAgency(agency) {
     title: 'Editar Agencia',
     html: `
       <div class="text-left space-y-3">
-        <div>
-          <label class="text-xs font-bold text-slate-500">Código</label>
-          <input id="edit-codigo" class="swal2-input w-full mt-1" value="${agency.idReal || ''}">
-        </div>
+        <div><label class="text-xs font-bold text-slate-500">Código</label><input id="edit-codigo" class="swal2-input w-full mt-1" value="${agency.idReal || ''}"></div>
         <div>
           <label class="text-xs font-bold text-slate-500">Zona</label>
           <select id="edit-zona" class="swal2-select w-full mt-1">
@@ -295,10 +266,7 @@ async function editAgency(agency) {
             <option value="OTRA" ${agency.zona === 'OTRA' ? 'selected' : ''}>OTRA</option>
           </select>
         </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500">Dirección</label>
-          <input id="edit-direccion" class="swal2-input w-full mt-1" value="${agency.direccion || ''}">
-        </div>
+        <div><label class="text-xs font-bold text-slate-500">Dirección</label><input id="edit-direccion" class="swal2-input w-full mt-1" value="${agency.direccion || ''}"></div>
         <div>
           <label class="text-xs font-bold text-slate-500">Estado</label>
           <select id="edit-estado" class="swal2-select w-full mt-1">
@@ -345,7 +313,7 @@ async function editAgency(agency) {
   }
 }
 
-// 🗑️ Eliminar agencia
+// 🗑️ ELIMINAR AGENCIA (CORREGIDO)
 async function deleteAgencyById(id, agencyName) {
   const result = await Swal.fire({
     title: '¿Eliminar agencia?',
@@ -358,28 +326,50 @@ async function deleteAgencyById(id, agencyName) {
   });
   
   if (result.isConfirmed) {
-    await deleteAgency(id);
-    
-    // Actualizar cache
-    agencies = agencies.filter(a => a.id !== id);
-    agenciesCache = agencies;
-    filteredAgencies = [...agencies];
-    
-    // Ajustar página si es necesario
-    const totalPages = Math.ceil(filteredAgencies.length / ITEMS_PER_PAGE);
-    if (currentPage > totalPages && totalPages > 0) {
-      currentPage = totalPages;
+    try {
+      // Mostrar loading
+      Swal.fire({
+        title: 'Eliminando...',
+        text: 'Por favor espera',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+      
+      // Eliminar de IndexedDB
+      await deleteAgency(id, false); // false = hard delete
+      
+      // Actualizar arrays locales
+      agencies = agencies.filter(a => a.id !== id);
+      agenciesCache = agencies;
+      filteredAgencies = [...agencies];
+      
+      // Ajustar página si es necesario
+      const totalPages = Math.ceil(filteredAgencies.length / ITEMS_PER_PAGE);
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+      } else if (totalPages === 0) {
+        currentPage = 1;
+      }
+      
+      renderCurrentPage();
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Eliminada',
+        text: 'Agencia removida del sistema',
+        timer: 1500,
+        showConfirmButton: false
+      });
+      
+    } catch (error) {
+      console.error('Error al eliminar:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo eliminar la agencia',
+        confirmButtonColor: '#ef4444'
+      });
     }
-    
-    renderCurrentPage();
-    
-    Swal.fire({
-      icon: 'success',
-      title: 'Eliminada',
-      text: 'Agencia removida del sistema',
-      timer: 1500,
-      showConfirmButton: false
-    });
   }
 }
 
@@ -398,7 +388,7 @@ function visitAgency(agency) {
   }
 }
 
-// 🎯 Manejo de eventos con delegación (más eficiente)
+// 🎯 Manejo de eventos con delegación (CORREGIDO)
 list.addEventListener('click', async (e) => {
   const btn = e.target.closest('button');
   if (!btn) return;
@@ -408,15 +398,28 @@ list.addEventListener('click', async (e) => {
   
   const agencyId = card.dataset.id;
   const agency = agencies.find(a => a.id === agencyId);
-  if (!agency) return;
+  if (!agency) {
+    console.error('Agencia no encontrada:', agencyId);
+    return;
+  }
   
+  // IR - Abrir en maps
   if (btn.classList.contains('btn-go')) {
     visitAgency(agency);
-  } else if (btn.classList.contains('btn-edit')) {
+  }
+  
+  // EDITAR
+  else if (btn.classList.contains('btn-edit')) {
     await editAgency(agency);
-  } else if (btn.classList.contains('btn-delete')) {
+  }
+  
+  // ELIMINAR
+  else if (btn.classList.contains('btn-delete')) {
     await deleteAgencyById(agencyId, agency.idReal);
-  } else if (btn.classList.contains('btn-visit')) {
+  }
+  
+  // VISITAR (marcar como visitada)
+  else if (btn.classList.contains('btn-visit')) {
     visitAgency(agency);
   }
 });
@@ -441,25 +444,17 @@ btnAdd.addEventListener('click', async () => {
       title: 'Nueva Agencia',
       html: `
         <div class="text-left space-y-3">
-          <div>
-            <label class="text-xs font-bold text-slate-500">Código *</label>
-            <input id="codigo" class="swal2-input w-full mt-1" placeholder="Ej: 8125001">
-          </div>
+          <div><label class="text-xs font-bold text-slate-500">Código *</label><input id="codigo" class="swal2-input w-full mt-1" placeholder="Ej: 8125001"></div>
           <div>
             <label class="text-xs font-bold text-slate-500">Zona *</label>
             <select id="zona" class="swal2-select w-full mt-1">
               <option value="">Seleccione zona</option>
-              <option value="A">Zona A</option>
-              <option value="B">Zona B</option>
-              <option value="C">Zona C</option>
-              <option value="D">Zona D</option>
+              <option value="A">Zona A</option><option value="B">Zona B</option>
+              <option value="C">Zona C</option><option value="D">Zona D</option>
               <option value="OTRA">OTRA</option>
             </select>
           </div>
-          <div>
-            <label class="text-xs font-bold text-slate-500">Dirección</label>
-            <input id="direccion" class="swal2-input w-full mt-1" placeholder="Calle, número...">
-          </div>
+          <div><label class="text-xs font-bold text-slate-500">Dirección</label><input id="direccion" class="swal2-input w-full mt-1" placeholder="Calle, número..."></div>
         </div>
       `,
       showCancelButton: true,
@@ -468,24 +463,16 @@ btnAdd.addEventListener('click', async () => {
       preConfirm: () => {
         const codigo = document.getElementById('codigo').value.trim();
         const zona = document.getElementById('zona').value;
-        
         if (!codigo || !zona) {
           Swal.showValidationMessage('Código y zona son obligatorios');
           return false;
         }
-        
-        return {
-          codigo,
-          zona,
-          direccion: document.getElementById('direccion').value.trim()
-        };
+        return { codigo, zona, direccion: document.getElementById('direccion').value.trim() };
       }
     });
     
     if (form) {
       await createAgencyFromGPS(pos.coords, form);
-      
-      // Recargar datos (forzar)
       agenciesCache = null;
       await loadAgencies(true);
       
@@ -504,27 +491,6 @@ btnAdd.addEventListener('click', async () => {
     enableHighAccuracy: true,
     timeout: 10000
   });
-});
-
-// 🔄 Recargar manual (pull to refresh opcional)
-let touchStart = 0;
-list.addEventListener('touchstart', (e) => {
-  touchStart = e.touches[0].clientY;
-});
-list.addEventListener('touchend', async (e) => {
-  const touchEnd = e.changedTouches[0].clientY;
-  if (touchEnd - touchStart > 100 && list.scrollTop === 0) {
-    agenciesCache = null;
-    await loadAgencies(true);
-    Swal.fire({
-      toast: true,
-      position: 'top-end',
-      icon: 'success',
-      title: 'Actualizado',
-      showConfirmButton: false,
-      timer: 1500
-    });
-  }
 });
 
 // 🚀 Inicializar

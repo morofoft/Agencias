@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Panel de Limpieza | Control de Agencias</title>
-  
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -14,32 +15,93 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%); min-height: 100vh; }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    
-    .fade-in { animation: fadeIn 0.4s ease-out; }
-    
-    .btn-danger { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
-    .btn-danger:hover { background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); transform: scale(0.98); }
-    .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-    .btn-warning:hover { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); transform: scale(0.98); }
-    .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-    .btn-success:hover { background: linear-gradient(135deg, #059669 0%, #047857 100%); transform: scale(0.98); }
-    .btn-primary { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); }
-    .btn-primary:hover { background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%); transform: scale(0.98); }
-    .btn-info { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
-    .btn-info:hover { background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); transform: scale(0.98); }
-    
-    button { transition: all 0.2s ease; }
-    button:active { transform: scale(0.97); }
-    
-    .card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-    
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1e1e2f 0%, #2d2d44 100%);
+      min-height: 100vh;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+      transform: scale(0.98);
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .btn-warning:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      transform: scale(0.98);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+      transform: scale(0.98);
+    }
+
+    .btn-info {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    }
+
+    .btn-info:hover {
+      background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+      transform: scale(0.98);
+    }
+
+    button {
+      transition: all 0.2s ease;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+
     .log-container {
       background: #1e1e2f;
       color: #a5f3fc;
@@ -48,13 +110,13 @@
       max-height: 300px;
       overflow-y: auto;
     }
-    
+
     .quality-bar {
       height: 8px;
       border-radius: 4px;
       transition: width 0.5s ease;
     }
-    
+
     .zone-badge {
       display: inline-block;
       padding: 2px 8px;
@@ -65,1038 +127,1870 @@
     }
   </style>
 </head>
+
 <body class="flex items-center justify-center p-4">
 
-<div id="app" class="w-full max-w-6xl">
-  
-  <!-- PANTALLA DE LOGIN -->
-  <div id="loginScreen" class="fade-in">
-    <div class="bg-white/95 backdrop-blur rounded-3xl shadow-2xl p-8 max-w-md mx-auto">
-      <div class="text-center mb-6">
-        <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-          <i class="fas fa-shield-alt text-3xl text-white"></i>
+  <div id="app" class="w-full max-w-6xl">
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="loginScreen" class="fade-in">
+      <div class="bg-white/95 backdrop-blur rounded-3xl shadow-2xl p-8 max-w-md mx-auto">
+        <div class="text-center mb-6">
+          <div
+            class="w-20 h-20 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <i class="fas fa-shield-alt text-3xl text-white"></i>
+          </div>
+          <h1 class="text-2xl font-bold text-slate-800">Panel de Limpieza</h1>
+          <p class="text-sm text-slate-500 mt-1">Área restringida - Acceso autorizado</p>
         </div>
-        <h1 class="text-2xl font-bold text-slate-800">Panel de Limpieza</h1>
-        <p class="text-sm text-slate-500 mt-1">Área restringida - Acceso autorizado</p>
+
+        <form id="loginForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              <i class="fas fa-key mr-2 text-red-500"></i>
+              Contraseña de acceso
+            </label>
+            <input type="password" id="password"
+              class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder="Ingrese la contraseña" autofocus>
+          </div>
+          <button type="submit"
+            class="w-full btn-danger text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2">
+            <i class="fas fa-unlock-alt"></i>
+            Acceder al Panel
+          </button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <a href="index.html" class="text-sm text-slate-400 hover:text-slate-600 transition">
+            <i class="fas fa-arrow-left mr-1"></i> Volver al inicio
+          </a>
+        </div>
       </div>
-      
-      <form id="loginForm" class="space-y-4">
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <i class="fas fa-key mr-2 text-red-500"></i>
-            Contraseña de acceso
-          </label>
-          <input type="password" id="password" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Ingrese la contraseña" autofocus>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL (oculta por defecto) -->
+    <div id="mainScreen" class="hidden fade-in">
+      <!-- Header -->
+      <div class="bg-white/95 backdrop-blur rounded-3xl shadow-xl p-6 mb-6">
+        <div class="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-700 rounded-xl flex items-center justify-center">
+                <i class="fas fa-broom text-white text-xl"></i>
+              </div>
+              <div>
+                <h1 class="text-2xl font-bold text-slate-800">Panel de Limpieza</h1>
+                <p class="text-sm text-slate-500">Herramientas de mantenimiento y limpieza de datos</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button id="btnRefresh"
+              class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+              <i class="fas fa-sync-alt"></i> Refrescar
+            </button>
+            <button id="btnLogout"
+              class="px-4 py-2 bg-slate-100 hover:bg-red-100 text-red-600 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+              <i class="fas fa-sign-out-alt"></i> Salir
+            </button>
+          </div>
         </div>
-        <button type="submit" class="w-full btn-danger text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2">
-          <i class="fas fa-unlock-alt"></i>
-          Acceder al Panel
+      </div>
+
+      <!-- SECCIÓN DE MODIFICACIÓN MASIVA DE ZONAS -->
+      <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden mt-6">
+        <div class="bg-gradient-to-r from-pink-600 to-rose-600 px-6 py-4">
+          <h2 class="text-white font-bold flex items-center gap-2">
+            <i class="fas fa-layer-group"></i> Modificación Masiva de Zonas
+          </h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Panel 1: Cambiar por ID -->
+            <div class="border border-slate-200 rounded-xl p-4">
+              <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <i class="fas fa-hashtag text-pink-500"></i> Por ID específico
+              </h3>
+              <div class="space-y-3">
+                <input type="text" id="massIds" placeholder="IDs separados por coma (ej: 8127001,8127002,8127003)"
+                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                <select id="massZonaSelect" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                  <option value="">Seleccionar zona</option>
+                  <option value="A">Zona A</option>
+                  <option value="B">Zona B</option>
+                  <option value="C">Zona C</option>
+                  <option value="D">Zona D</option>
+                  <option value="SAN JUAN CENTRO">SAN JUAN CENTRO</option>
+                  <option value="LOS CORBANO">LOS CORBANO</option>
+                  <option value="VALLEJUELO">VALLEJUELO</option>
+                  <option value="LAS MATAS DE FARFAN">LAS MATAS DE FARFAN</option>
+                  <option value="RAFAEL BAEZ">RAFAEL BAEZ</option>
+                  <option value="LUIS EDWARDO LUCIANO">LUIS EDWARDO LUCIANO</option>
+                  <option value="EL ROSARIO">EL ROSARIO</option>
+                  <option value="PEDRO CORTO">PEDRO CORTO</option>
+                  <option value="ELIAS PIÑA">ELIAS PIÑA</option>
+                  <option value="EL CERCADO">EL CERCADO</option>
+                </select>
+                <div class="flex gap-2">
+                  <button id="btnMassChangeById"
+                    class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-check"></i> Cambiar Zona
+                  </button>
+                  <button id="btnMassChangeByIdSimulate"
+                    class="flex-1 bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-eye"></i> Simular
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 2: Cambiar por Patrón -->
+            <div class="border border-slate-200 rounded-xl p-4">
+              <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <i class="fas fa-magic text-pink-500"></i> Por Patrón
+              </h3>
+              <div class="space-y-3">
+                <input type="text" id="massPattern" placeholder="Patrón (ej: 8127 para IDs que empiecen con 8127)"
+                  class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                <select id="massPatternZonaSelect" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                  <option value="">Seleccionar zona</option>
+                  <option value="A">Zona A</option>
+                  <option value="B">Zona B</option>
+                  <option value="C">Zona C</option>
+                  <option value="D">Zona D</option>
+                  <option value="SAN JUAN CENTRO">SAN JUAN CENTRO</option>
+                  <option value="LOS CORBANO">LOS CORBANO</option>
+                  <option value="VALLEJUELO">VALLEJUELO</option>
+                  <option value="LAS MATAS DE FARFAN">LAS MATAS DE FARFAN</option>
+                  <option value="RAFAEL BAEZ">RAFAEL BAEZ</option>
+                  <option value="LUIS EDWARDO LUCIANO">LUIS EDWARDO LUCIANO</option>
+                  <option value="EL ROSARIO">EL ROSARIO</option>
+                  <option value="PEDRO CORTO">PEDRO CORTO</option>
+                  <option value="ELIAS PIÑA">ELIAS PIÑA</option>
+                  <option value="EL CERCADO">EL CERCADO</option>
+                </select>
+                <div class="flex gap-2">
+                  <button id="btnMassChangeByPattern"
+                    class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-check"></i> Cambiar Zona
+                  </button>
+                  <button id="btnMassChangeByPatternSimulate"
+                    class="flex-1 bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-eye"></i> Simular
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 3: Cambiar por Rango -->
+            <div class="border border-slate-200 rounded-xl p-4">
+              <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <i class="fas fa-chart-line text-pink-500"></i> Por Rango Numérico
+              </h3>
+              <div class="space-y-3">
+                <div class="flex gap-2">
+                  <input type="text" id="rangeStart" placeholder="ID inicial (ej: 8127000)"
+                    class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                  <input type="text" id="rangeEnd" placeholder="ID final (ej: 8127100)"
+                    class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <select id="massRangeZonaSelect" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                  <option value="">Seleccionar zona</option>
+                  <option value="A">Zona A</option>
+                  <option value="B">Zona B</option>
+                  <option value="C">Zona C</option>
+                  <option value="D">Zona D</option>
+                  <option value="SAN JUAN CENTRO">SAN JUAN CENTRO</option>
+                  <option value="LOS CORBANO">LOS CORBANO</option>
+                  <option value="VALLEJUELO">VALLEJUELO</option>
+                  <option value="LAS MATAS DE FARFAN">LAS MATAS DE FARFAN</option>
+                  <option value="RAFAEL BAEZ">RAFAEL BAEZ</option>
+                  <option value="LUIS EDWARDO LUCIANO">LUIS EDWARDO LUCIANO</option>
+                  <option value="EL ROSARIO">EL ROSARIO</option>
+                  <option value="PEDRO CORTO">PEDRO CORTO</option>
+                  <option value="ELIAS PIÑA">ELIAS PIÑA</option>
+                  <option value="EL CERCADO">EL CERCADO</option>
+                </select>
+                <div class="flex gap-2">
+                  <button id="btnMassChangeByRange"
+                    class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-check"></i> Cambiar Zona
+                  </button>
+                  <button id="btnMassChangeByRangeSimulate"
+                    class="flex-1 bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-eye"></i> Simular
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel 4: Mover zona completa -->
+            <div class="border border-slate-200 rounded-xl p-4">
+              <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <i class="fas fa-arrows-alt text-pink-500"></i> Mover Zona Completa
+              </h3>
+              <div class="space-y-3">
+                <select id="moveFromZona" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                  <option value="">Zona de origen</option>
+                </select>
+                <select id="moveToZona" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                  <option value="">Zona de destino</option>
+                  <option value="A">Zona A</option>
+                  <option value="B">Zona B</option>
+                  <option value="C">Zona C</option>
+                  <option value="D">Zona D</option>
+                  <option value="SAN JUAN CENTRO">SAN JUAN CENTRO</option>
+                  <option value="LOS CORBANO">LOS CORBANO</option>
+                  <option value="VALLEJUELO">VALLEJUELO</option>
+                  <option value="LAS MATAS DE FARFAN">LAS MATAS DE FARFAN</option>
+                  <option value="RAFAEL BAEZ">RAFAEL BAEZ</option>
+                  <option value="LUIS EDWARDO LUCIANO">LUIS EDWARDO LUCIANO</option>
+                  <option value="EL ROSARIO">EL ROSARIO</option>
+                  <option value="PEDRO CORTO">PEDRO CORTO</option>
+                  <option value="ELIAS PIÑA">ELIAS PIÑA</option>
+                  <option value="EL CERCADO">EL CERCADO</option>
+                </select>
+                <div class="flex gap-2">
+                  <button id="btnMassMoveZone"
+                    class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-check"></i> Mover
+                  </button>
+                  <button id="btnMassMoveZoneSimulate"
+                    class="flex-1 bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-eye"></i> Simular
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resultado de operaciones -->
+          <div id="massOperationResult" class="mt-4 text-sm text-center text-slate-500">
+            Esperando acción...
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN DE CALIDAD DE DATOS (destacada) -->
+      <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden mb-6">
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4">
+          <h2 class="text-white font-bold flex items-center gap-2">
+            <i class="fas fa-chart-line"></i> Calidad de Datos
+          </h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Puntaje General -->
+            <div class="text-center border-r border-slate-100">
+              <div class="text-5xl font-bold" id="qualityScore">--%</div>
+              <div class="text-sm text-slate-500 mt-1">Puntaje General</div>
+              <div class="w-full bg-slate-200 rounded-full h-2 mt-3">
+                <div id="qualityBar" class="quality-bar bg-emerald-500 rounded-full" style="width: 0%"></div>
+              </div>
+              <div id="qualityGrade" class="text-xs font-bold mt-2"></div>
+            </div>
+
+            <!-- Métricas rápidas -->
+            <div class="col-span-2">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-slate-50 rounded-xl p-3 text-center">
+                  <div class="text-2xl font-bold text-indigo-600" id="validIdsPercent">--%</div>
+                  <div class="text-xs text-slate-500">IDs válidos (812*)</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3 text-center">
+                  <div class="text-2xl font-bold text-emerald-600" id="gpsPercent">--%</div>
+                  <div class="text-xs text-slate-500">Con GPS</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3 text-center">
+                  <div class="text-2xl font-bold text-amber-600" id="addressPercent">--%</div>
+                  <div class="text-xs text-slate-500">Con dirección</div>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-3 text-center">
+                  <div class="text-2xl font-bold text-purple-600" id="zonePercent">--%</div>
+                  <div class="text-xs text-slate-500">Zona válida</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gráfico de calidad -->
+          <div class="mt-6">
+            <canvas id="qualityChart" height="80"></canvas>
+          </div>
+
+          <div class="flex justify-end mt-4">
+            <button id="btnCalculateQuality"
+              class="btn-info text-white font-semibold py-2 px-4 rounded-xl text-sm flex items-center gap-2">
+              <i class="fas fa-chart-simple"></i> Recalcular calidad
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- COLUMNA IZQUIERDA: Limpieza Local -->
+        <div class="space-y-6">
+
+          <!-- Limpieza Local -->
+          <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4">
+              <h2 class="text-white font-bold flex items-center gap-2">
+                <i class="fas fa-database"></i> Datos Locales (IndexedDB)
+              </h2>
+            </div>
+            <div class="p-6 space-y-4">
+              <div class="grid grid-cols-2 gap-3">
+                <button id="btnCleanCache"
+                  class="btn-warning text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                  <i class="fas fa-trash-alt"></i> Limpiar Caché
+                </button>
+                <button id="btnCleanInvalidLocal"
+                  class="btn-danger text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                  <i class="fas fa-filter"></i> Eliminar IDs inválidos
+                </button>
+              </div>
+              <button id="btnCleanDuplicatesLocal"
+                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-copy"></i> Eliminar Duplicados (por idReal)
+              </button>
+              <button id="btnCleanNoGps"
+                class="w-full bg-slate-500 hover:bg-slate-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-map-marker-alt-slash"></i> Eliminar agencias sin GPS
+              </button>
+            </div>
+          </div>
+
+          <!-- Normalización de Zonas -->
+          <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
+              <h2 class="text-white font-bold flex items-center gap-2">
+                <i class="fas fa-layer-group"></i> Normalización de Zonas
+              </h2>
+            </div>
+            <div class="p-6 space-y-4">
+              <button id="btnNormalizeZones"
+                class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-magic"></i> Normalizar nombres de zonas
+              </button>
+              <button id="btnFixIds"
+                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-wrench"></i> Corregir IDs sin prefijo 812
+              </button>
+              <div id="zoneDistribution" class="mt-3 text-sm">
+                <p class="text-xs font-bold text-slate-500 mb-2">Distribución de zonas:</p>
+                <div id="zoneList" class="max-h-32 overflow-y-auto"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: Firebase + Estadísticas -->
+        <div class="space-y-6">
+
+          <!-- Limpieza Firebase -->
+          <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-red-700 to-red-800 px-6 py-4">
+              <h2 class="text-white font-bold flex items-center gap-2">
+                <i class="fas fa-cloud-upload-alt"></i> Firebase Cloud
+              </h2>
+            </div>
+            <div class="p-6 space-y-4">
+              <div class="grid grid-cols-2 gap-3">
+                <button id="btnSyncFromFirebase"
+                  class="btn-primary text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                  <i class="fas fa-download"></i> Sincronizar desde Cloud
+                </button>
+                <button id="btnCleanFirebaseInvalid"
+                  class="btn-danger text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                  <i class="fas fa-fire"></i> Eliminar IDs inválidos
+                </button>
+              </div>
+              <button id="btnSyncToFirebase"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                <i class="fas fa-upload"></i> Sincronizar todo a Firebase
+              </button>
+            </div>
+          </div>
+
+          <!-- Estadísticas Locales -->
+          <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
+              <h2 class="text-white font-bold flex items-center gap-2">
+                <i class="fas fa-chart-bar"></i> Estadísticas Locales
+              </h2>
+            </div>
+            <div class="p-6">
+              <div id="localStats" class="space-y-2 text-sm">
+                <div class="flex justify-between py-2 border-b border-slate-100">
+                  <span class="text-slate-500">Total agencias:</span>
+                  <span class="font-bold text-indigo-600">--</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-100">
+                  <span class="text-slate-500">IDs inválidos (no 812):</span>
+                  <span class="font-bold text-red-600">--</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-slate-100">
+                  <span class="text-slate-500">Agencias sin GPS:</span>
+                  <span class="font-bold text-amber-600">--</span>
+                </div>
+                <div class="flex justify-between py-2">
+                  <span class="text-slate-500">Duplicados:</span>
+                  <span class="font-bold text-red-600">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOG DE ACTIVIDAD -->
+      <div class="mt-6 bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4">
+          <h2 class="text-white font-bold flex items-center gap-2">
+            <i class="fas fa-terminal"></i> Registro de Actividad
+          </h2>
+        </div>
+        <div class="log-container p-4" id="logContainer">
+          <div class="text-slate-400">Listo para ejecutar acciones...</div>
+        </div>
+        <div class="p-3 bg-slate-50 flex justify-between">
+          <button id="btnClearLog" class="text-xs text-slate-400 hover:text-red-500 transition px-3 py-1 rounded">
+            <i class="fas fa-eraser"></i> Limpiar log
+          </button>
+          <button id="btnExportLog" class="text-xs text-slate-400 hover:text-emerald-500 transition px-3 py-1 rounded">
+            <i class="fas fa-download"></i> Exportar log
+          </button>
+        </div>
+      </div>
+
+      <!-- BOTONES DE ACCIÓN RÁPIDA -->
+      <div class="mt-6 grid grid-cols-3 gap-4">
+        <button id="btnFullClean"
+          class="btn-danger text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 text-lg">
+          <i class="fas fa-bomb"></i> LIMPIEZA COMPLETA
         </button>
-      </form>
-      
-      <div class="mt-6 text-center">
-        <a href="index.html" class="text-sm text-slate-400 hover:text-slate-600 transition">
-          <i class="fas fa-arrow-left mr-1"></i> Volver al inicio
-        </a>
+        <button id="btnFullSync"
+          class="btn-success text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 text-lg">
+          <i class="fas fa-cloud-upload-alt"></i> SINCRONIZAR TODO
+        </button>
+        <button id="btnCleanMalformed"
+          class="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 mt-2">
+          <i class="fas fa-bug"></i> Limpiar IDs mal formados (812 duplicado)
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- PANTALLA PRINCIPAL (oculta por defecto) -->
-  <div id="mainScreen" class="hidden fade-in">
-    <!-- Header -->
-    <div class="bg-white/95 backdrop-blur rounded-3xl shadow-xl p-6 mb-6">
-      <div class="flex justify-between items-center flex-wrap gap-4">
-        <div>
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-700 rounded-xl flex items-center justify-center">
-              <i class="fas fa-broom text-white text-xl"></i>
-            </div>
-            <div>
-              <h1 class="text-2xl font-bold text-slate-800">Panel de Limpieza</h1>
-              <p class="text-sm text-slate-500">Herramientas de mantenimiento y limpieza de datos</p>
-            </div>
-          </div>
-        </div>
-        <div class="flex gap-2">
-          <button id="btnRefresh" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-sm transition flex items-center gap-2">
-            <i class="fas fa-sync-alt"></i> Refrescar
-          </button>
-          <button id="btnLogout" class="px-4 py-2 bg-slate-100 hover:bg-red-100 text-red-600 rounded-xl font-semibold text-sm transition flex items-center gap-2">
-            <i class="fas fa-sign-out-alt"></i> Salir
-          </button>
-        </div>
-      </div>
-    </div>
+  <script type="module">
+    import { auth, db } from "./js/firebase/firebase.init.js";
+    import { getAllAgencies, deleteAgency, addAgency, updateAgency } from "./js/agencies/agencies.store.js";
+    import { collection, getDocs, deleteDoc, doc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    <!-- SECCIÓN DE CALIDAD DE DATOS (destacada) -->
-    <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden mb-6">
-      <div class="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4">
-        <h2 class="text-white font-bold flex items-center gap-2">
-          <i class="fas fa-chart-line"></i> Calidad de Datos
-        </h2>
-      </div>
-      <div class="p-6">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- Puntaje General -->
-          <div class="text-center border-r border-slate-100">
-            <div class="text-5xl font-bold" id="qualityScore">--%</div>
-            <div class="text-sm text-slate-500 mt-1">Puntaje General</div>
-            <div class="w-full bg-slate-200 rounded-full h-2 mt-3">
-              <div id="qualityBar" class="quality-bar bg-emerald-500 rounded-full" style="width: 0%"></div>
-            </div>
-            <div id="qualityGrade" class="text-xs font-bold mt-2"></div>
-          </div>
-          
-          <!-- Métricas rápidas -->
-          <div class="col-span-2">
-            <div class="grid grid-cols-2 gap-4">
-              <div class="bg-slate-50 rounded-xl p-3 text-center">
-                <div class="text-2xl font-bold text-indigo-600" id="validIdsPercent">--%</div>
-                <div class="text-xs text-slate-500">IDs válidos (812*)</div>
-              </div>
-              <div class="bg-slate-50 rounded-xl p-3 text-center">
-                <div class="text-2xl font-bold text-emerald-600" id="gpsPercent">--%</div>
-                <div class="text-xs text-slate-500">Con GPS</div>
-              </div>
-              <div class="bg-slate-50 rounded-xl p-3 text-center">
-                <div class="text-2xl font-bold text-amber-600" id="addressPercent">--%</div>
-                <div class="text-xs text-slate-500">Con dirección</div>
-              </div>
-              <div class="bg-slate-50 rounded-xl p-3 text-center">
-                <div class="text-2xl font-bold text-purple-600" id="zonePercent">--%</div>
-                <div class="text-xs text-slate-500">Zona válida</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Gráfico de calidad -->
-        <div class="mt-6">
-          <canvas id="qualityChart" height="80"></canvas>
-        </div>
-        
-        <div class="flex justify-end mt-4">
-          <button id="btnCalculateQuality" class="btn-info text-white font-semibold py-2 px-4 rounded-xl text-sm flex items-center gap-2">
-            <i class="fas fa-chart-simple"></i> Recalcular calidad
-          </button>
-        </div>
-      </div>
-    </div>
+    // ============================================
+    // CONTRASEÑA
+    // ============================================
+    const ADMIN_PASSWORD = "admin123";
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      
-      <!-- COLUMNA IZQUIERDA: Limpieza Local -->
-      <div class="space-y-6">
-        
-        <!-- Limpieza Local -->
-        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
-          <div class="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4">
-            <h2 class="text-white font-bold flex items-center gap-2">
-              <i class="fas fa-database"></i> Datos Locales (IndexedDB)
-            </h2>
-          </div>
-          <div class="p-6 space-y-4">
-            <div class="grid grid-cols-2 gap-3">
-              <button id="btnCleanCache" class="btn-warning text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-                <i class="fas fa-trash-alt"></i> Limpiar Caché
-              </button>
-              <button id="btnCleanInvalidLocal" class="btn-danger text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-                <i class="fas fa-filter"></i> Eliminar IDs inválidos
-              </button>
-            </div>
-            <button id="btnCleanDuplicatesLocal" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-              <i class="fas fa-copy"></i> Eliminar Duplicados (por idReal)
-            </button>
-            <button id="btnCleanNoGps" class="w-full bg-slate-500 hover:bg-slate-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-              <i class="fas fa-map-marker-alt-slash"></i> Eliminar agencias sin GPS
-            </button>
-          </div>
-        </div>
+    // Elementos del DOM
+    const loginScreen = document.getElementById('loginScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    const logContainer = document.getElementById('logContainer');
 
-        <!-- Normalización de Zonas -->
-        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
-          <div class="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
-            <h2 class="text-white font-bold flex items-center gap-2">
-              <i class="fas fa-layer-group"></i> Normalización de Zonas
-            </h2>
-          </div>
-          <div class="p-6 space-y-4">
-            <button id="btnNormalizeZones" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-              <i class="fas fa-magic"></i> Normalizar nombres de zonas
-            </button>
-            <button id="btnFixIds" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-              <i class="fas fa-wrench"></i> Corregir IDs sin prefijo 812
-            </button>
-            <div id="zoneDistribution" class="mt-3 text-sm">
-              <p class="text-xs font-bold text-slate-500 mb-2">Distribución de zonas:</p>
-              <div id="zoneList" class="max-h-32 overflow-y-auto"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+    let isRunning = false;
+    let qualityChart = null;
 
-      <!-- COLUMNA DERECHA: Firebase + Estadísticas -->
-      <div class="space-y-6">
-        
-        <!-- Limpieza Firebase -->
-        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
-          <div class="bg-gradient-to-r from-red-700 to-red-800 px-6 py-4">
-            <h2 class="text-white font-bold flex items-center gap-2">
-              <i class="fas fa-cloud-upload-alt"></i> Firebase Cloud
-            </h2>
-          </div>
-          <div class="p-6 space-y-4">
-            <div class="grid grid-cols-2 gap-3">
-              <button id="btnSyncFromFirebase" class="btn-primary text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-                <i class="fas fa-download"></i> Sincronizar desde Cloud
-              </button>
-              <button id="btnCleanFirebaseInvalid" class="btn-danger text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-                <i class="fas fa-fire"></i> Eliminar IDs inválidos
-              </button>
-            </div>
-            <button id="btnSyncToFirebase" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
-              <i class="fas fa-upload"></i> Sincronizar todo a Firebase
-            </button>
-          </div>
-        </div>
+    // Al inicio, verificar conexión a Firebase
+    async function checkFirebaseConnection() {
+      try {
+        const agenciesRef = collection(db, "agencias");
+        const snapshot = await getDocs(agenciesRef);
+        addLog('✅ Conexión a Firebase establecida', 'success');
+        return true;
+      } catch (err) {
+        addLog(`⚠️ Error conectando a Firebase: ${err.message}`, 'warning');
+        return false;
+      }
+    }
 
-        <!-- Estadísticas Locales -->
-        <div class="bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
-          <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
-            <h2 class="text-white font-bold flex items-center gap-2">
-              <i class="fas fa-chart-bar"></i> Estadísticas Locales
-            </h2>
-          </div>
-          <div class="p-6">
-            <div id="localStats" class="space-y-2 text-sm">
-              <div class="flex justify-between py-2 border-b border-slate-100">
-                <span class="text-slate-500">Total agencias:</span>
-                <span class="font-bold text-indigo-600">--</span>
-              </div>
-              <div class="flex justify-between py-2 border-b border-slate-100">
-                <span class="text-slate-500">IDs inválidos (no 812):</span>
-                <span class="font-bold text-red-600">--</span>
-              </div>
-              <div class="flex justify-between py-2 border-b border-slate-100">
-                <span class="text-slate-500">Agencias sin GPS:</span>
-                <span class="font-bold text-amber-600">--</span>
-              </div>
-              <div class="flex justify-between py-2">
-                <span class="text-slate-500">Duplicados:</span>
-                <span class="font-bold text-red-600">--</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    // Llamar al inicio
+    await checkFirebaseConnection();
 
-    <!-- LOG DE ACTIVIDAD -->
-    <div class="mt-6 bg-white/95 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
-      <div class="bg-gradient-to-r from-slate-700 to-slate-800 px-6 py-4">
-        <h2 class="text-white font-bold flex items-center gap-2">
-          <i class="fas fa-terminal"></i> Registro de Actividad
-        </h2>
-      </div>
-      <div class="log-container p-4" id="logContainer">
-        <div class="text-slate-400">Listo para ejecutar acciones...</div>
-      </div>
-      <div class="p-3 bg-slate-50 flex justify-between">
-        <button id="btnClearLog" class="text-xs text-slate-400 hover:text-red-500 transition px-3 py-1 rounded">
-          <i class="fas fa-eraser"></i> Limpiar log
-        </button>
-        <button id="btnExportLog" class="text-xs text-slate-400 hover:text-emerald-500 transition px-3 py-1 rounded">
-          <i class="fas fa-download"></i> Exportar log
-        </button>
-      </div>
-    </div>
+    // Mapa de normalización de zonas
+    const ZONE_NORMALIZATION_MAP = {
+      // Variantes de SAN JUAN CENTRO
+      'san juan centro': 'SAN JUAN CENTRO',
+      'centro': 'SAN JUAN CENTRO',
+      'sanjuan centro': 'SAN JUAN CENTRO',
+      's.j. centro': 'SAN JUAN CENTRO',
+      'a': 'ZONA A San Juan',
+      'b': 'ZONA B San Juan',
+      'c': 'ZONA C San Juan',
+      'd': 'ZONA D San Juan',
 
-    <!-- BOTONES DE ACCIÓN RÁPIDA -->
-    <div class="mt-6 grid grid-cols-2 gap-4">
-      <button id="btnFullClean" class="btn-danger text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 text-lg">
-        <i class="fas fa-bomb"></i> LIMPIEZA COMPLETA
-      </button>
-      <button id="btnFullSync" class="btn-success text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 text-lg">
-        <i class="fas fa-cloud-upload-alt"></i> SINCRONIZAR TODO
-      </button>
-    </div>
-  </div>
-</div>
+      // Variantes de LOS CORBANO
+      'los corbano': 'LOS CORBANO',
+      'corbano sur': 'LOS CORBANO',
+      'corbano norte': 'LOS CORBANO',
 
-<script type="module">
-  import { auth, db } from "./js/firebase/firebase.init.js";
-  import { getAllAgencies, deleteAgency, addAgency, updateAgency } from "./js/agencies/agencies.store.js";
-  import { collection, getDocs, deleteDoc, doc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      // Variantes de VALLEJUELO
+      'vallejuelo': 'VALLEJUELO',
 
-  // ============================================
-  // CONTRASEÑA
-  // ============================================
-  const ADMIN_PASSWORD = "admin123";
-  
-  // Elementos del DOM
-  const loginScreen = document.getElementById('loginScreen');
-  const mainScreen = document.getElementById('mainScreen');
-  const logContainer = document.getElementById('logContainer');
-  
-  let isRunning = false;
-  let qualityChart = null;
-  
-  // Mapa de normalización de zonas
-  const ZONE_NORMALIZATION_MAP = {
-    // Variantes de SAN JUAN CENTRO
-    'san juan centro': 'SAN JUAN CENTRO',
-    'centro': 'SAN JUAN CENTRO',
-    'sanjuan centro': 'SAN JUAN CENTRO',
-    's.j. centro': 'SAN JUAN CENTRO',
-    
-    // Variantes de LOS CORBANO
-    'los corbano': 'LOS CORBANO',
-    'corbano': 'LOS CORBANO',
-    'corbano sur': 'LOS CORBANO',
-    'corbano norte': 'LOS CORBANO',
-    'corbano sur': 'LOS CORBANO',
-    
-    // Variantes de VALLEJUELO
-    'vallejuelo': 'VALLEJUELO',
-    'valle juelo': 'VALLEJUELO',
-    
-    // Variantes de LAS MATAS DE FARFAN
-    'las matas de farfan': 'LAS MATAS DE FARFAN',
-    'las matas': 'LAS MATAS DE FARFAN',
-    'matas de farfan': 'LAS MATAS DE FARFAN',
-    
-    // Variantes de RAFAEL BAEZ
-    'rafael baez': 'RAFAEL BAEZ',
-    'rafael báez': 'RAFAEL BAEZ',
-    'r. baez': 'RAFAEL BAEZ',
-    
-    // Variantes de LUIS EDWARDO LUCIANO
-    'luis edwardo luciano': 'LUIS EDWARDO LUCIANO',
-    'luis edwardo': 'LUIS EDWARDO LUCIANO',
-    'l. edwardo': 'LUIS EDWARDO LUCIANO',
-    
-    // Variantes de EL ROSARIO
-    'el rosario': 'EL ROSARIO',
-    'rosario': 'EL ROSARIO',
-    
-    // Variantes de PEDRO CORTO
-    'pedro corto': 'PEDRO CORTO',
-    'p. corto': 'PEDRO CORTO',
-    
-    // Variantes de ELIAS PIÑA
-    'elias piña': 'ELIAS PIÑA',
-    'elías piña': 'ELIAS PIÑA',
-    'e. piña': 'ELIAS PIÑA',
-    
-    // Variantes de EL CERCADO
-    'el cercado': 'EL CERCADO',
-    'cercado': 'EL CERCADO',
-    
-    // Otras zonas
-    'a': 'ZONA A',
-    'b': 'ZONA B',
-    'c': 'ZONA C',
-    'd': 'ZONA D',
-    'km.11': 'KM.11',
-    'cuenda': 'CUENDA',
-    'cardon': 'CARDON',
-    'la cualta': 'LA CUALTA',
-    'juan santiago': 'JUAN SANTIAGO'
-  };
-  
-  // ============================================
-  // FUNCIONES DE LOG
-  // ============================================
-  function addLog(message, type = 'info') {
-    const colors = {
-      info: 'text-blue-400',
-      success: 'text-green-400',
-      warning: 'text-yellow-400',
-      error: 'text-red-400'
+      // Variantes de LAS MATAS DE FARFAN
+      'las matas de farfan': 'LAS MATAS DE FARFAN',
+      'las matas': 'LAS MATAS DE FARFAN',
+
+      // Variantes de RAFAEL BAEZ
+      'rafael baez': 'RAFAEL BAEZ',
+      'Campo rafael báez': 'RAFAEL BAEZ',
+
+      // Variantes de LUIS EDWARDO LUCIANO
+      'luis edwardo luciano': 'LUIS EDWARDO LUCIANO',
+      'Campo luis edwardo': 'LUIS EDWARDO LUCIANO',
+
+      // Variantes de EL ROSARIO
+      'el rosario': 'EL ROSARIO',
+
+      // Variantes de PEDRO CORTO
+      'pedro corto': 'PEDRO CORTO',
+
+      // Variantes de ELIAS PIÑA
+      'elias piña': 'ELIAS PIÑA',
+      'elías piña': 'ELIAS PIÑA',
+
+      // Variantes de EL CERCADO
+      'el cercado': 'EL CERCADO',
+
+      // Otras zonas
+
+      'km.11': 'KM.11',
+      'cuenda': 'CUENDA',
+      'cardon': 'CARDON',
+      'la cualta': 'LA CUALTA',
+      'juan santiago': 'JUAN SANTIAGO'
     };
-    
-    const icon = {
-      info: 'ℹ️',
-      success: '✅',
-      warning: '⚠️',
-      error: '❌'
-    };
-    
-    const logDiv = document.createElement('div');
-    logDiv.className = `text-xs font-mono py-1 border-b border-slate-700/50 ${colors[type]}`;
-    logDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${icon[type]} ${message}`;
-    logContainer.appendChild(logDiv);
-    logContainer.scrollTop = logContainer.scrollHeight;
-    
-    console.log(`[${type.toUpperCase()}] ${message}`);
-  }
-  
-  function clearLog() {
-    logContainer.innerHTML = '<div class="text-slate-400">Log limpiado...</div>';
-    addLog('Log reiniciado', 'info');
-  }
-  
-  function exportLog() {
-    const logs = Array.from(logContainer.children).map(div => div.innerText).join('\n');
-    const blob = new Blob([logs], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `limpieza_log_${new Date().toISOString().split('T')[0]}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    addLog('Log exportado', 'success');
-  }
-  
-  // ============================================
-  // CALIDAD DE DATOS
-  // ============================================
-  async function calculateQuality() {
-    addLog('📊 Calculando calidad de datos...', 'info');
-    
-    try {
-      const agencies = await getAllAgencies();
-      if (agencies.length === 0) {
-        addLog('No hay agencias para calcular calidad', 'warning');
-        return;
-      }
-      
-      const total = agencies.length;
-      
-      // 1. IDs válidos (comienzan con 812)
-      const validIds = agencies.filter(a => String(a.idReal || '').startsWith('812'));
-      const validIdsPercent = (validIds.length / total) * 100;
-      
-      // 2. Con GPS
-      const hasGps = agencies.filter(a => a.lat && a.lng);
-      const gpsPercent = (hasGps.length / total) * 100;
-      
-      // 3. Con dirección (más de 10 caracteres)
-      const hasAddress = agencies.filter(a => a.direccion && a.direccion.length > 10);
-      const addressPercent = (hasAddress.length / total) * 100;
-      
-      // 4. Zona válida (en el mapa de normalización o con formato correcto)
-      const validZones = agencies.filter(a => {
-        const zone = (a.zona || '').toLowerCase();
-        return zone.length > 2 && (ZONE_NORMALIZATION_MAP[zone] || zone.toUpperCase() === zone);
-      });
-      const zonePercent = (validZones.length / total) * 100;
-      
-      // Calcular puntaje general (promedio ponderado)
-      const score = Math.round(
-        (validIdsPercent * 0.35) + 
-        (gpsPercent * 0.35) + 
-        (addressPercent * 0.15) + 
-        (zonePercent * 0.15)
-      );
-      
-      // Actualizar UI
-      document.getElementById('qualityScore').textContent = `${score}%`;
-      document.getElementById('qualityBar').style.width = `${score}%`;
-      
-      // Color según puntaje
-      const qualityBar = document.getElementById('qualityBar');
-      const qualityGrade = document.getElementById('qualityGrade');
-      if (score >= 80) {
-        qualityBar.className = 'quality-bar bg-emerald-500 rounded-full';
-        qualityGrade.innerHTML = '🎉 EXCELENTE - Datos de alta calidad';
-        qualityGrade.className = 'text-xs font-bold text-emerald-600 mt-2';
-      } else if (score >= 60) {
-        qualityBar.className = 'quality-bar bg-amber-500 rounded-full';
-        qualityGrade.innerHTML = '⚠️ ACEPTABLE - Requiere mejoras';
-        qualityGrade.className = 'text-xs font-bold text-amber-600 mt-2';
-      } else {
-        qualityBar.className = 'quality-bar bg-red-500 rounded-full';
-        qualityGrade.innerHTML = '🔴 CRÍTICO - Se necesita limpieza urgente';
-        qualityGrade.className = 'text-xs font-bold text-red-600 mt-2';
-      }
-      
-      document.getElementById('validIdsPercent').textContent = `${Math.round(validIdsPercent)}%`;
-      document.getElementById('gpsPercent').textContent = `${Math.round(gpsPercent)}%`;
-      document.getElementById('addressPercent').textContent = `${Math.round(addressPercent)}%`;
-      document.getElementById('zonePercent').textContent = `${Math.round(zonePercent)}%`;
-      
-      // Actualizar gráfico
-      if (qualityChart) {
-        qualityChart.destroy();
-      }
-      
-      const ctx = document.getElementById('qualityChart').getContext('2d');
-      qualityChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['IDs Válidos', 'Con GPS', 'Con Dirección', 'Zona Válida'],
-          datasets: [{
-            label: 'Porcentaje',
-            data: [validIdsPercent, gpsPercent, addressPercent, zonePercent],
-            backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#06b6d4'],
-            borderRadius: 8,
-            borderSkipped: false
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: { position: 'bottom', labels: { font: { size: 10 } } }
-          },
-          scales: {
-            y: { max: 100, beginAtZero: true, grid: { color: '#e2e8f0' } },
-            x: { ticks: { font: { size: 10 } } }
+
+    // ============================================
+    // FUNCIONES DE LOG
+    // ============================================
+    function addLog(message, type = 'info') {
+      const colors = {
+        info: 'text-blue-400',
+        success: 'text-green-400',
+        warning: 'text-yellow-400',
+        error: 'text-red-400'
+      };
+
+      const icon = {
+        info: 'ℹ️',
+        success: '✅',
+        warning: '⚠️',
+        error: '❌'
+      };
+
+      const logDiv = document.createElement('div');
+      logDiv.className = `text-xs font-mono py-1 border-b border-slate-700/50 ${colors[type]}`;
+      logDiv.innerHTML = `[${new Date().toLocaleTimeString()}] ${icon[type]} ${message}`;
+      logContainer.appendChild(logDiv);
+      logContainer.scrollTop = logContainer.scrollHeight;
+
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+
+    function clearLog() {
+      logContainer.innerHTML = '<div class="text-slate-400">Log limpiado...</div>';
+      addLog('Log reiniciado', 'info');
+    }
+
+    function exportLog() {
+      const logs = Array.from(logContainer.children).map(div => div.innerText).join('\n');
+      const blob = new Blob([logs], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `limpieza_log_${new Date().toISOString().split('T')[0]}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      addLog('Log exportado', 'success');
+    }
+
+    // ============================================
+    // CALIDAD DE DATOS
+    // ============================================
+    async function calculateQuality() {
+      addLog('📊 Calculando calidad de datos...', 'info');
+
+      try {
+        const agencies = await getAllAgencies();
+        if (agencies.length === 0) {
+          addLog('No hay agencias para calcular calidad', 'warning');
+          return;
+        }
+
+        const total = agencies.length;
+
+        const validIds = agencies.filter(a => String(a.idReal || '').startsWith('812'));
+        const validIdsPercent = (validIds.length / total) * 100;
+
+        const hasGps = agencies.filter(a => a.lat && a.lng);
+        const gpsPercent = (hasGps.length / total) * 100;
+
+        const hasAddress = agencies.filter(a => a.direccion && a.direccion.length > 10);
+        const addressPercent = (hasAddress.length / total) * 100;
+
+        const validZones = agencies.filter(a => {
+          const zone = (a.zona || '').toLowerCase();
+          return zone.length > 2;
+        });
+        const zonePercent = (validZones.length / total) * 100;
+
+        const score = Math.round(
+          (validIdsPercent * 0.35) + (gpsPercent * 0.35) + (addressPercent * 0.15) + (zonePercent * 0.15)
+        );
+
+        // Verificar que los elementos existan antes de actualizarlos
+        const qualityScoreEl = document.getElementById('qualityScore');
+        const qualityBarEl = document.getElementById('qualityBar');
+        const qualityGradeEl = document.getElementById('qualityGrade');
+
+        if (qualityScoreEl) qualityScoreEl.textContent = `${score}%`;
+        if (qualityBarEl) qualityBarEl.style.width = `${score}%`;
+
+        if (qualityBarEl) {
+          if (score >= 80) {
+            qualityBarEl.className = 'quality-bar bg-emerald-500 rounded-full';
+            if (qualityGradeEl) qualityGradeEl.innerHTML = '🎉 EXCELENTE - Datos de alta calidad';
+          } else if (score >= 60) {
+            qualityBarEl.className = 'quality-bar bg-amber-500 rounded-full';
+            if (qualityGradeEl) qualityGradeEl.innerHTML = '⚠️ ACEPTABLE - Requiere mejoras';
+          } else {
+            qualityBarEl.className = 'quality-bar bg-red-500 rounded-full';
+            if (qualityGradeEl) qualityGradeEl.innerHTML = '🔴 CRÍTICO - Se necesita limpieza urgente';
           }
         }
-      });
-      
-      addLog(`Calidad de datos: ${score}% (${validIds.length}/${total} IDs válidos, ${hasGps.length}/${total} con GPS)`, score >= 80 ? 'success' : 'warning');
-      
-      return { score, validIdsPercent, gpsPercent, addressPercent, zonePercent };
-      
-    } catch (err) {
-      addLog(`Error calculando calidad: ${err.message}`, 'error');
-      return null;
-    }
-  }
-  
-  // ============================================
-  // NORMALIZACIÓN DE ZONAS
-  // ============================================
-  async function normalizeZones() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🏷️ Normalizando nombres de zonas...', 'info');
-    
-    try {
-      const agencies = await getAllAgencies();
-      let normalized = 0;
-      const changes = [];
-      
-      for (const agency of agencies) {
-        const currentZone = (agency.zona || '').toLowerCase().trim();
-        const newZone = ZONE_NORMALIZATION_MAP[currentZone];
-        
-        if (newZone && agency.zona !== newZone) {
-          const oldZone = agency.zona;
-          agency.zona = newZone;
-          agency.updated_at = Date.now();
-          await updateAgency(agency);
-          changes.push(`${agency.idReal}: ${oldZone} → ${newZone}`);
-          addLog(`Normalizado: ${agency.idReal} - ${oldZone} → ${newZone}`, 'success');
-          normalized++;
+
+        if (qualityGradeEl) qualityGradeEl.className = 'text-xs font-bold mt-2 ' +
+          (score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-amber-600' : 'text-red-600');
+
+        const validIdsPercentEl = document.getElementById('validIdsPercent');
+        const gpsPercentEl = document.getElementById('gpsPercent');
+        const addressPercentEl = document.getElementById('addressPercent');
+        const zonePercentEl = document.getElementById('zonePercent');
+
+        if (validIdsPercentEl) validIdsPercentEl.textContent = `${Math.round(validIdsPercent)}%`;
+        if (gpsPercentEl) gpsPercentEl.textContent = `${Math.round(gpsPercent)}%`;
+        if (addressPercentEl) addressPercentEl.textContent = `${Math.round(addressPercent)}%`;
+        if (zonePercentEl) zonePercentEl.textContent = `${Math.round(zonePercent)}%`;
+
+        // Actualizar gráfico solo si el canvas existe
+        const chartCanvas = document.getElementById('qualityChart');
+        if (chartCanvas) {
+          if (qualityChart) {
+            qualityChart.destroy();
+          }
+
+          const ctx = chartCanvas.getContext('2d');
+          qualityChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['IDs Válidos', 'Con GPS', 'Con Dirección', 'Zona Válida'],
+              datasets: [{
+                label: 'Porcentaje',
+                data: [validIdsPercent, gpsPercent, addressPercent, zonePercent],
+                backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#06b6d4'],
+                borderRadius: 8
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 10 } } }
+              },
+              scales: {
+                y: { max: 100, beginAtZero: true }
+              }
+            }
+          });
         }
+
+        addLog(`Calidad de datos: ${score}% (${validIds.length}/${total} IDs válidos, ${hasGps.length}/${total} con GPS)`, score >= 80 ? 'success' : 'warning');
+
+      } catch (err) {
+        addLog(`Error calculando calidad: ${err.message}`, 'error');
       }
-      
-      if (normalized === 0) {
-        addLog('No se encontraron zonas para normalizar', 'info');
-      } else {
-        addLog(`✅ Normalizadas ${normalized} zonas`, 'success');
-      }
-      
-      await loadLocalStats();
-      await updateZoneDistribution();
-      await calculateQuality();
-      
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
-      isRunning = false;
     }
-  }
-  
-  async function updateZoneDistribution() {
-    try {
-      const agencies = await getAllAgencies();
-      const zoneCount = {};
-      
-      agencies.forEach(a => {
-        const zone = a.zona || 'Sin zona';
-        zoneCount[zone] = (zoneCount[zone] || 0) + 1;
-      });
-      
-      const zoneListDiv = document.getElementById('zoneList');
-      if (zoneListDiv) {
+    // ============================================
+    // NORMALIZACIÓN DE ZONAS
+    // ============================================
+    async function normalizeZones() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🏷️ Normalizando nombres de zonas...', 'info');
+
+      try {
+        const agencies = await getAllAgencies();
+        let normalized = 0;
+        const changes = [];
+
+        for (const agency of agencies) {
+          const currentZone = (agency.zona || '').toLowerCase().trim();
+          const newZone = ZONE_NORMALIZATION_MAP[currentZone];
+
+          if (newZone && agency.zona !== newZone) {
+            const oldZone = agency.zona;
+            agency.zona = newZone;
+            agency.updated_at = Date.now();
+            await updateAgency(agency);
+            changes.push(`${agency.idReal}: ${oldZone} → ${newZone}`);
+            addLog(`Normalizado: ${agency.idReal} - ${oldZone} → ${newZone}`, 'success');
+            normalized++;
+          }
+        }
+
+        if (normalized === 0) {
+          addLog('No se encontraron zonas para normalizar', 'info');
+        } else {
+          addLog(`✅ Normalizadas ${normalized} zonas`, 'success');
+        }
+
+        await loadLocalStats();
+        await updateZoneDistribution();
+        await calculateQuality();
+
+      } catch (err) {
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    async function updateZoneDistribution() {
+      try {
+        const zoneListDiv = document.getElementById('zoneList');
+
+        if (!zoneListDiv) {
+          console.log('Elemento zoneList no encontrado');
+          return;
+        }
+
+        const agencies = await getAllAgencies();
+        const zoneCount = {};
+
+        agencies.forEach(a => {
+          const zone = a.zona || 'Sin zona';
+          zoneCount[zone] = (zoneCount[zone] || 0) + 1;
+        });
+
         const sortedZones = Object.entries(zoneCount).sort((a, b) => b[1] - a[1]);
-        zoneListDiv.innerHTML = sortedZones.map(([zone, count]) => `
-          <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100">
-            <span class="zone-badge bg-indigo-100 text-indigo-700">${zone}</span>
-            <span class="font-bold">${count}</span>
-          </div>
-        `).join('');
-        
+
         if (sortedZones.length === 0) {
           zoneListDiv.innerHTML = '<p class="text-xs text-slate-400">No hay zonas registradas</p>';
-        }
-      }
-    } catch (err) {
-      console.error('Error actualizando distribución de zonas:', err);
-    }
-  }
-  
-  // ============================================
-  // CORREGIR IDs
-  // ============================================
-  async function fixInvalidIds() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🔧 Corrigiendo IDs sin prefijo 812...', 'info');
-    
-    try {
-      const agencies = await getAllAgencies();
-      let fixed = 0;
-      
-      for (const agency of agencies) {
-        const idReal = String(agency.idReal || '');
-        if (!idReal.startsWith('812') && /^\d+$/.test(idReal) && idReal.length >= 4) {
-          const newId = '812' + idReal;
-          agency.idReal = newId;
-          agency.id_nuevo = newId;
-          agency.updated_at = Date.now();
-          await updateAgency(agency);
-          addLog(`Corregido: ${idReal} → ${newId}`, 'success');
-          fixed++;
-        }
-      }
-      
-      addLog(`✅ Corregidos ${fixed} IDs`, 'success');
-      await loadLocalStats();
-      await calculateQuality();
-      
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
-      isRunning = false;
-    }
-  }
-  
-  // ============================================
-  // ESTADÍSTICAS
-  // ============================================
-  async function loadLocalStats() {
-    try {
-      const agencies = await getAllAgencies();
-      const invalid = agencies.filter(a => !String(a.idReal || '').startsWith('812'));
-      const noGps = agencies.filter(a => !a.lat || !a.lng);
-      
-      const seen = new Map();
-      const duplicates = [];
-      agencies.forEach(a => {
-        if (seen.has(a.idReal)) {
-          duplicates.push(a);
         } else {
-          seen.set(a.idReal, a);
+          zoneListDiv.innerHTML = sortedZones.map(([zone, count]) => `
+        <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100">
+          <span class="zone-badge bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">${zone}</span>
+          <span class="font-bold">${count}</span>
+        </div>
+      `).join('');
         }
-      });
-      
-      document.getElementById('localStats').innerHTML = `
-        <div class="flex justify-between py-2 border-b border-slate-100">
-          <span class="text-slate-500">Total agencias:</span>
-          <span class="font-bold text-indigo-600">${agencies.length}</span>
-        </div>
-        <div class="flex justify-between py-2 border-b border-slate-100">
-          <span class="text-slate-500">IDs inválidos (no 812):</span>
-          <span class="font-bold text-red-600">${invalid.length}</span>
-        </div>
-        <div class="flex justify-between py-2 border-b border-slate-100">
-          <span class="text-slate-500">Agencias sin GPS:</span>
-          <span class="font-bold text-amber-600">${noGps.length}</span>
-        </div>
-        <div class="flex justify-between py-2">
-          <span class="text-slate-500">Duplicados:</span>
-          <span class="font-bold text-red-600">${duplicates.length}</span>
-        </div>
-      `;
-      
-      await updateZoneDistribution();
-      
-    } catch (err) {
-      addLog(`Error cargando estadísticas locales: ${err.message}`, 'error');
+      } catch (err) {
+        console.error('Error actualizando distribución de zonas:', err);
+      }
     }
-  }
-  
-  async function loadFirebaseStats() {
-    try {
-      const agenciesRef = collection(db, "agencias");
-      const snapshot = await getDocs(agenciesRef);
-      const agencies = [];
-      snapshot.forEach(docSnap => {
-        agencies.push({ id: docSnap.id, ...docSnap.data() });
-      });
-      
-      const invalid = agencies.filter(a => !String(a.idReal || a.id_nuevo || '').startsWith('812'));
-      
-      const seen = new Map();
-      const duplicates = [];
-      agencies.forEach(a => {
-        const idReal = a.idReal || a.id_nuevo;
-        if (seen.has(idReal)) {
-          duplicates.push(a);
-        } else {
-          seen.set(idReal, a);
-        }
-      });
-      
-      document.getElementById('firebaseStats').innerHTML = `
-        <div class="flex justify-between py-2 border-b border-slate-100">
-          <span class="text-slate-500">Total agencias:</span>
-          <span class="font-bold text-red-600">${agencies.length}</span>
-        </div>
-        <div class="flex justify-between py-2 border-b border-slate-100">
-          <span class="text-slate-500">IDs inválidos (no 812):</span>
-          <span class="font-bold text-red-600">${invalid.length}</span>
-        </div>
-        <div class="flex justify-between py-2">
-          <span class="text-slate-500">Duplicados:</span>
-          <span class="font-bold text-red-600">${duplicates.length}</span>
-        </div>
-      `;
-      
-    } catch (err) {
-      addLog(`Error cargando estadísticas Firebase: ${err.message}`, 'error');
-    }
-  }
-  
-  // ============================================
-  // ACCIONES LOCALES
-  // ============================================
-  async function cleanInvalidLocalIds() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🔍 Buscando IDs inválidos localmente...', 'info');
-    
-    try {
-      const agencies = await getAllAgencies();
-      const invalid = agencies.filter(a => !String(a.idReal || '').startsWith('812'));
-      
-      if (invalid.length === 0) {
-        addLog('No se encontraron IDs inválidos', 'success');
-        isRunning = false;
-        return;
-      }
-      
-      addLog(`Encontrados ${invalid.length} IDs inválidos`, 'warning');
-      
-      for (const agency of invalid) {
-        await deleteAgency(agency.id, false);
-        addLog(`Eliminado: ${agency.idReal || 'sin ID'}`, 'success');
-      }
-      
-      addLog(`✅ Eliminados ${invalid.length} IDs inválidos`, 'success');
-      await loadLocalStats();
-      await calculateQuality();
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
-      isRunning = false;
-    }
-  }
-  
-  async function cleanDuplicatesLocal() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🔍 Buscando duplicados localmente...', 'info');
-    
-    try {
-      const agencies = await getAllAgencies();
-      const seen = new Map();
-      const toDelete = [];
-      
-      agencies.forEach(agency => {
-        const idReal = agency.idReal;
-        if (seen.has(idReal)) {
-          toDelete.push(agency);
-        } else {
-          seen.set(idReal, agency);
-        }
-      });
-      
-      if (toDelete.length === 0) {
-        addLog('No se encontraron duplicados', 'success');
-        isRunning = false;
-        return;
-      }
-      
-      addLog(`Encontrados ${toDelete.length} duplicados`, 'warning');
-      
-      for (const agency of toDelete) {
-        await deleteAgency(agency.id, false);
-        addLog(`Eliminado duplicado: ${agency.idReal}`, 'success');
-      }
-      
-      addLog(`✅ Eliminados ${toDelete.length} duplicados`, 'success');
-      await loadLocalStats();
-      await calculateQuality();
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
-      isRunning = false;
-    }
-  }
-  
-  async function cleanNoGpsLocal() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🔍 Buscando agencias sin GPS...', 'info');
-    
-    try {
-      const agencies = await getAllAgencies();
-      const noGps = agencies.filter(a => !a.lat || !a.lng);
-      
-      if (noGps.length === 0) {
-        addLog('No se encontraron agencias sin GPS', 'success');
-        isRunning = false;
-        return;
-      }
-      
-      addLog(`Encontradas ${noGps.length} agencias sin GPS`, 'warning');
-      
-      for (const agency of noGps) {
-        await deleteAgency(agency.id, false);
-        addLog(`Eliminada: ${agency.idReal} (sin GPS)`, 'success');
-      }
-      
-      addLog(`✅ Eliminadas ${noGps.length} agencias sin GPS`, 'success');
-      await loadLocalStats();
-      await calculateQuality();
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
-      isRunning = false;
-    }
-  }
-  
-  async function cleanCacheLocal() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🧹 Limpiando cachés locales...', 'info');
-    
-    try {
-      const keepKeys = ['user_preferences', 'theme', 'cleaner_auth'];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!keepKeys.includes(key)) {
-          localStorage.removeItem(key);
-        }
-      }
-      
-      sessionStorage.clear();
-      
-      if ('caches' in window) {
-        const cacheNames = await caches.keys();
-        for (const cacheName of cacheNames) {
-          if (cacheName.includes('leaflet') || cacheName.includes('tile')) {
-            await caches.delete(cacheName);
+    // ============================================
+    // CORREGIR IDs
+    // ============================================
+    async function fixInvalidIds() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🔧 Corrigiendo IDs sin prefijo 812...', 'info');
+
+      try {
+        const agencies = await getAllAgencies();
+        let fixed = 0;
+        let skipped = 0;
+
+        for (const agency of agencies) {
+          const idReal = String(agency.idReal || '');
+
+          // Verificar si necesita corrección
+          const needsFix = !idReal.startsWith('812') && /^\d+$/.test(idReal);
+
+          if (needsFix) {
+            let newId = idReal;
+
+            // Caso especial: si ya tiene 812 en medio, extraer solo los últimos dígitos
+            if (idReal.includes('812')) {
+              // Extraer la parte después del 812 (ej: "127001" de "812127001")
+              const match = idReal.match(/812(\d+)/);
+              if (match && match[1]) {
+                newId = '812' + match[1];
+              } else {
+                newId = '812' + idReal;
+              }
+            }
+            // Si es un número normal sin prefijo
+            else if (/^\d+$/.test(idReal)) {
+              // Si el número ya es muy largo, posiblemente ya tiene un prefijo incrustado
+              if (idReal.length > 7 && idReal.substring(0, 3) !== '812') {
+                // Buscar si contiene 812 en alguna posición
+                const has812 = idReal.indexOf('812');
+                if (has812 !== -1) {
+                  newId = '812' + idReal.substring(has812 + 3);
+                } else {
+                  newId = '812' + idReal;
+                }
+              } else {
+                newId = '812' + idReal;
+              }
+            }
+
+            // Limpiar IDs que tengan 812 repetido
+            if (newId.startsWith('812812')) {
+              newId = '812' + newId.substring(6);
+            }
+
+            // Validar que el ID tenga al menos 7 dígitos
+            if (newId.length < 7) {
+              addLog(`ID inválido después de corrección: ${idReal} → ${newId} (muy corto)`, 'warning');
+              skipped++;
+              continue;
+            }
+
+            addLog(`Corregido: ${idReal} → ${newId}`, 'success');
+            agency.idReal = newId;
+            agency.id_nuevo = newId;
+            agency.updated_at = Date.now();
+            await updateAgency(agency);
+            fixed++;
           }
         }
+
+        if (fixed === 0 && skipped === 0) {
+          addLog('No se encontraron IDs para corregir', 'info');
+        } else {
+          addLog(`✅ Corregidos ${fixed} IDs (${skipped} omitidos por formato inválido)`, 'success');
+        }
+
+        await loadLocalStats();
+        await calculateQuality();
+
+      } catch (err) {
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    // Función especial para limpiar IDs que tienen 812 duplicado o mal formado
+    async function cleanMalformedIds() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🔧 Limpiando IDs mal formados (812 duplicado)...', 'info');
+
+      try {
+        const agencies = await getAllAgencies();
+        let fixed = 0;
+
+        for (const agency of agencies) {
+          let idReal = String(agency.idReal || '');
+          let originalId = idReal;
+          let changed = false;
+
+          // Caso: 812127001 -> debe ser 8127001
+          if (idReal.startsWith('812') && idReal.length > 7) {
+            // Extraer solo 812 + los últimos 6 o 7 dígitos
+            const without812 = idReal.substring(3); // quitar el primer 812
+            // Si lo que queda también comienza con 812, quitar uno
+            if (without812.startsWith('812')) {
+              idReal = '812' + without812.substring(3);
+              changed = true;
+            }
+            // Si el resto tiene más de 7 dígitos, probablemente está mal
+            else if (without812.length > 7) {
+              // Tomar solo los últimos 6-7 dígitos
+              const lastDigits = without812.slice(-7);
+              idReal = '812' + lastDigits;
+              changed = true;
+            }
+          }
+
+          // Caso: ID que no empieza con 812 pero tiene números
+          if (!idReal.startsWith('812') && /^\d+$/.test(idReal)) {
+            // Si el número es muy largo, tomar solo los últimos 7 dígitos
+            if (idReal.length > 7) {
+              const lastDigits = idReal.slice(-7);
+              idReal = '812' + lastDigits;
+            } else {
+              idReal = '812' + idReal;
+            }
+            changed = true;
+          }
+
+          // Limpiar IDs que tengan 812 repetido en cualquier posición
+          if (idReal.includes('812812')) {
+            idReal = idReal.replace(/812+/g, '812');
+            changed = true;
+          }
+
+          // Validar longitud final (debe ser 7-10 dígitos)
+          if (changed) {
+            if (idReal.length >= 7 && idReal.length <= 10) {
+              addLog(`Limpiado: ${originalId} → ${idReal}`, 'success');
+              agency.idReal = idReal;
+              agency.id_nuevo = idReal;
+              agency.updated_at = Date.now();
+              await updateAgency(agency);
+              fixed++;
+            } else {
+              addLog(`ID inválido después de limpieza: ${originalId} → ${idReal} (longitud: ${idReal.length})`, 'warning');
+            }
+          }
+        }
+
+        addLog(`✅ Limpiados ${fixed} IDs mal formados`, 'success');
+        await loadLocalStats();
+        await calculateQuality();
+
+      } catch (err) {
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    // Exponer función global
+    window.cleanMalformedIds = cleanMalformedIds;
+
+        // ============================================
+    // FUNCIONES PARA MODIFICAR ZONAS DESDE CONSOLA/UI
+    // ============================================
+
+    /**
+     * Cambiar la zona de una o múltiples agencias por ID real
+     * @param {string|string[]} ids - ID o array de IDs de agencias
+     * @param {string} nuevaZona - Nueva zona
+     * @param {boolean} dryRun - Si es true, solo muestra qué se cambiaría
+     */
+    async function cambiarZona(ids, nuevaZona, dryRun = false) {
+      const agencies = await getAllAgencies();
+      const idsArray = Array.isArray(ids) ? ids : [ids];
+      
+      const agenciasAfectadas = agencies.filter(a => idsArray.includes(a.idReal));
+      
+      if (agenciasAfectadas.length === 0) {
+        addLog(`❌ No se encontraron agencias con los IDs: ${idsArray.join(', ')}`, 'error');
+        return { actualizadas: 0, errores: 0 };
       }
       
-      addLog('✅ Cachés limpiados correctamente', 'success');
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
-      isRunning = false;
-    }
-  }
-  
-  // ============================================
-  // ACCIONES FIREBASE
-  // ============================================
-  async function syncFromFirebase() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('📥 Sincronizando desde Firebase...', 'info');
-    
-    try {
-      const agenciesRef = collection(db, "agencias");
-      const snapshot = await getDocs(agenciesRef);
-      let count = 0;
+      addLog(`📋 Agencias encontradas: ${agenciasAfectadas.length}`, 'info');
       
-      for (const docSnap of snapshot) {
-        const data = docSnap.data();
-        if (data.idReal && data.idReal.toString().startsWith('812')) {
-          await addAgency({ ...data, synced: true });
-          count++;
+      if (dryRun) {
+        addLog(`🔍 SIMULACIÓN - Se cambiarían ${agenciasAfectadas.length} agencias a zona "${nuevaZona}"`, 'warning');
+        agenciasAfectadas.forEach(a => {
+          addLog(`   - ${a.idReal}: ${a.zona || 'Sin zona'} → ${nuevaZona}`, 'info');
+        });
+        return { actualizadas: 0, errores: 0 };
+      }
+      
+      let actualizadas = 0;
+      let errores = 0;
+      
+      for (const agency of agenciasAfectadas) {
+        try {
+          const zonaAnterior = agency.zona;
+          agency.zona = nuevaZona;
+          agency.updated_at = Date.now();
+          await updateAgency(agency);
+          addLog(`✅ ${agency.idReal}: ${zonaAnterior || 'Sin zona'} → ${nuevaZona}`, 'success');
+          actualizadas++;
+        } catch (err) {
+          addLog(`❌ Error actualizando ${agency.idReal}: ${err.message}`, 'error');
+          errores++;
         }
       }
       
-      addLog(`✅ Sincronizados ${count} registros desde Firebase`, 'success');
+      addLog(`📊 Resumen: ${actualizadas} actualizadas, ${errores} errores`, actualizadas > 0 ? 'success' : 'warning');
+      
       await loadLocalStats();
       await calculateQuality();
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
-      isRunning = false;
-    }
-  }
-  
-  async function cleanFirebaseInvalid() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🔥 Limpiando IDs inválidos en Firebase...', 'info');
-    
-    try {
-      const agenciesRef = collection(db, "agencias");
-      const snapshot = await getDocs(agenciesRef);
-      let deleted = 0;
+      await updateZoneSelects();
       
-      for (const docSnap of snapshot) {
-        const data = docSnap.data();
-        const idReal = data.idReal || data.id_nuevo || '';
-        
-        if (!idReal.toString().startsWith('812')) {
-          await deleteDoc(doc(db, "agencias", docSnap.id));
-          addLog(`Eliminado de Firebase: ${idReal || 'sin ID'}`, 'success');
-          deleted++;
-        }
-      }
-      
-      addLog(`✅ Eliminados ${deleted} registros inválidos de Firebase`, 'success');
-      await loadFirebaseStats();
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
-      isRunning = false;
+      return { actualizadas, errores };
     }
-  }
-  
-  async function syncToFirebase() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('📤 Sincronizando todo a Firebase...', 'info');
-    
-    try {
+
+    /**
+     * Cambiar zona de todas las agencias que coinciden con un patrón
+     */
+    async function cambiarZonaPorPatron(patron, nuevaZona, dryRun = false) {
       const agencies = await getAllAgencies();
-      const agenciesRef = collection(db, "agencias");
       
-      const snapshot = await getDocs(agenciesRef);
-      for (const docSnap of snapshot) {
-        await deleteDoc(doc(db, "agencias", docSnap.id));
+      const agenciasAfectadas = agencies.filter(a => 
+        a.idReal && a.idReal.toString().includes(patron)
+      );
+      
+      if (agenciasAfectadas.length === 0) {
+        addLog(`❌ No se encontraron agencias con el patrón: "${patron}"`, 'error');
+        return { actualizadas: 0 };
       }
-      addLog('Firebase limpiado', 'info');
       
-      let uploaded = 0;
-      for (const agency of agencies) {
-        if (agency.idReal && agency.idReal.toString().startsWith('812')) {
-          const { id, ...dataToUpload } = agency;
-          await addDoc(agenciesRef, { ...dataToUpload, synced: true });
-          uploaded++;
+      addLog(`📋 Patrón: "${patron}" - ${agenciasAfectadas.length} agencias encontradas`, 'info');
+      
+      if (dryRun) {
+        addLog(`🔍 SIMULACIÓN - Se cambiarían ${agenciasAfectadas.length} agencias a zona "${nuevaZona}"`, 'warning');
+        agenciasAfectadas.slice(0, 10).forEach(a => {
+          addLog(`   - ${a.idReal}: ${a.zona || 'Sin zona'} → ${nuevaZona}`, 'info');
+        });
+        if (agenciasAfectadas.length > 10) {
+          addLog(`   ... y ${agenciasAfectadas.length - 10} más`, 'info');
         }
+        return { actualizadas: 0 };
       }
       
-      addLog(`✅ Subidas ${uploaded} agencias a Firebase`, 'success');
-      await loadFirebaseStats();
-    } catch (err) {
-      addLog(`Error: ${err.message}`, 'error');
-    } finally {
+      let actualizadas = 0;
+      for (const agency of agenciasAfectadas) {
+        agency.zona = nuevaZona;
+        agency.updated_at = Date.now();
+        await updateAgency(agency);
+        actualizadas++;
+      }
+      
+      addLog(`✅ ${actualizadas} agencias actualizadas a zona "${nuevaZona}"`, 'success');
+      
+      await loadLocalStats();
+      await calculateQuality();
+      await updateZoneSelects();
+      
+      return { actualizadas };
+    }
+
+    /**
+     * Cambiar zona de todas las agencias en un rango de IDs
+     */
+    async function cambiarZonaPorRango(inicio, fin, nuevaZona, dryRun = false) {
+      const agencies = await getAllAgencies();
+      const inicioNum = parseInt(inicio);
+      const finNum = parseInt(fin);
+      
+      const agenciasAfectadas = agencies.filter(a => {
+        const idNum = parseInt(a.idReal);
+        return !isNaN(idNum) && idNum >= inicioNum && idNum <= finNum;
+      });
+      
+      if (agenciasAfectadas.length === 0) {
+        addLog(`❌ No se encontraron agencias en el rango ${inicio} - ${fin}`, 'error');
+        return { actualizadas: 0 };
+      }
+      
+      addLog(`📋 Rango: ${inicio} - ${fin} - ${agenciasAfectadas.length} agencias encontradas`, 'info');
+      
+      if (dryRun) {
+        addLog(`🔍 SIMULACIÓN - Se cambiarían ${agenciasAfectadas.length} agencias a zona "${nuevaZona}"`, 'warning');
+        agenciasAfectadas.slice(0, 10).forEach(a => {
+          addLog(`   - ${a.idReal}: ${a.zona || 'Sin zona'} → ${nuevaZona}`, 'info');
+        });
+        if (agenciasAfectadas.length > 10) {
+          addLog(`   ... y ${agenciasAfectadas.length - 10} más`, 'info');
+        }
+        return { actualizadas: 0 };
+      }
+      
+      let actualizadas = 0;
+      for (const agency of agenciasAfectadas) {
+        agency.zona = nuevaZona;
+        agency.updated_at = Date.now();
+        await updateAgency(agency);
+        actualizadas++;
+      }
+      
+      addLog(`✅ ${actualizadas} agencias actualizadas a zona "${nuevaZona}"`, 'success');
+      
+      await loadLocalStats();
+      await calculateQuality();
+      await updateZoneSelects();
+      
+      return { actualizadas };
+    }
+
+    /**
+     * Mover todas las agencias de una zona a otra
+     */
+    async function moverZona(zonaOrigen, zonaDestino, dryRun = false) {
+      const agencies = await getAllAgencies();
+      const agenciasAfectadas = agencies.filter(a => a.zona === zonaOrigen);
+      
+      if (agenciasAfectadas.length === 0) {
+        addLog(`❌ No se encontraron agencias en la zona "${zonaOrigen}"`, 'error');
+        return { actualizadas: 0 };
+      }
+      
+      addLog(`📋 Mover ${agenciasAfectadas.length} agencias de "${zonaOrigen}" a "${zonaDestino}"`, 'info');
+      
+      if (dryRun) {
+        addLog(`🔍 SIMULACIÓN - Se moverían ${agenciasAfectadas.length} agencias`, 'warning');
+        agenciasAfectadas.slice(0, 10).forEach(a => {
+          addLog(`   - ${a.idReal}: ${a.zona} → ${zonaDestino}`, 'info');
+        });
+        if (agenciasAfectadas.length > 10) {
+          addLog(`   ... y ${agenciasAfectadas.length - 10} más`, 'info');
+        }
+        return { actualizadas: 0 };
+      }
+      
+      let actualizadas = 0;
+      for (const agency of agenciasAfectadas) {
+        agency.zona = zonaDestino;
+        agency.updated_at = Date.now();
+        await updateAgency(agency);
+        actualizadas++;
+      }
+      
+      addLog(`✅ ${actualizadas} agencias movidas de "${zonaOrigen}" a "${zonaDestino}"`, 'success');
+      
+      await loadLocalStats();
+      await calculateQuality();
+      await updateZoneSelects();
+      
+      return { actualizadas };
+    }
+
+    /**
+     * Mostrar todas las zonas actuales
+     */
+    async function verZonas() {
+      const agencies = await getAllAgencies();
+      const zonas = {};
+      
+      agencies.forEach(a => {
+        const zona = a.zona || 'Sin zona';
+        zonas[zona] = (zonas[zona] || 0) + 1;
+      });
+      
+      console.log('\n📊 Distribución actual de zonas:');
+      console.table(zonas);
+      addLog(`Total agencias: ${agencies.length}`, 'info');
+      
+      return zonas;
+    }
+
+    // Exponer funciones globales para consola
+    window.cambiarZona = cambiarZona;
+    window.cambiarZonaPorPatron = cambiarZonaPorPatron;
+    window.cambiarZonaPorRango = cambiarZonaPorRango;
+    window.moverZona = moverZona;
+    window.verZonas = verZonas;
+
+    // Función para actualizar selects de zonas
+    async function updateZoneSelects() {
+      const agencies = await getAllAgencies();
+      const zonas = [...new Set(agencies.map(a => a.zona).filter(z => z))];
+      
+      const moveFromSelect = document.getElementById('moveFromZona');
+      if (moveFromSelect) {
+        moveFromSelect.innerHTML = '<option value="">Zona de origen</option>' + 
+          zonas.map(z => `<option value="${z}">${z}</option>`).join('');
+      }
+    }
+    // ============================================
+    // ESTADÍSTICAS
+    // ============================================
+    async function loadLocalStats() {
+      try {
+        const statsElement = document.getElementById('localStats');
+
+        if (!statsElement) {
+          console.log('Elemento localStats no encontrado en el DOM');
+          return;
+        }
+
+        const agencies = await getAllAgencies();
+
+        const invalid = agencies.filter(a => !String(a.idReal || '').startsWith('812'));
+        const noGps = agencies.filter(a => !a.lat || !a.lng);
+
+        const seen = new Map();
+        const duplicates = [];
+        agencies.forEach(a => {
+          if (seen.has(a.idReal)) {
+            duplicates.push(a);
+          } else {
+            seen.set(a.idReal, a);
+          }
+        });
+
+        statsElement.innerHTML = `
+      <div class="flex justify-between py-2 border-b border-slate-100">
+        <span class="text-slate-500">Total agencias:</span>
+        <span class="font-bold text-indigo-600">${agencies.length}</span>
+      </div>
+      <div class="flex justify-between py-2 border-b border-slate-100">
+        <span class="text-slate-500">IDs inválidos (no 812):</span>
+        <span class="font-bold text-red-600">${invalid.length}</span>
+      </div>
+      <div class="flex justify-between py-2 border-b border-slate-100">
+        <span class="text-slate-500">Agencias sin GPS:</span>
+        <span class="font-bold text-amber-600">${noGps.length}</span>
+      </div>
+      <div class="flex justify-between py-2">
+        <span class="text-slate-500">Duplicados:</span>
+        <span class="font-bold text-red-600">${duplicates.length}</span>
+      </div>
+    `;
+
+        await updateZoneDistribution();
+
+      } catch (err) {
+        addLog(`Error cargando estadísticas locales: ${err.message}`, 'error');
+      }
+    }
+    async function loadFirebaseStats() {
+      try {
+        const statsElement = document.getElementById('firebaseStats');
+
+        // Si el elemento no existe, no hacer nada
+        if (!statsElement) {
+          console.log('Elemento firebaseStats no encontrado en el DOM');
+          return;
+        }
+
+        addLog('📊 Cargando estadísticas de Firebase...', 'info');
+
+        const agenciesRef = collection(db, "agencias");
+        const snapshot = await getDocs(agenciesRef);
+
+        if (!snapshot || !snapshot.docs) {
+          statsElement.innerHTML = `
+        <div class="text-center py-4 text-yellow-500">
+          <i class="fas fa-exclamation-triangle"></i> No se pudo obtener datos de Firebase
+        </div>
+      `;
+          return;
+        }
+
+        const agencies = [];
+        snapshot.forEach((docSnap) => {
+          agencies.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        if (agencies.length === 0) {
+          statsElement.innerHTML = `
+        <div class="text-center py-4 text-slate-400">
+          <i class="fas fa-cloud"></i> No hay datos en Firebase
+        </div>
+      `;
+          return;
+        }
+
+        const invalid = agencies.filter(a => {
+          const idReal = a.idReal || a.id_nuevo || '';
+          return !String(idReal).startsWith('812');
+        });
+
+        const seen = new Map();
+        const duplicates = [];
+        agencies.forEach(a => {
+          const idReal = a.idReal || a.id_nuevo;
+          if (seen.has(idReal)) {
+            duplicates.push(a);
+          } else {
+            seen.set(idReal, a);
+          }
+        });
+
+        statsElement.innerHTML = `
+      <div class="flex justify-between py-2 border-b border-slate-100">
+        <span class="text-slate-500">Total agencias:</span>
+        <span class="font-bold text-red-600">${agencies.length}</span>
+      </div>
+      <div class="flex justify-between py-2 border-b border-slate-100">
+        <span class="text-slate-500">IDs inválidos (no 812):</span>
+        <span class="font-bold text-red-600">${invalid.length}</span>
+      </div>
+      <div class="flex justify-between py-2">
+        <span class="text-slate-500">Duplicados:</span>
+        <span class="font-bold text-red-600">${duplicates.length}</span>
+      </div>
+    `;
+
+        addLog(`Firebase: ${agencies.length} agencias, ${invalid.length} inválidas`, 'info');
+
+      } catch (err) {
+        console.error('Error en loadFirebaseStats:', err);
+        const statsElement = document.getElementById('firebaseStats');
+        if (statsElement) {
+          statsElement.innerHTML = `
+        <div class="text-center py-4 text-red-500">
+          <i class="fas fa-exclamation-triangle"></i> Error: ${err.message}
+        </div>
+      `;
+        }
+        addLog(`Error cargando estadísticas Firebase: ${err.message}`, 'error');
+      }
+    }
+    // ============================================
+    // ACCIONES LOCALES
+    // ============================================
+    async function cleanInvalidLocalIds() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🔍 Buscando IDs inválidos localmente...', 'info');
+
+      try {
+        const agencies = await getAllAgencies();
+        const invalid = agencies.filter(a => !String(a.idReal || '').startsWith('812'));
+
+        if (invalid.length === 0) {
+          addLog('No se encontraron IDs inválidos', 'success');
+          isRunning = false;
+          return;
+        }
+
+        addLog(`Encontrados ${invalid.length} IDs inválidos`, 'warning');
+
+        for (const agency of invalid) {
+          await deleteAgency(agency.id, false);
+          addLog(`Eliminado: ${agency.idReal || 'sin ID'}`, 'success');
+        }
+
+        addLog(`✅ Eliminados ${invalid.length} IDs inválidos`, 'success');
+        await loadLocalStats();
+        await calculateQuality();
+      } catch (err) {
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    async function cleanDuplicatesLocal() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🔍 Buscando duplicados localmente...', 'info');
+
+      try {
+        const agencies = await getAllAgencies();
+        const seen = new Map();
+        const toDelete = [];
+
+        agencies.forEach(agency => {
+          const idReal = agency.idReal;
+          if (seen.has(idReal)) {
+            toDelete.push(agency);
+          } else {
+            seen.set(idReal, agency);
+          }
+        });
+
+        if (toDelete.length === 0) {
+          addLog('No se encontraron duplicados', 'success');
+          isRunning = false;
+          return;
+        }
+
+        addLog(`Encontrados ${toDelete.length} duplicados`, 'warning');
+
+        for (const agency of toDelete) {
+          await deleteAgency(agency.id, false);
+          addLog(`Eliminado duplicado: ${agency.idReal}`, 'success');
+        }
+
+        addLog(`✅ Eliminados ${toDelete.length} duplicados`, 'success');
+        await loadLocalStats();
+        await calculateQuality();
+      } catch (err) {
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    async function cleanNoGpsLocal() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🔍 Buscando agencias sin GPS...', 'info');
+
+      try {
+        const agencies = await getAllAgencies();
+        const noGps = agencies.filter(a => !a.lat || !a.lng);
+
+        if (noGps.length === 0) {
+          addLog('No se encontraron agencias sin GPS', 'success');
+          isRunning = false;
+          return;
+        }
+
+        addLog(`Encontradas ${noGps.length} agencias sin GPS`, 'warning');
+
+        for (const agency of noGps) {
+          await deleteAgency(agency.id, false);
+          addLog(`Eliminada: ${agency.idReal} (sin GPS)`, 'success');
+        }
+
+        addLog(`✅ Eliminadas ${noGps.length} agencias sin GPS`, 'success');
+        await loadLocalStats();
+        await calculateQuality();
+      } catch (err) {
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    async function cleanCacheLocal() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🧹 Limpiando cachés locales...', 'info');
+
+      try {
+        const keepKeys = ['user_preferences', 'theme', 'cleaner_auth'];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!keepKeys.includes(key)) {
+            localStorage.removeItem(key);
+          }
+        }
+
+        sessionStorage.clear();
+
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          for (const cacheName of cacheNames) {
+            if (cacheName.includes('leaflet') || cacheName.includes('tile')) {
+              await caches.delete(cacheName);
+            }
+          }
+        }
+
+        addLog('✅ Cachés limpiados correctamente', 'success');
+      } catch (err) {
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    // ============================================
+    // ACCIONES FIREBASE
+    // ============================================
+    async function syncFromFirebase() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('📥 Sincronizando desde Firebase...', 'info');
+
+      try {
+        const agenciesRef = collection(db, "agencias");
+        const snapshot = await getDocs(agenciesRef);
+
+        if (!snapshot || !snapshot.docs) {
+          throw new Error('No se pudo obtener datos de Firebase');
+        }
+
+        let count = 0;
+        let skipped = 0;
+
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data();
+          const idReal = data.idReal || data.id_nuevo || '';
+
+          if (idReal && String(idReal).startsWith('812')) {
+            // Verificar si ya existe localmente para no duplicar
+            const existing = await getAgencyByIdReal(idReal);
+            if (!existing) {
+              await addAgency({ ...data, synced: true });
+              count++;
+            } else {
+              skipped++;
+            }
+          }
+        }
+
+        addLog(`✅ Sincronizados ${count} registros desde Firebase (${skipped} omitidos por duplicados)`, 'success');
+        await loadLocalStats();
+        await calculateQuality();
+
+      } catch (err) {
+        console.error('Error en syncFromFirebase:', err);
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    async function cleanFirebaseInvalid() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🔥 Limpiando IDs inválidos en Firebase...', 'info');
+
+      try {
+        const agenciesRef = collection(db, "agencias");
+        const snapshot = await getDocs(agenciesRef);
+
+        if (!snapshot || !snapshot.docs) {
+          throw new Error('No se pudo obtener datos de Firebase');
+        }
+
+        let deleted = 0;
+        let errors = 0;
+
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data();
+          const idReal = data.idReal || data.id_nuevo || '';
+
+          if (!String(idReal).startsWith('812') && idReal) {
+            try {
+              await deleteDoc(doc(db, "agencias", docSnap.id));
+              addLog(`Eliminado de Firebase: ${idReal || 'sin ID'}`, 'success');
+              deleted++;
+            } catch (err) {
+              errors++;
+              addLog(`Error eliminando ${idReal}: ${err.message}`, 'error');
+            }
+          }
+        }
+
+        addLog(`✅ Eliminados ${deleted} registros inválidos de Firebase (${errors} errores)`, 'success');
+        await loadFirebaseStats();
+
+      } catch (err) {
+        console.error('Error en cleanFirebaseInvalid:', err);
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    async function syncToFirebase() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('📤 Sincronizando todo a Firebase...', 'info');
+
+      try {
+        const agencies = await getAllAgencies();
+
+        if (!agencies || agencies.length === 0) {
+          addLog('No hay agencias locales para sincronizar', 'warning');
+          isRunning = false;
+          return;
+        }
+
+        const agenciesRef = collection(db, "agencias");
+
+        // Limpiar Firebase primero (con manejo de errores)
+        addLog('Limpiando Firebase...', 'info');
+        const snapshot = await getDocs(agenciesRef);
+
+        if (snapshot && snapshot.docs) {
+          for (const docSnap of snapshot.docs) {
+            try {
+              await deleteDoc(doc(db, "agencias", docSnap.id));
+            } catch (err) {
+              console.warn('Error eliminando documento:', err);
+            }
+          }
+        }
+        addLog('Firebase limpiado', 'info');
+
+        // Subir agencias válidas
+        let uploaded = 0;
+        let skipped = 0;
+
+        for (const agency of agencies) {
+          const idReal = agency.idReal || '';
+          if (idReal && String(idReal).startsWith('812')) {
+            try {
+              const { id, ...dataToUpload } = agency;
+              await addDoc(agenciesRef, { ...dataToUpload, synced: true });
+              uploaded++;
+            } catch (err) {
+              skipped++;
+              addLog(`Error subiendo ${idReal}: ${err.message}`, 'error');
+            }
+          } else {
+            skipped++;
+          }
+        }
+
+        addLog(`✅ Subidas ${uploaded} agencias a Firebase (${skipped} omitidas por ID inválido)`, 'success');
+        await loadFirebaseStats();
+
+      } catch (err) {
+        console.error('Error en syncToFirebase:', err);
+        addLog(`Error: ${err.message}`, 'error');
+      } finally {
+        isRunning = false;
+      }
+    }
+
+    // Función auxiliar para obtener agencia por ID real
+    async function getAgencyByIdReal(idReal) {
+      try {
+        const agencies = await getAllAgencies();
+        return agencies.find(a => a.idReal === idReal);
+      } catch (err) {
+        console.error('Error en getAgencyByIdReal:', err);
+        return null;
+      }
+    }
+    async function fullClean() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🚨 INICIANDO LIMPIEZA COMPLETA...', 'warning');
+
+      await cleanInvalidLocalIds();
+      await cleanDuplicatesLocal();
+      await cleanNoGpsLocal();
+      await cleanCacheLocal();
+      await cleanFirebaseInvalid();
+      await normalizeZones();
+
+      addLog('🎉 LIMPIEZA COMPLETA FINALIZADA', 'success');
       isRunning = false;
     }
-  }
-  
-  async function fullClean() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🚨 INICIANDO LIMPIEZA COMPLETA...', 'warning');
-    
-    await cleanInvalidLocalIds();
-    await cleanDuplicatesLocal();
-    await cleanNoGpsLocal();
-    await cleanCacheLocal();
-    await cleanFirebaseInvalid();
-    await normalizeZones();
-    
-    addLog('🎉 LIMPIEZA COMPLETA FINALIZADA', 'success');
-    isRunning = false;
-  }
-  
-  async function fullSync() {
-    if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
-    isRunning = true;
-    addLog('🔄 INICIANDO SINCRONIZACIÓN COMPLETA...', 'warning');
-    
-    await syncToFirebase();
-    
-    addLog('🎉 SINCRONIZACIÓN COMPLETA FINALIZADA', 'success');
-    isRunning = false;
-  }
-  
-  // ============================================
-  // LOGIN
-  // ============================================
-  function login(password) {
-    if (password === ADMIN_PASSWORD) {
-      localStorage.setItem('cleaner_auth', 'true');
-      loginScreen.classList.add('hidden');
-      mainScreen.classList.remove('hidden');
-      addLog('✅ Acceso concedido al panel de limpieza', 'success');
-      loadLocalStats();
-      loadFirebaseStats();
-      calculateQuality();
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Acceso denegado',
-        text: 'Contraseña incorrecta',
-        confirmButtonColor: '#dc2626'
+
+    async function fullSync() {
+      if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
+      isRunning = true;
+      addLog('🔄 INICIANDO SINCRONIZACIÓN COMPLETA...', 'warning');
+
+      await syncToFirebase();
+
+      addLog('🎉 SINCRONIZACIÓN COMPLETA FINALIZADA', 'success');
+      isRunning = false;
+    }
+
+    // ============================================
+    // LOGIN
+    // ============================================
+    function login(password) {
+      if (password === ADMIN_PASSWORD) {
+        localStorage.setItem('cleaner_auth', 'true');
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.remove('hidden');
+        addLog('✅ Acceso concedido al panel de limpieza', 'success');
+        loadLocalStats();
+        loadFirebaseStats();
+        calculateQuality();
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Acceso denegado',
+          text: 'Contraseña incorrecta',
+          confirmButtonColor: '#dc2626'
+        });
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('cleaner_auth');
+      loginScreen.classList.remove('hidden');
+      mainScreen.classList.add('hidden');
+      document.getElementById('password').value = '';
+      clearLog();
+    }
+
+    // ============================================
+    // INICIALIZACIÓN
+    // ============================================
+    function init() {
+      if (localStorage.getItem('cleaner_auth') === 'true') {
+        loginScreen.classList.add('hidden');
+        mainScreen.classList.remove('hidden');
+        loadLocalStats();
+        loadFirebaseStats();
+        calculateQuality();
+      }
+
+      document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        login(document.getElementById('password').value);
       });
+
+      document.getElementById('btnLogout').addEventListener('click', logout);
+      document.getElementById('btnRefresh').addEventListener('click', () => {
+        loadLocalStats();
+        loadFirebaseStats();
+        calculateQuality();
+        addLog('Estadísticas actualizadas', 'info');
+      });
+      document.getElementById('btnClearLog').addEventListener('click', clearLog);
+      document.getElementById('btnExportLog').addEventListener('click', exportLog);
+
+      // Acciones locales
+      document.getElementById('btnCleanInvalidLocal').addEventListener('click', cleanInvalidLocalIds);
+      document.getElementById('btnCleanDuplicatesLocal').addEventListener('click', cleanDuplicatesLocal);
+      document.getElementById('btnCleanNoGps').addEventListener('click', cleanNoGpsLocal);
+      document.getElementById('btnCleanCache').addEventListener('click', cleanCacheLocal);
+
+      // Normalización
+      document.getElementById('btnNormalizeZones').addEventListener('click', normalizeZones);
+      document.getElementById('btnFixIds').addEventListener('click', fixInvalidIds);
+      document.getElementById('btnCalculateQuality').addEventListener('click', calculateQuality);
+
+      // Acciones Firebase
+      document.getElementById('btnSyncFromFirebase').addEventListener('click', syncFromFirebase);
+      document.getElementById('btnCleanFirebaseInvalid').addEventListener('click', cleanFirebaseInvalid);
+      document.getElementById('btnSyncToFirebase').addEventListener('click', syncToFirebase);
+
+      // Acciones completas
+      document.getElementById('btnFullClean').addEventListener('click', fullClean);
+      document.getElementById('btnFullSync').addEventListener('click', fullSync);
+
+      document.getElementById('btnCleanMalformed').addEventListener('click', cleanMalformedIds);
+   
+      // ============================================
+// FUNCIONES DE MODIFICACIÓN MASIVA DE ZONAS
+// ============================================
+
+// Actualizar selects de zonas dinámicamente
+async function updateZoneSelects() {
+  const agencies = await getAllAgencies();
+  const zonas = [...new Set(agencies.map(a => a.zona).filter(z => z))];
+  
+  const moveFromSelect = document.getElementById('moveFromZona');
+  if (moveFromSelect) {
+    moveFromSelect.innerHTML = '<option value="">Zona de origen</option>' + 
+      zonas.map(z => `<option value="${z}">${z}</option>`).join('');
+  }
+}
+
+// Cambiar zona por IDs
+document.getElementById('btnMassChangeById')?.addEventListener('click', async () => {
+  const idsInput = document.getElementById('massIds').value;
+  const zona = document.getElementById('massZonaSelect').value;
+  
+  if (!idsInput || !zona) {
+    Swal.fire('Error', 'Ingresa IDs y selecciona una zona', 'warning');
+    return;
+  }
+  
+  const ids = idsInput.split(',').map(id => id.trim());
+  const result = await cambiarZona(ids, zona, false);
+  
+  document.getElementById('massOperationResult').innerHTML = `
+    <span class="text-green-600">✅ ${result.actualizadas} agencias actualizadas a zona "${zona}"</span>
+  `;
+  setTimeout(() => updateZoneSelects(), 500);
+});
+
+// Simular cambio por IDs
+document.getElementById('btnMassChangeByIdSimulate')?.addEventListener('click', async () => {
+  const idsInput = document.getElementById('massIds').value;
+  const zona = document.getElementById('massZonaSelect').value;
+  
+  if (!idsInput || !zona) {
+    Swal.fire('Error', 'Ingresa IDs y selecciona una zona', 'warning');
+    return;
+  }
+  
+  const ids = idsInput.split(',').map(id => id.trim());
+  await cambiarZona(ids, zona, true);
+});
+
+// Cambiar zona por patrón
+document.getElementById('btnMassChangeByPattern')?.addEventListener('click', async () => {
+  const patron = document.getElementById('massPattern').value;
+  const zona = document.getElementById('massPatternZonaSelect').value;
+  
+  if (!patron || !zona) {
+    Swal.fire('Error', 'Ingresa un patrón y selecciona una zona', 'warning');
+    return;
+  }
+  
+  const result = await cambiarZonaPorPatron(patron, zona, false);
+  
+  document.getElementById('massOperationResult').innerHTML = `
+    <span class="text-green-600">✅ ${result.actualizadas} agencias actualizadas a zona "${zona}"</span>
+  `;
+  setTimeout(() => updateZoneSelects(), 500);
+});
+
+// Simular cambio por patrón
+document.getElementById('btnMassChangeByPatternSimulate')?.addEventListener('click', async () => {
+  const patron = document.getElementById('massPattern').value;
+  const zona = document.getElementById('massPatternZonaSelect').value;
+  
+  if (!patron || !zona) {
+    Swal.fire('Error', 'Ingresa un patrón y selecciona una zona', 'warning');
+    return;
+  }
+  
+  await cambiarZonaPorPatron(patron, zona, true);
+});
+
+// Cambiar zona por rango
+document.getElementById('btnMassChangeByRange')?.addEventListener('click', async () => {
+  const inicio = document.getElementById('rangeStart').value;
+  const fin = document.getElementById('rangeEnd').value;
+  const zona = document.getElementById('massRangeZonaSelect').value;
+  
+  if (!inicio || !fin || !zona) {
+    Swal.fire('Error', 'Completa todos los campos', 'warning');
+    return;
+  }
+  
+  const result = await cambiarZonaPorRango(inicio, fin, zona, false);
+  
+  document.getElementById('massOperationResult').innerHTML = `
+    <span class="text-green-600">✅ ${result.actualizadas} agencias actualizadas a zona "${zona}"</span>
+  `;
+  setTimeout(() => updateZoneSelects(), 500);
+});
+
+// Simular cambio por rango
+document.getElementById('btnMassChangeByRangeSimulate')?.addEventListener('click', async () => {
+  const inicio = document.getElementById('rangeStart').value;
+  const fin = document.getElementById('rangeEnd').value;
+  const zona = document.getElementById('massRangeZonaSelect').value;
+  
+  if (!inicio || !fin || !zona) {
+    Swal.fire('Error', 'Completa todos los campos', 'warning');
+    return;
+  }
+  
+  await cambiarZonaPorRango(inicio, fin, zona, true);
+});
+
+// Mover zona completa
+document.getElementById('btnMassMoveZone')?.addEventListener('click', async () => {
+  const fromZona = document.getElementById('moveFromZona').value;
+  const toZona = document.getElementById('moveToZona').value;
+  
+  if (!fromZona || !toZona) {
+    Swal.fire('Error', 'Selecciona zona de origen y destino', 'warning');
+    return;
+  }
+  
+  const result = await moverZona(fromZona, toZona, false);
+  
+  document.getElementById('massOperationResult').innerHTML = `
+    <span class="text-green-600">✅ ${result.actualizadas} agencias movidas de "${fromZona}" a "${toZona}"</span>
+  `;
+  setTimeout(() => updateZoneSelects(), 500);
+});
+
+// Simular mover zona
+document.getElementById('btnMassMoveZoneSimulate')?.addEventListener('click', async () => {
+  const fromZona = document.getElementById('moveFromZona').value;
+  const toZona = document.getElementById('moveToZona').value;
+  
+  if (!fromZona || !toZona) {
+    Swal.fire('Error', 'Selecciona zona de origen y destino', 'warning');
+    return;
+  }
+  
+  await moverZona(fromZona, toZona, true);
+});
+
+// Llamar a updateZoneSelects al cargar
+setTimeout(() => updateZoneSelects(), 1000);
     }
-  }
-  
-  function logout() {
-    localStorage.removeItem('cleaner_auth');
-    loginScreen.classList.remove('hidden');
-    mainScreen.classList.add('hidden');
-    document.getElementById('password').value = '';
-    clearLog();
-  }
-  
-  // ============================================
-  // INICIALIZACIÓN
-  // ============================================
-  function init() {
-    if (localStorage.getItem('cleaner_auth') === 'true') {
-      loginScreen.classList.add('hidden');
-      mainScreen.classList.remove('hidden');
-      loadLocalStats();
-      loadFirebaseStats();
-      calculateQuality();
-    }
-    
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      login(document.getElementById('password').value);
-    });
-    
-    document.getElementById('btnLogout').addEventListener('click', logout);
-    document.getElementById('btnRefresh').addEventListener('click', () => {
-      loadLocalStats();
-      loadFirebaseStats();
-      calculateQuality();
-      addLog('Estadísticas actualizadas', 'info');
-    });
-    document.getElementById('btnClearLog').addEventListener('click', clearLog);
-    document.getElementById('btnExportLog').addEventListener('click', exportLog);
-    
-    // Acciones locales
-    document.getElementById('btnCleanInvalidLocal').addEventListener('click', cleanInvalidLocalIds);
-    document.getElementById('btnCleanDuplicatesLocal').addEventListener('click', cleanDuplicatesLocal);
-    document.getElementById('btnCleanNoGps').addEventListener('click', cleanNoGpsLocal);
-    document.getElementById('btnCleanCache').addEventListener('click', cleanCacheLocal);
-    
-    // Normalización
-    document.getElementById('btnNormalizeZones').addEventListener('click', normalizeZones);
-    document.getElementById('btnFixIds').addEventListener('click', fixInvalidIds);
-    document.getElementById('btnCalculateQuality').addEventListener('click', calculateQuality);
-    
-    // Acciones Firebase
-    document.getElementById('btnSyncFromFirebase').addEventListener('click', syncFromFirebase);
-    document.getElementById('btnCleanFirebaseInvalid').addEventListener('click', cleanFirebaseInvalid);
-    document.getElementById('btnSyncToFirebase').addEventListener('click', syncToFirebase);
-    
-    // Acciones completas
-    document.getElementById('btnFullClean').addEventListener('click', fullClean);
-    document.getElementById('btnFullSync').addEventListener('click', fullSync);
-  }
-  
-  init();
-</script>
+
+    init();
+  </script>
 </body>
+
 </html>
