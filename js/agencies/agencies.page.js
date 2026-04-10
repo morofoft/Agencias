@@ -376,7 +376,9 @@ async function deleteAgencyById(id, agencyName) {
 // 📍 Visitar agencia (abrir en maps)
 function visitAgency(agency) {
   if (agency.lat && agency.lng) {
-    window.open(`https://www.google.com/maps?q=${agency.lat},${agency.lng}`, '_blank');
+    //window.open(`https://www.google.com/maps?q=${agency.lat},${agency.lng}`, '_blank');
+    window.open(`https://waze.com/ul?ll=${agency.lat},${agency.lng}&navigate=yes`, '_blank');
+    
   } else {
     Swal.fire({
       icon: 'warning',

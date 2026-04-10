@@ -14,6 +14,7 @@ export function goToAgency(agency) {
     `)
     .openOn(map);
   
-  const url = `https://www.google.com/maps/dir/?api=1&destination=${agency.lat},${agency.lng}&travelmode=driving`;
-  window.open(url, '_blank');
+  //const url = `https://www.google.com/maps/dir/?api=1&destination=${agency.lat},${agency.lng}&travelmode=driving`;
+  window.open(`https://waze.com/ul?ll=${agency.lat},${agency.lng}&navigate=yes`, '_blank');
+ // window.open(url, '_blank');
 }

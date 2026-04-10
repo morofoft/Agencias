@@ -388,7 +388,8 @@ function startGpsWatch() {
 // FUNCIONES GLOBALES
 // ============================================
 window.goTo = (lat, lng) => {
-  window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+  //window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+  window.open(`https://waze.com/ul?ll=${lat},${lng}&navigate=yes`, '_blank');
 };
 
 window.copiar = async (texto) => {
