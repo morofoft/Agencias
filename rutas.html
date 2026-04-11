@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Pedro Garcia | Planificador de Rutas</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb@8/build/umd.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tech: {
+                            bg: '#0a0f1e',
+                            pane: '#111827',
+                            neon: '#00f2fe',
+                            purple: '#8e44ad',
+                            green: '#39ff14',
+                            red: '#ff073a',
+                            yellow: '#fbbf24'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; }
+        
+        #map { height: 45vh; min-height: 350px; width: 100%; border-radius: 12px; }
+        
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #1f2937; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #00f2fe; border-radius: 10px; }
+        
+        .agencia-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .agencia-item:hover {
+            background: rgba(0, 242, 254, 0.1);
+            transform: translateX(4px);
+        }
+        .agencia-item.selected {
+            background: rgba(79, 70, 229, 0.2);
+            border-left: 3px solid #4f46e5;
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .route-marker {
+            background: #4f46e5;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-tech-bg text-gray-200 font-sans">
+
+    <header class="bg-tech-pane border-b border-tech-neon/30 shadow-lg p-3 sticky top-0 z-50">
+        <div class="flex items-center justify-between max-w-7xl mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-3 h-3 bg-tech-neon rounded-full animate-pulse shadow-neon-md"></div>
+                <h1 class="text-xl font-bold tracking-widest text-white">
+                    <span class="text-tech-neon">RM</span>_ROUTE<span class="text-xs text-tech-neon/70">.v5.0</span>
+                </h1>
+            </div>
+            <nav class="flex gap-3">
+                <a href="index.html" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-tech-neon transition-colors">
+                    <i class="fas fa-map-marked-alt mr-1"></i> Mapa
+                </a>
+                <a href="agencies.html" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-tech-neon transition-colors">
+                    <i class="fas fa-building mr-1"></i> Agencias
+                </a>
+                <a href="admin.html" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-tech-neon transition-colors">
+                    <i class="fas fa-user-cog mr-1"></i> Admin
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="h-full overflow-y-auto p-4 pb-24">
+        <div class="max-w-7xl mx-auto">
+            
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <div class="bg-tech-pane border border-tech-neon/30 rounded-xl p-3 text-center">
+                    <p class="text-[9px] text-gray-500 uppercase font-bold tracking-wider">Total</p>
+                    <p id="stat-total" class="text-2xl font-mono text-tech-neon font-bold">0</p>
+                </div>
+                <div class="bg-tech-pane border border-tech-green/30 rounded-xl p-3 text-center">
+                    <p class="text-[9px] text-gray-500 uppercase font-bold tracking-wider">Completados</p>
+                    <p id="stat-completados" class="text-2xl font-mono text-tech-green font-bold">0</p>
+                </div>
+                <div class="bg-tech-pane border border-tech-red/30 rounded-xl p-3 text-center">
+                    <p class="text-[9px] text-gray-500 uppercase font-bold tracking-wider">Pendientes</p>
+                    <p id="stat-pendientes" class="text-2xl font-mono text-tech-red font-bold">0</p>
+                </div>
+            </div>
+
+            <!-- Mapa -->
+            <div class="bg-tech-pane rounded-xl border border-tech-neon/20 shadow-lg overflow-hidden mb-4">
+                <div id="map" class="z-10"></div>
+                <div id="navigation-hud" class="p-3 bg-gray-900 flex flex-wrap items-center justify-between gap-2 border-t border-gray-800">
+                    <div id="info" class="text-[11px] font-mono text-tech-green animate-pulse-slow">
+                        <i class="fas fa-circle text-[6px] mr-1 text-tech-green"></i> SISTEMA_LISTO
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleFollow()" id="followBtn" class="px-3 py-2 bg-gray-800 rounded-lg text-blue-400 border border-blue-500/30 text-xs font-bold">
+                            <i class="fas fa-location-dot mr-1"></i> Seguir
+                        </button>
+                        <button onclick="toggleCompass()" id="compassBtn" class="px-3 py-2 bg-gray-800 rounded-lg text-indigo-400 border border-indigo-500/30 text-xs font-bold">
+                            <i class="fas fa-compass mr-1"></i> Brújula
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel de Control -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                
+                <!-- Lista de Agencias (SOLO LAS SELECCIONADAS) -->
+                <div class="lg:col-span-2 bg-tech-pane rounded-xl border border-gray-800 overflow-hidden">
+                    <div class="bg-gray-900 p-3 border-b border-gray-800 flex justify-between items-center flex-wrap gap-2">
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-tech-neon">
+                            <i class="fas fa-building mr-2"></i> Agencias
+                        </h2>
+                        <div class="flex gap-2">
+                            <input type="text" id="searchAgencias" placeholder="Buscar por código o zona..." 
+                                class="text-xs bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 w-40 focus:border-tech-neon outline-none">
+                            <button onclick="seleccionarTodas()" class="text-[10px] bg-purple-500/20 text-purple-400 px-3 py-1.5 rounded-lg border border-purple-500/30 hover:bg-purple-500/30 transition">
+                                <i class="fas fa-check-double mr-1"></i> Seleccionar todas
+                            </button>
+                            <button onclick="limpiarSeleccion()" class="text-[10px] bg-gray-700/50 text-gray-400 px-3 py-1.5 rounded-lg border border-gray-600 hover:bg-gray-700 transition">
+                                <i class="fas fa-times mr-1"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                    <div id="lista-agencias" class="h-80 overflow-y-auto custom-scroll divide-y divide-gray-800">
+                        <div class="text-center text-gray-500 py-8 text-xs">Cargando agencias...</div>
+                    </div>
+                </div>
+
+                <!-- Acciones y Resumen -->
+                <div class="space-y-4">
+                    <div class="bg-tech-pane rounded-xl border border-gray-800 p-4">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                            <i class="fas fa-cogs mr-1"></i> Acciones
+                        </h3>
+                        <div class="space-y-3">
+                            <button onclick="generarRuta()" id="btnGenerarRuta" 
+                                class="w-full bg-tech-neon/20 hover:bg-tech-neon/30 text-tech-neon border border-tech-neon/50 py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2">
+                                <i class="fas fa-route"></i> Generar Ruta
+                            </button>
+                            <button onclick="iniciarNavegacion()" id="btnNavegar" 
+                                class="w-full bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/50 py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <i class="fas fa-play"></i> Iniciar Navegación
+                            </button>
+                            <button onclick="abrirEnGoogleMaps()" 
+                                class="w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/50 py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2">
+                                <i class="fab fa-google"></i> Abrir en Google Maps
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-tech-pane rounded-xl border border-gray-800 p-4">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                            <i class="fas fa-chart-line mr-1"></i> Resumen de Ruta
+                        </h3>
+                        <div id="route-summary" class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Agencias seleccionadas:</span>
+                                <span id="summary-count" class="font-mono text-tech-neon font-bold">0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Distancia total:</span>
+                                <span id="summary-distance" class="font-mono text-tech-green">0 km</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Tiempo estimado:</span>
+                                <span id="summary-time" class="font-mono text-tech-yellow">0 min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orden de Visita -->
+            <div class="mt-4 bg-tech-pane rounded-xl border border-gray-800 overflow-hidden">
+                <div class="bg-gray-900 p-3 border-b border-gray-800">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-tech-neon">
+                        <i class="fas fa-list-ol mr-2"></i> Orden de Visita Optimizado
+                    </h2>
+                </div>
+                <div id="orden-visita" class="p-3 max-h-28 overflow-y-auto custom-scroll flex flex-wrap gap-2">
+                    <span class="text-gray-500 text-xs">Selecciona agencias y genera una ruta</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { getAllAgencies, updateAgency } from './js/agencies/agencies.store.js';
+        import { haversineDistance, isValidCoordinates, showToast, escapeHtml, formatDistance } from './js/utils/helpers.js';
+
+        // ============================================
+        // VARIABLES
+        // ============================================
+        let todasAgencias = [];
+        let agenciasSeleccionadas = new Map();
+        let userPos = null;
+        let userMarker = null;
+        let map = null;
+        let rutaLayer = null;
+        let markers = [];
+        let ordenRuta = [];
+        let destinoIndex = 0;
+        let followUser = true;
+        let compassActive = false;
+        let heading = 0;
+        let rutaGenerada = false;
+        
+        // OpenRouteService API Key (gratis - regístrate en https://openrouteservice.org/)
+        // Por ahora usamos la API pública con límites
+        const ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjU3ZGEyODVlYWFkNjRkMmRhMjU2ZWU0OGIzNDRhODUxIiwiaCI6Im11cm11cjY0In0='; // Demo key
+        
+        const elementos = {
+            lista: document.getElementById('lista-agencias'),
+            search: document.getElementById('searchAgencias'),
+            summaryCount: document.getElementById('summary-count'),
+            summaryDistance: document.getElementById('summary-distance'),
+            summaryTime: document.getElementById('summary-time'),
+            ordenVisita: document.getElementById('orden-visita'),
+            btnNavegar: document.getElementById('btnNavegar')
+        };
+        
+        // ============================================
+        // MAPA
+        // ============================================
+        function initMap() {
+            if (map) map.remove();
+            map = L.map('map', { rotate: true }).setView([18.8059, -71.2299], 13);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+            setTimeout(() => map.invalidateSize(), 400);
+            window.addEventListener('resize', () => map.invalidateSize());
+            map.on('dragstart', () => followUser = false);
+        }
+        
+        // ============================================
+        // GPS
+        // ============================================
+        function iniciarGPS() {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.watchPosition(pos => {
+                userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                if (userMarker) {
+                    userMarker.setLatLng([userPos.lat, userPos.lng]);
+                } else {
+                    let arrowIcon = L.divIcon({
+                        html: `<div class="text-2xl filter drop-shadow-lg">⬆️</div>`,
+                        className: "", iconSize: [30, 30]
+                    });
+                    userMarker = L.marker([userPos.lat, userPos.lng], { icon: arrowIcon }).addTo(map);
+                }
+                if (followUser) map.setView([userPos.lat, userPos.lng], 16);
+            }, null, { enableHighAccuracy: true });
+        }
+        
+        window.toggleFollow = () => {
+            followUser = !followUser;
+            document.getElementById("followBtn").classList.toggle("bg-blue-500/20", followUser);
+        };
+        
+        window.toggleCompass = () => {
+            compassActive = !compassActive;
+            if (compassActive) activarBrujula();
+            else map.setBearing(0);
+            document.getElementById("compassBtn").classList.toggle("bg-indigo-500/20", compassActive);
+        };
+        
+        function activarBrujula() {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(res => {
+                    if (res === 'granted') iniciarBrujula();
+                }).catch(() => {});
+            } else iniciarBrujula();
+        }
+        
+        function iniciarBrujula() {
+            window.addEventListener("deviceorientation", (event) => {
+                if (!compassActive) return;
+                let dir = event.alpha;
+                if (dir !== null) {
+                    heading = 360 - dir;
+                    map.setBearing(heading);
+                    let el = userMarker?.getElement();
+                    if (el) el.style.transform = `rotate(${heading}deg)`;
+                }
+            });
+        }
+        
+        // ============================================
+        // AGENCIAS
+        // ============================================
+        async function cargarAgencias() {
+            try {
+                todasAgencias = await getAllAgencies();
+                todasAgencias = todasAgencias.filter(a => isValidCoordinates(a.lat, a.lng) && a.idReal);
+                renderizarLista();
+                actualizarEstadisticas();
+            } catch (err) {
+                console.error('Error:', err);
+                if (elementos.lista) elementos.lista.innerHTML = `<div class="text-center text-red-400 py-8 text-xs">Error cargando agencias</div>`;
+            }
+        }
+        
+        function renderizarLista() {
+            if (!elementos.lista) return;
+            
+            let filtradas = [...todasAgencias];
+            const searchTerm = elementos.search?.value.toLowerCase().trim() || '';
+            
+            if (searchTerm) {
+                filtradas = filtradas.filter(a => 
+                    a.idReal.toLowerCase().includes(searchTerm) ||
+                    (a.zona && a.zona.toLowerCase().includes(searchTerm)) ||
+                    (a.direccion && a.direccion.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            if (filtradas.length === 0) {
+                elementos.lista.innerHTML = `<div class="text-center text-gray-500 py-8 text-xs">No se encontraron agencias</div>`;
+                return;
+            }
+            
+            elementos.lista.innerHTML = filtradas.map(agency => {
+                const isSelected = agenciasSeleccionadas.has(agency.id);
+                const isCompleted = agency.visitado;
+                let estadoClass = '';
+                let estadoIcon = '';
+                
+                if (isCompleted) {
+                    estadoClass = 'border-tech-green/30 bg-tech-green/5';
+                    estadoIcon = '<i class="fas fa-check-circle text-tech-green text-xs"></i>';
+                } else if (isSelected) {
+                    estadoClass = 'border-tech-yellow/30 bg-tech-yellow/5 selected';
+                    estadoIcon = '<i class="fas fa-star text-tech-yellow text-xs"></i>';
+                } else {
+                    estadoClass = 'border-gray-700';
+                    estadoIcon = '<i class="far fa-circle text-gray-500 text-xs"></i>';
+                }
+                
+                return `
+                    <div class="agencia-item p-3 flex items-center justify-between cursor-pointer ${estadoClass} border-b border-gray-800"
+                         data-id="${agency.id}">
+                        <div class="flex items-center gap-3 flex-1">
+                            ${estadoIcon}
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <p class="font-bold text-sm text-white">${escapeHtml(agency.idReal)}</p>
+                                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">${escapeHtml(agency.zona || 'Sin zona')}</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500 truncate max-w-[200px]">${escapeHtml(agency.direccion?.substring(0, 50) || 'Sin dirección')}</p>
+                                <p class="text-[9px] font-mono text-gray-600">${agency.lat.toFixed(5)}, ${agency.lng.toFixed(5)}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.marcarVisitado('${agency.id}')" 
+                                    class="text-xs px-2 py-1 rounded ${isCompleted ? 'bg-yellow-500/20 text-yellow-400' : 'bg-tech-green/20 text-tech-green'}">
+                                ${isCompleted ? '↩️' : '✅'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.querySelectorAll('.agencia-item').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    if (e.target.closest('button')) return;
+                    const id = el.dataset.id;
+                    const agency = todasAgencias.find(a => a.id === id);
+                    if (agency) toggleSeleccion(agency);
+                });
+            });
+        }
+        
+        function toggleSeleccion(agency) {
+            if (agency.visitado) {
+                showToast('warning', `${agency.idReal} ya fue completado`);
+                return;
+            }
+            if (agenciasSeleccionadas.has(agency.id)) {
+                agenciasSeleccionadas.delete(agency.id);
+            } else {
+                agenciasSeleccionadas.set(agency.id, agency);
+            }
+            renderizarLista();
+            renderizarMapa();
+            actualizarResumen();
+            limpiarRuta();
+        }
+        
+        window.marcarVisitado = async function(id) {
+            const agency = todasAgencias.find(a => a.id === id);
+            if (!agency) return;
+            agency.visitado = !agency.visitado;
+            if (agency.visitado) agenciasSeleccionadas.delete(agency.id);
+            await updateAgency(agency);
+            renderizarLista();
+            renderizarMapa();
+            actualizarEstadisticas();
+            actualizarResumen();
+            limpiarRuta();
+            showToast('success', agency.visitado ? `${agency.idReal} completado` : `${agency.idReal} reactivado`);
+        };
+        
+        window.seleccionarTodas = () => {
+            const pendientes = todasAgencias.filter(a => !a.visitado);
+            if (pendientes.length === 0) {
+                showToast('warning', 'No hay agencias pendientes');
+                return;
+            }
+            pendientes.forEach(a => agenciasSeleccionadas.set(a.id, a));
+            renderizarLista();
+            renderizarMapa();
+            actualizarResumen();
+            limpiarRuta();
+        };
+        
+        window.limpiarSeleccion = () => {
+            agenciasSeleccionadas.clear();
+            renderizarLista();
+            renderizarMapa();
+            actualizarResumen();
+            limpiarRuta();
+            showToast('info', 'Selección limpiada');
+        };
+        
+        function actualizarEstadisticas() {
+            const total = todasAgencias.length;
+            const completados = todasAgencias.filter(a => a.visitado).length;
+            document.getElementById("stat-total").innerText = total;
+            document.getElementById("stat-completados").innerText = completados;
+            document.getElementById("stat-pendientes").innerText = total - completados;
+        }
+        
+        function actualizarResumen() {
+            if (elementos.summaryCount) elementos.summaryCount.innerText = agenciasSeleccionadas.size;
+        }
+        
+        function limpiarRuta() {
+            if (rutaLayer) map.removeLayer(rutaLayer);
+            rutaLayer = null;
+            rutaGenerada = false;
+            if (elementos.btnNavegar) elementos.btnNavegar.disabled = true;
+            if (elementos.ordenVisita) elementos.ordenVisita.innerHTML = '<span class="text-gray-500 text-xs">Selecciona agencias y genera una ruta</span>';
+            if (elementos.summaryDistance) elementos.summaryDistance.innerText = '0 km';
+            if (elementos.summaryTime) elementos.summaryTime.innerText = '0 min';
+        }
+        
+        // ============================================
+        // MAPA - SOLO LAS SELECCIONADAS
+        // ============================================
+        function renderizarMapa() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            
+            // SOLO mostrar las agencias SELECCIONADAS en el mapa
+            const agenciasMostrar = Array.from(agenciasSeleccionadas.values());
+            
+            agenciasMostrar.forEach(agency => {
+                const color = "#fbbf24"; // Amarillo para seleccionadas
+                const icon = L.divIcon({
+                    html: `<div style="background:${color}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 8px ${color};"></div>`,
+                    className: ""
+                });
+                
+                const marker = L.marker([agency.lat, agency.lng], { icon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <div style="min-width:150px">
+                            <b class="text-white">${escapeHtml(agency.idReal)}</b><br>
+                            <span class="text-xs text-gray-400">${escapeHtml(agency.zona || 'Sin zona')}</span><br>
+                            <span class="text-xs text-yellow-400">✅ Seleccionada</span>
+                        </div>
+                    `);
+                markers.push(marker);
+            });
+        }
+        
+        // ============================================
+        // OPTIMIZACIÓN
+        // ============================================
+        function optimizarOrden(agencias) {
+            if (!agencias.length) return [];
+            const sin = [...agencias];
+            const orden = [];
+            let actual = userPos || sin[0];
+            while (sin.length) {
+                let best = 0, bestD = Infinity;
+                sin.forEach((p, i) => {
+                    const d = haversineDistance(actual.lat, actual.lng, p.lat, p.lng);
+                    if (d < bestD) { bestD = d; best = i; }
+                });
+                const s = sin.splice(best, 1)[0];
+                orden.push(s);
+                actual = s;
+            }
+            return orden;
+        }
+        
+        // ============================================
+        // OPENROUTESERVICE (sin CORS)
+        // ============================================
+        async function generarRutaORS(agencias) {
+            if (!agencias.length) return null;
+            
+            const coords = [];
+            if (userPos) coords.push([userPos.lng, userPos.lat]);
+            agencias.forEach(a => coords.push([a.lng, a.lat]));
+            
+            const body = {
+                coordinates: coords,
+                format: 'geojson',
+                preference: 'fastest',
+                profile: 'driving-car',
+                geometry: true,
+                instructions: true
+            };
+            
+            try {
+                const response = await fetch('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+                        'Authorization': ORS_API_KEY
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                return data;
+            } catch (err) {
+                console.error('ORS Error:', err);
+                showToast('error', 'Error al calcular ruta. Usando líneas rectas.');
+                return null;
+            }
+        }
+        
+        async function generarRuta() {
+            if (agenciasSeleccionadas.size === 0) {
+                showToast('warning', 'Selecciona al menos una agencia');
+                return;
+            }
+            
+            showToast('info', 'Calculando ruta optimizada...', 1500);
+            
+            const agenciasList = Array.from(agenciasSeleccionadas.values());
+            ordenRuta = optimizarOrden(agenciasList);
+            
+            // Mostrar orden en UI
+            const ordenHtml = ordenRuta.map((a, i) => `
+                <span class="bg-gray-800 px-3 py-1.5 rounded-lg text-xs flex items-center gap-2">
+                    <span class="w-5 h-5 rounded-full bg-tech-neon text-tech-bg flex items-center justify-center font-bold text-[10px]">${i+1}</span>
+                    <span class="font-mono">${escapeHtml(a.idReal)}</span>
+                </span>
+            `).join('');
+            if (elementos.ordenVisita) elementos.ordenVisita.innerHTML = ordenHtml;
+            
+            // Intentar ruta real con ORS
+            const routeData = await generarRutaORS(ordenRuta);
+            
+            if (routeData && routeData.features && routeData.features[0]) {
+                if (rutaLayer) map.removeLayer(rutaLayer);
+                
+                rutaLayer = L.geoJSON(routeData, {
+                    style: { color: "#00f2fe", weight: 5, opacity: 0.9 }
+                }).addTo(map);
+                
+                map.fitBounds(rutaLayer.getBounds());
+                
+                const distance = routeData.features[0].properties.summary.distance / 1000;
+                const duration = Math.round(routeData.features[0].properties.summary.duration / 60);
+                
+                if (elementos.summaryDistance) elementos.summaryDistance.innerText = `${distance.toFixed(2)} km`;
+                if (elementos.summaryTime) elementos.summaryTime.innerText = `${duration} min`;
+                
+                rutaGenerada = true;
+                if (elementos.btnNavegar) elementos.btnNavegar.disabled = false;
+                showToast('success', `Ruta generada con ${ordenRuta.length} agencias · ${distance.toFixed(2)} km`);
+            } else {
+                // Fallback: líneas rectas
+                dibujarRutaLineaRecta(ordenRuta);
+                showToast('info', 'Mostrando ruta en línea recta (servicio de rutas no disponible)');
+            }
+        }
+        
+        function dibujarRutaLineaRecta(agencias) {
+            if (rutaLayer) map.removeLayer(rutaLayer);
+            
+            const latlngs = [];
+            if (userPos) latlngs.push([userPos.lat, userPos.lng]);
+            agencias.forEach(a => latlngs.push([a.lat, a.lng]));
+            
+            rutaLayer = L.polyline(latlngs, { color: "#00f2fe", weight: 5, opacity: 0.9 }).addTo(map);
+            map.fitBounds(rutaLayer.getBounds());
+            
+            let totalDist = 0;
+            let prev = userPos || agencias[0];
+            agencias.forEach(a => {
+                totalDist += haversineDistance(prev.lat, prev.lng, a.lat, a.lng);
+                prev = a;
+            });
+            
+            if (elementos.summaryDistance) elementos.summaryDistance.innerText = `${(totalDist / 1000).toFixed(2)} km`;
+            if (elementos.summaryTime) elementos.summaryTime.innerText = `${Math.round(totalDist / 1000 / 50 * 60)} min`;
+            
+            rutaGenerada = true;
+            if (elementos.btnNavegar) elementos.btnNavegar.disabled = false;
+        }
+        
+        // ============================================
+        // NAVEGACIÓN
+        // ============================================
+        function iniciarNavegacion() {
+            if (!rutaGenerada || ordenRuta.length === 0) {
+                showToast('warning', 'Primero genera una ruta');
+                return;
+            }
+            destinoIndex = 0;
+            seguirRuta();
+        }
+        
+        function seguirRuta() {
+            if (destinoIndex >= ordenRuta.length) {
+                document.getElementById("info").innerHTML = `<i class="fas fa-check-circle mr-1"></i> RUTA COMPLETADA`;
+                showToast('success', '¡Has completado todos los destinos!');
+                if (elementos.btnNavegar) elementos.btnNavegar.disabled = true;
+                return;
+            }
+            
+            const destino = ordenRuta[destinoIndex];
+            const dist = userPos ? haversineDistance(userPos.lat, userPos.lng, destino.lat, destino.lng) : 0;
+            
+            document.getElementById("info").innerHTML = `
+                <i class="fas fa-location-dot mr-1"></i> ${escapeHtml(destino.idReal)} | 
+                <i class="fas fa-road mr-1"></i> ${dist.toFixed(2)} km
+            `;
+            
+            if (userPos && dist < 0.05) {
+                marcarVisitado(destino.id);
+                destinoIndex++;
+            }
+            setTimeout(seguirRuta, 2000);
+        }
+        
+        // ============================================
+        // GOOGLE MAPS
+        // ============================================
+        function abrirEnGoogleMaps() {
+            if (agenciasSeleccionadas.size === 0) {
+                showToast('warning', 'Selecciona al menos una agencia');
+                return;
+            }
+            
+            const agenciasList = Array.from(agenciasSeleccionadas.values());
+            let url;
+            if (agenciasList.length === 1) {
+                const a = agenciasList[0];
+                url = `https://www.google.com/maps/dir/?api=1&destination=${a.lat},${a.lng}&travelmode=driving`;
+                if (userPos) url += `&origin=${userPos.lat},${userPos.lng}`;
+            } else {
+                const origin = userPos ? `${userPos.lat},${userPos.lng}` : `${agenciasList[0].lat},${agenciasList[0].lng}`;
+                const destination = `${agenciasList[agenciasList.length - 1].lat},${agenciasList[agenciasList.length - 1].lng}`;
+                const waypoints = agenciasList.slice(1, -1).map(a => `${a.lat},${a.lng}`).join('|');
+                url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+                if (waypoints) url += `&waypoints=${waypoints}`;
+            }
+            window.open(url, '_blank');
+            showToast('success', 'Abriendo Google Maps...');
+        }
+        
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        async function init() {
+            initMap();
+            iniciarGPS();
+            await cargarAgencias();
+            
+            if (elementos.search) {
+                elementos.search.addEventListener('input', () => renderizarLista());
+            }
+            
+            window.generarRuta = generarRuta;
+            window.iniciarNavegacion = iniciarNavegacion;
+            window.abrirEnGoogleMaps = abrirEnGoogleMaps;
+        }
+        
+        init();
+    </script>
+</body>
+</html>
