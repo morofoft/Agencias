@@ -1625,7 +1625,6 @@
         addLog('🗑️ Eliminando datos locales...', 'info');
 
         await clearLocalData();
-        await clearLocalData();
 
         addLog('📥 Recargando desde Firebase...', 'info');
 
@@ -1663,15 +1662,13 @@
   }
 }
 
-function clearLocalData() {
-  localStorage.clear();
-}
-
 async function clearLocalData() {
   const dbs = await indexedDB.databases();
   for (const db of dbs) {
     indexedDB.deleteDatabase(db.name);
   }
+
+  localStorage.clear();
 }
     async function cleanFirebaseInvalid() {
       if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
