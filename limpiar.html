@@ -1066,7 +1066,7 @@
     // Exponer función global
     window.cleanMalformedIds = cleanMalformedIds;
 
-        // ============================================
+    // ============================================
     // FUNCIONES PARA MODIFICAR ZONAS DESDE CONSOLA/UI
     // ============================================
 
@@ -1079,16 +1079,16 @@
     async function cambiarZona(ids, nuevaZona, dryRun = false) {
       const agencies = await getAllAgencies();
       const idsArray = Array.isArray(ids) ? ids : [ids];
-      
+
       const agenciasAfectadas = agencies.filter(a => idsArray.includes(a.idReal));
-      
+
       if (agenciasAfectadas.length === 0) {
         addLog(`❌ No se encontraron agencias con los IDs: ${idsArray.join(', ')}`, 'error');
         return { actualizadas: 0, errores: 0 };
       }
-      
+
       addLog(`📋 Agencias encontradas: ${agenciasAfectadas.length}`, 'info');
-      
+
       if (dryRun) {
         addLog(`🔍 SIMULACIÓN - Se cambiarían ${agenciasAfectadas.length} agencias a zona "${nuevaZona}"`, 'warning');
         agenciasAfectadas.forEach(a => {
@@ -1096,10 +1096,10 @@
         });
         return { actualizadas: 0, errores: 0 };
       }
-      
+
       let actualizadas = 0;
       let errores = 0;
-      
+
       for (const agency of agenciasAfectadas) {
         try {
           const zonaAnterior = agency.zona;
@@ -1113,13 +1113,13 @@
           errores++;
         }
       }
-      
+
       addLog(`📊 Resumen: ${actualizadas} actualizadas, ${errores} errores`, actualizadas > 0 ? 'success' : 'warning');
-      
+
       await loadLocalStats();
       await calculateQuality();
       await updateZoneSelects();
-      
+
       return { actualizadas, errores };
     }
 
@@ -1128,18 +1128,18 @@
      */
     async function cambiarZonaPorPatron(patron, nuevaZona, dryRun = false) {
       const agencies = await getAllAgencies();
-      
-      const agenciasAfectadas = agencies.filter(a => 
+
+      const agenciasAfectadas = agencies.filter(a =>
         a.idReal && a.idReal.toString().includes(patron)
       );
-      
+
       if (agenciasAfectadas.length === 0) {
         addLog(`❌ No se encontraron agencias con el patrón: "${patron}"`, 'error');
         return { actualizadas: 0 };
       }
-      
+
       addLog(`📋 Patrón: "${patron}" - ${agenciasAfectadas.length} agencias encontradas`, 'info');
-      
+
       if (dryRun) {
         addLog(`🔍 SIMULACIÓN - Se cambiarían ${agenciasAfectadas.length} agencias a zona "${nuevaZona}"`, 'warning');
         agenciasAfectadas.slice(0, 10).forEach(a => {
@@ -1150,7 +1150,7 @@
         }
         return { actualizadas: 0 };
       }
-      
+
       let actualizadas = 0;
       for (const agency of agenciasAfectadas) {
         agency.zona = nuevaZona;
@@ -1158,13 +1158,13 @@
         await updateAgency(agency);
         actualizadas++;
       }
-      
+
       addLog(`✅ ${actualizadas} agencias actualizadas a zona "${nuevaZona}"`, 'success');
-      
+
       await loadLocalStats();
       await calculateQuality();
       await updateZoneSelects();
-      
+
       return { actualizadas };
     }
 
@@ -1175,19 +1175,19 @@
       const agencies = await getAllAgencies();
       const inicioNum = parseInt(inicio);
       const finNum = parseInt(fin);
-      
+
       const agenciasAfectadas = agencies.filter(a => {
         const idNum = parseInt(a.idReal);
         return !isNaN(idNum) && idNum >= inicioNum && idNum <= finNum;
       });
-      
+
       if (agenciasAfectadas.length === 0) {
         addLog(`❌ No se encontraron agencias en el rango ${inicio} - ${fin}`, 'error');
         return { actualizadas: 0 };
       }
-      
+
       addLog(`📋 Rango: ${inicio} - ${fin} - ${agenciasAfectadas.length} agencias encontradas`, 'info');
-      
+
       if (dryRun) {
         addLog(`🔍 SIMULACIÓN - Se cambiarían ${agenciasAfectadas.length} agencias a zona "${nuevaZona}"`, 'warning');
         agenciasAfectadas.slice(0, 10).forEach(a => {
@@ -1198,7 +1198,7 @@
         }
         return { actualizadas: 0 };
       }
-      
+
       let actualizadas = 0;
       for (const agency of agenciasAfectadas) {
         agency.zona = nuevaZona;
@@ -1206,13 +1206,13 @@
         await updateAgency(agency);
         actualizadas++;
       }
-      
+
       addLog(`✅ ${actualizadas} agencias actualizadas a zona "${nuevaZona}"`, 'success');
-      
+
       await loadLocalStats();
       await calculateQuality();
       await updateZoneSelects();
-      
+
       return { actualizadas };
     }
 
@@ -1222,14 +1222,14 @@
     async function moverZona(zonaOrigen, zonaDestino, dryRun = false) {
       const agencies = await getAllAgencies();
       const agenciasAfectadas = agencies.filter(a => a.zona === zonaOrigen);
-      
+
       if (agenciasAfectadas.length === 0) {
         addLog(`❌ No se encontraron agencias en la zona "${zonaOrigen}"`, 'error');
         return { actualizadas: 0 };
       }
-      
+
       addLog(`📋 Mover ${agenciasAfectadas.length} agencias de "${zonaOrigen}" a "${zonaDestino}"`, 'info');
-      
+
       if (dryRun) {
         addLog(`🔍 SIMULACIÓN - Se moverían ${agenciasAfectadas.length} agencias`, 'warning');
         agenciasAfectadas.slice(0, 10).forEach(a => {
@@ -1240,7 +1240,7 @@
         }
         return { actualizadas: 0 };
       }
-      
+
       let actualizadas = 0;
       for (const agency of agenciasAfectadas) {
         agency.zona = zonaDestino;
@@ -1248,13 +1248,13 @@
         await updateAgency(agency);
         actualizadas++;
       }
-      
+
       addLog(`✅ ${actualizadas} agencias movidas de "${zonaOrigen}" a "${zonaDestino}"`, 'success');
-      
+
       await loadLocalStats();
       await calculateQuality();
       await updateZoneSelects();
-      
+
       return { actualizadas };
     }
 
@@ -1264,16 +1264,16 @@
     async function verZonas() {
       const agencies = await getAllAgencies();
       const zonas = {};
-      
+
       agencies.forEach(a => {
         const zona = a.zona || 'Sin zona';
         zonas[zona] = (zonas[zona] || 0) + 1;
       });
-      
+
       console.log('\n📊 Distribución actual de zonas:');
       console.table(zonas);
       addLog(`Total agencias: ${agencies.length}`, 'info');
-      
+
       return zonas;
     }
 
@@ -1288,10 +1288,10 @@
     async function updateZoneSelects() {
       const agencies = await getAllAgencies();
       const zonas = [...new Set(agencies.map(a => a.zona).filter(z => z))];
-      
+
       const moveFromSelect = document.getElementById('moveFromZona');
       if (moveFromSelect) {
-        moveFromSelect.innerHTML = '<option value="">Zona de origen</option>' + 
+        moveFromSelect.innerHTML = '<option value="">Zona de origen</option>' +
           zonas.map(z => `<option value="${z}">${z}</option>`).join('');
       }
     }
@@ -1577,9 +1577,9 @@
     // ACCIONES FIREBASE
     // ============================================
     async function syncFromFirebase() {
-  if (isRunning) { 
-    addLog('Ya hay una operación en curso...', 'warning'); 
-    return; 
+  if (isRunning) {
+    addLog('Ya hay una operación en curso...', 'warning');
+    return;
   }
 
   isRunning = true;
@@ -1593,62 +1593,53 @@
       throw new Error('No se pudo obtener datos de Firebase');
     }
 
-    let count = 0;
-    let skipped = 0;
-    const toInsert = [];
+    // 🔥 1. Obtener todos los IDs locales UNA SOLA VEZ
+    const localAgencies = await getAllAgencies();
+    const localIds = new Set(localAgencies.map(a => a.idReal));
 
+    let toInsert = [];
+    let skipped = 0;
+
+    // 🔥 2. Filtrar solo los nuevos (SIN consultas dentro del loop)
     for (const docSnap of snapshot.docs) {
       const data = docSnap.data();
       const idReal = data.idReal || data.id_nuevo || '';
 
       if (idReal && String(idReal).startsWith('812')) {
-        const existing = await getAgencyByIdReal(idReal);
-
-        if (!existing) {
+        if (!localIds.has(idReal)) {
           toInsert.push({ ...data, synced: true });
-          count++;
         } else {
           skipped++;
         }
       }
     }
 
-    // 👉 CASO CLAVE: todo fue omitido (ya existe localmente)
-    if (count === 0 && skipped > 0) {
-      addLog(`⚠️ ${skipped}/${skipped} registros ya existen`, 'warning');
+    addLog(`📊 Nuevos: ${toInsert.length} | Omitidos: ${skipped}`, 'info');
 
-      const confirmReplace = confirm(
-        `${skipped}/${skipped} registros ya existen.\n\n¿Deseas reemplazar todos los datos locales con los de Firebase?`
-      );
+    // 🔥 3. Si no hay nuevos → opción de reemplazo
+    if (toInsert.length === 0 && skipped > 0) {
+      addLog(`⚠️ Todos los registros ya existen`, 'warning');
+
+      const confirmReplace = confirm(`${skipped} registros ya existen. ¿Reemplazar todo?`);
 
       if (confirmReplace) {
         addLog('🗑️ Eliminando datos locales...', 'info');
-
         await clearLocalData();
 
-        addLog('📥 Recargando desde Firebase...', 'info');
+        const allData = snapshot.docs
+          .map(d => ({ ...d.data(), synced: true }))
+          .filter(d => String(d.idReal || d.id_nuevo).startsWith('812'));
 
-        for (const docSnap of snapshot.docs) {
-          const data = docSnap.data();
-          const idReal = data.idReal || data.id_nuevo || '';
+        await processInBatches(allData);
 
-          if (idReal && String(idReal).startsWith('812')) {
-            await addAgency({ ...data, synced: true });
-          }
-        }
-
-        addLog(`✅ Datos reemplazados completamente desde Firebase`, 'success');
+        addLog(`✅ Datos reemplazados correctamente`, 'success');
       } else {
-        addLog('❌ Operación cancelada por el usuario', 'info');
+        addLog('❌ Operación cancelada', 'info');
       }
-
     } else {
-      // 👉 flujo normal
-      for (const item of toInsert) {
-        await addAgency(item);
-      }
-
-      addLog(`✅ Sincronizados ${count} registros (${skipped} omitidos)`, 'success');
+      // 🔥 4. Insertar solo nuevos
+      await processInBatches(toInsert);
+      addLog(`✅ Sincronizados ${toInsert.length} registros (${skipped} omitidos)`, 'success');
     }
 
     await loadLocalStats();
@@ -1662,14 +1653,31 @@
   }
 }
 
-async function clearLocalData() {
-  const dbs = await indexedDB.databases();
-  for (const db of dbs) {
-    indexedDB.deleteDatabase(db.name);
-  }
+async function processInBatches(items) {
+  const BATCH_SIZE = 10; // 🔥 pequeño = seguro
 
-  localStorage.clear();
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, i + BATCH_SIZE);
+
+    // ✅ SIN Promise.all (evita saturación)
+    for (const item of batch) {
+      await addAgency(item);
+    }
+
+    addLog(`Progreso: ${Math.min(i + BATCH_SIZE, items.length)}/${items.length}`, 'info');
+
+    // 🔥 Dar respiro al navegador
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
 }
+    async function clearLocalData() {
+      const dbs = await indexedDB.databases();
+      for (const db of dbs) {
+        indexedDB.deleteDatabase(db.name);
+      }
+
+      localStorage.clear();
+    }
     async function cleanFirebaseInvalid() {
       if (isRunning) { addLog('Ya hay una operación en curso...', 'warning'); return; }
       isRunning = true;
@@ -1711,6 +1719,15 @@ async function clearLocalData() {
       } finally {
         isRunning = false;
       }
+    }
+
+    async function borrarDB() {
+      const dbs = await indexedDB.databases();
+      for (const db of dbs) {
+        indexedDB.deleteDatabase(db.name);
+      }
+
+      localStorage.clear();
     }
 
     async function syncToFirebase() {
@@ -1797,8 +1814,17 @@ async function clearLocalData() {
       await cleanFirebaseInvalid();
       await normalizeZones();
 
+      const dbs = await indexedDB.databases();
+      for (const db of dbs) {
+        indexedDB.deleteDatabase(db.name);
+      }
+
+      localStorage.clear();
+
       addLog('🎉 LIMPIEZA COMPLETA FINALIZADA', 'success');
       isRunning = false;
+      alert('🎉 LIMPIEZA COMPLETA FINALIZADA \n Se recargará la pagina.')
+      window.location.reload();
     }
 
     async function fullSync() {
@@ -1890,153 +1916,153 @@ async function clearLocalData() {
       document.getElementById('btnFullSync').addEventListener('click', fullSync);
 
       document.getElementById('btnCleanMalformed').addEventListener('click', cleanMalformedIds);
-   
+
       // ============================================
-// FUNCIONES DE MODIFICACIÓN MASIVA DE ZONAS
-// ============================================
+      // FUNCIONES DE MODIFICACIÓN MASIVA DE ZONAS
+      // ============================================
 
-// Actualizar selects de zonas dinámicamente
-async function updateZoneSelects() {
-  const agencies = await getAllAgencies();
-  const zonas = [...new Set(agencies.map(a => a.zona).filter(z => z))];
-  
-  const moveFromSelect = document.getElementById('moveFromZona');
-  if (moveFromSelect) {
-    moveFromSelect.innerHTML = '<option value="">Zona de origen</option>' + 
-      zonas.map(z => `<option value="${z}">${z}</option>`).join('');
-  }
-}
+      // Actualizar selects de zonas dinámicamente
+      async function updateZoneSelects() {
+        const agencies = await getAllAgencies();
+        const zonas = [...new Set(agencies.map(a => a.zona).filter(z => z))];
 
-// Cambiar zona por IDs
-document.getElementById('btnMassChangeById')?.addEventListener('click', async () => {
-  const idsInput = document.getElementById('massIds').value;
-  const zona = document.getElementById('massZonaSelect').value;
-  
-  if (!idsInput || !zona) {
-    Swal.fire('Error', 'Ingresa IDs y selecciona una zona', 'warning');
-    return;
-  }
-  
-  const ids = idsInput.split(',').map(id => id.trim());
-  const result = await cambiarZona(ids, zona, false);
-  
-  document.getElementById('massOperationResult').innerHTML = `
+        const moveFromSelect = document.getElementById('moveFromZona');
+        if (moveFromSelect) {
+          moveFromSelect.innerHTML = '<option value="">Zona de origen</option>' +
+            zonas.map(z => `<option value="${z}">${z}</option>`).join('');
+        }
+      }
+
+      // Cambiar zona por IDs
+      document.getElementById('btnMassChangeById')?.addEventListener('click', async () => {
+        const idsInput = document.getElementById('massIds').value;
+        const zona = document.getElementById('massZonaSelect').value;
+
+        if (!idsInput || !zona) {
+          Swal.fire('Error', 'Ingresa IDs y selecciona una zona', 'warning');
+          return;
+        }
+
+        const ids = idsInput.split(',').map(id => id.trim());
+        const result = await cambiarZona(ids, zona, false);
+
+        document.getElementById('massOperationResult').innerHTML = `
     <span class="text-green-600">✅ ${result.actualizadas} agencias actualizadas a zona "${zona}"</span>
   `;
-  setTimeout(() => updateZoneSelects(), 500);
-});
+        setTimeout(() => updateZoneSelects(), 500);
+      });
 
-// Simular cambio por IDs
-document.getElementById('btnMassChangeByIdSimulate')?.addEventListener('click', async () => {
-  const idsInput = document.getElementById('massIds').value;
-  const zona = document.getElementById('massZonaSelect').value;
-  
-  if (!idsInput || !zona) {
-    Swal.fire('Error', 'Ingresa IDs y selecciona una zona', 'warning');
-    return;
-  }
-  
-  const ids = idsInput.split(',').map(id => id.trim());
-  await cambiarZona(ids, zona, true);
-});
+      // Simular cambio por IDs
+      document.getElementById('btnMassChangeByIdSimulate')?.addEventListener('click', async () => {
+        const idsInput = document.getElementById('massIds').value;
+        const zona = document.getElementById('massZonaSelect').value;
 
-// Cambiar zona por patrón
-document.getElementById('btnMassChangeByPattern')?.addEventListener('click', async () => {
-  const patron = document.getElementById('massPattern').value;
-  const zona = document.getElementById('massPatternZonaSelect').value;
-  
-  if (!patron || !zona) {
-    Swal.fire('Error', 'Ingresa un patrón y selecciona una zona', 'warning');
-    return;
-  }
-  
-  const result = await cambiarZonaPorPatron(patron, zona, false);
-  
-  document.getElementById('massOperationResult').innerHTML = `
+        if (!idsInput || !zona) {
+          Swal.fire('Error', 'Ingresa IDs y selecciona una zona', 'warning');
+          return;
+        }
+
+        const ids = idsInput.split(',').map(id => id.trim());
+        await cambiarZona(ids, zona, true);
+      });
+
+      // Cambiar zona por patrón
+      document.getElementById('btnMassChangeByPattern')?.addEventListener('click', async () => {
+        const patron = document.getElementById('massPattern').value;
+        const zona = document.getElementById('massPatternZonaSelect').value;
+
+        if (!patron || !zona) {
+          Swal.fire('Error', 'Ingresa un patrón y selecciona una zona', 'warning');
+          return;
+        }
+
+        const result = await cambiarZonaPorPatron(patron, zona, false);
+
+        document.getElementById('massOperationResult').innerHTML = `
     <span class="text-green-600">✅ ${result.actualizadas} agencias actualizadas a zona "${zona}"</span>
   `;
-  setTimeout(() => updateZoneSelects(), 500);
-});
+        setTimeout(() => updateZoneSelects(), 500);
+      });
 
-// Simular cambio por patrón
-document.getElementById('btnMassChangeByPatternSimulate')?.addEventListener('click', async () => {
-  const patron = document.getElementById('massPattern').value;
-  const zona = document.getElementById('massPatternZonaSelect').value;
-  
-  if (!patron || !zona) {
-    Swal.fire('Error', 'Ingresa un patrón y selecciona una zona', 'warning');
-    return;
-  }
-  
-  await cambiarZonaPorPatron(patron, zona, true);
-});
+      // Simular cambio por patrón
+      document.getElementById('btnMassChangeByPatternSimulate')?.addEventListener('click', async () => {
+        const patron = document.getElementById('massPattern').value;
+        const zona = document.getElementById('massPatternZonaSelect').value;
 
-// Cambiar zona por rango
-document.getElementById('btnMassChangeByRange')?.addEventListener('click', async () => {
-  const inicio = document.getElementById('rangeStart').value;
-  const fin = document.getElementById('rangeEnd').value;
-  const zona = document.getElementById('massRangeZonaSelect').value;
-  
-  if (!inicio || !fin || !zona) {
-    Swal.fire('Error', 'Completa todos los campos', 'warning');
-    return;
-  }
-  
-  const result = await cambiarZonaPorRango(inicio, fin, zona, false);
-  
-  document.getElementById('massOperationResult').innerHTML = `
+        if (!patron || !zona) {
+          Swal.fire('Error', 'Ingresa un patrón y selecciona una zona', 'warning');
+          return;
+        }
+
+        await cambiarZonaPorPatron(patron, zona, true);
+      });
+
+      // Cambiar zona por rango
+      document.getElementById('btnMassChangeByRange')?.addEventListener('click', async () => {
+        const inicio = document.getElementById('rangeStart').value;
+        const fin = document.getElementById('rangeEnd').value;
+        const zona = document.getElementById('massRangeZonaSelect').value;
+
+        if (!inicio || !fin || !zona) {
+          Swal.fire('Error', 'Completa todos los campos', 'warning');
+          return;
+        }
+
+        const result = await cambiarZonaPorRango(inicio, fin, zona, false);
+
+        document.getElementById('massOperationResult').innerHTML = `
     <span class="text-green-600">✅ ${result.actualizadas} agencias actualizadas a zona "${zona}"</span>
   `;
-  setTimeout(() => updateZoneSelects(), 500);
-});
+        setTimeout(() => updateZoneSelects(), 500);
+      });
 
-// Simular cambio por rango
-document.getElementById('btnMassChangeByRangeSimulate')?.addEventListener('click', async () => {
-  const inicio = document.getElementById('rangeStart').value;
-  const fin = document.getElementById('rangeEnd').value;
-  const zona = document.getElementById('massRangeZonaSelect').value;
-  
-  if (!inicio || !fin || !zona) {
-    Swal.fire('Error', 'Completa todos los campos', 'warning');
-    return;
-  }
-  
-  await cambiarZonaPorRango(inicio, fin, zona, true);
-});
+      // Simular cambio por rango
+      document.getElementById('btnMassChangeByRangeSimulate')?.addEventListener('click', async () => {
+        const inicio = document.getElementById('rangeStart').value;
+        const fin = document.getElementById('rangeEnd').value;
+        const zona = document.getElementById('massRangeZonaSelect').value;
 
-// Mover zona completa
-document.getElementById('btnMassMoveZone')?.addEventListener('click', async () => {
-  const fromZona = document.getElementById('moveFromZona').value;
-  const toZona = document.getElementById('moveToZona').value;
-  
-  if (!fromZona || !toZona) {
-    Swal.fire('Error', 'Selecciona zona de origen y destino', 'warning');
-    return;
-  }
-  
-  const result = await moverZona(fromZona, toZona, false);
-  
-  document.getElementById('massOperationResult').innerHTML = `
+        if (!inicio || !fin || !zona) {
+          Swal.fire('Error', 'Completa todos los campos', 'warning');
+          return;
+        }
+
+        await cambiarZonaPorRango(inicio, fin, zona, true);
+      });
+
+      // Mover zona completa
+      document.getElementById('btnMassMoveZone')?.addEventListener('click', async () => {
+        const fromZona = document.getElementById('moveFromZona').value;
+        const toZona = document.getElementById('moveToZona').value;
+
+        if (!fromZona || !toZona) {
+          Swal.fire('Error', 'Selecciona zona de origen y destino', 'warning');
+          return;
+        }
+
+        const result = await moverZona(fromZona, toZona, false);
+
+        document.getElementById('massOperationResult').innerHTML = `
     <span class="text-green-600">✅ ${result.actualizadas} agencias movidas de "${fromZona}" a "${toZona}"</span>
   `;
-  setTimeout(() => updateZoneSelects(), 500);
-});
+        setTimeout(() => updateZoneSelects(), 500);
+      });
 
-// Simular mover zona
-document.getElementById('btnMassMoveZoneSimulate')?.addEventListener('click', async () => {
-  const fromZona = document.getElementById('moveFromZona').value;
-  const toZona = document.getElementById('moveToZona').value;
-  
-  if (!fromZona || !toZona) {
-    Swal.fire('Error', 'Selecciona zona de origen y destino', 'warning');
-    return;
-  }
-  
-  await moverZona(fromZona, toZona, true);
-});
+      // Simular mover zona
+      document.getElementById('btnMassMoveZoneSimulate')?.addEventListener('click', async () => {
+        const fromZona = document.getElementById('moveFromZona').value;
+        const toZona = document.getElementById('moveToZona').value;
 
-// Llamar a updateZoneSelects al cargar
-setTimeout(() => updateZoneSelects(), 1000);
+        if (!fromZona || !toZona) {
+          Swal.fire('Error', 'Selecciona zona de origen y destino', 'warning');
+          return;
+        }
+
+        await moverZona(fromZona, toZona, true);
+      });
+
+      // Llamar a updateZoneSelects al cargar
+      setTimeout(() => updateZoneSelects(), 1000);
     }
 
     init();
