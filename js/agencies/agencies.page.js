@@ -16,21 +16,34 @@ let searchTimeout = null;
 let renderTimeout = null;
 let isLoading = false;
 
-async function descargarIds() {
-  const ids = await getAllIdReal();
+document.addEventListener('keydown', async (e) => {
 
-  const blob = new Blob([ids.join('\n')], { type: 'text/plain' });
+  // CTRL + SHIFT + D
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
 
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'ids.txt';
-  a.click();
+    e.preventDefault();
 
-  URL.revokeObjectURL(a.href);
-}
+    const ids = await getAllIdReal();
 
+    const blob = new Blob([ids.join('\n')], {
+      type: 'text/plain'
+    });
 
-descargarIds();
+    const a = document.createElement('a');
+
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ids.txt';
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(a.href);
+
+    console.log('✅ Archivo descargado');
+  }
+
+});
 
 // 🔍 Búsqueda con debounce
 search.addEventListener('input', (e) => {
