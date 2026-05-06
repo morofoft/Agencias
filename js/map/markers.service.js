@@ -30,7 +30,7 @@ export function agencyMarker(agency) {
     'JUAN SANTIAGO': '#d946ef'         // magenta
   };
 
-  const color = zonaColors[agency.zona] || '#64748b';
+  const color = zonaColors[agency.zona] || '#111827';
 
   // Creamos un icono de casa personalizado
   const houseIcon = L.divIcon({
