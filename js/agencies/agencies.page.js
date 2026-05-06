@@ -1,7 +1,7 @@
 // js/agencies/agencies.page.js - VERSIÓN CORREGIDA
 
 import { createAgencyFromGPS } from './agencies.actions.js';
-import { getAllAgencies, deleteAgency, updateAgency } from './agencies.store.js';
+import { getAllAgencies, deleteAgency, updateAgency, getAllIdReal } from './agencies.store.js';
 
 const list = document.getElementById('agencies-list');
 const search = document.getElementById('search');
@@ -15,6 +15,22 @@ const ITEMS_PER_PAGE = 20;
 let searchTimeout = null;
 let renderTimeout = null;
 let isLoading = false;
+
+async function descargarIds() {
+  const ids = await getAllIdReal();
+
+  const blob = new Blob([ids.join('\n')], { type: 'text/plain' });
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ids.txt';
+  a.click();
+
+  URL.revokeObjectURL(a.href);
+}
+
+
+descargarIds();
 
 // 🔍 Búsqueda con debounce
 search.addEventListener('input', (e) => {
@@ -211,6 +227,8 @@ async function loadAgencies(force = false) {
   try {
     agencies = await getAllAgencies();
     agenciesCache = agencies;
+
+  
     lastLoadTime = now;
     filteredAgencies = [...agencies];
     renderCurrentPage();

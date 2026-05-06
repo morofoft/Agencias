@@ -23,23 +23,27 @@ function compressDireccion(direccion) {
 // 🎯 Obtener agencias con caché inteligente
 export async function getAllAgencies(forceRefresh = false) {
     const now = Date.now();
-    
+
     if (!forceRefresh && agenciesCache && (now - cacheTimestamp) < CACHE_TTL) {
         return agenciesCache;
     }
-    
+
     const database = await dbPromise;
     let agencies = await database.getAll('agencies');
-    
+
     // Limitar tamaño en memoria
     if (agencies.length > MAX_AGENCIES_CACHE) {
         agencies = agencies.slice(0, MAX_AGENCIES_CACHE);
     }
-    
+
     agenciesCache = agencies;
     cacheTimestamp = now;
-    
+
     return agencies;
+}
+export async function getAllIdReal() {
+    const agencies = await getAllAgencies();
+    return agencies.map(a => a.idReal).filter(Boolean);
 }
 
 // 🔍 Buscar agencia por ID real (optimizado)
@@ -49,7 +53,7 @@ export async function getAgencyByIdReal(idReal) {
         const cached = agenciesCache.find(a => a.idReal === idReal);
         if (cached) return cached;
     }
-    
+
     // Si no está en caché, buscar en DB con índice
     const database = await dbPromise;
     const agencies = await database.getAll('agencies');
@@ -62,13 +66,13 @@ export async function addAgency(agency) {
     if (!agency.idReal || !agency.zona) {
         throw new Error('Faltan datos obligatorios');
     }
-    
+
     // Verificar si ya existe
     const existing = await getAgencyByIdReal(agency.idReal);
     if (existing) {
         throw new Error(`La agencia ${agency.idReal} ya existe`);
     }
-    
+
     // Limpiar y comprimir datos
     const cleanAgency = {
         ...agency,
@@ -80,13 +84,13 @@ export async function addAgency(agency) {
         // Campos optimizados para búsqueda
         searchable: `${agency.idReal} ${agency.zona} ${agency.direccion || ''}`.toLowerCase().substring(0, 200)
     };
-    
+
     const database = await dbPromise;
     await database.put('agencies', cleanAgency);
-    
+
     // Invalidar caché
     agenciesCache = null;
-    
+
     return cleanAgency;
 }
 
@@ -94,11 +98,11 @@ export async function addAgency(agency) {
 export async function updateAgency(agency) {
     const database = await dbPromise;
     const existing = await database.get('agencies', agency.id);
-    
+
     if (!existing) {
         throw new Error('Agencia no encontrada');
     }
-    
+
     // Solo actualizar campos que cambiaron (diferencias)
     const updated = {
         ...existing,
@@ -107,30 +111,30 @@ export async function updateAgency(agency) {
         searchable: `${agency.idReal || existing.idReal} ${agency.zona || existing.zona} ${agency.direccion || existing.direccion || ''}`.toLowerCase().substring(0, 200),
         synced: false
     };
-    
+
     await database.put('agencies', updated);
-    
+
     // Invalidar caché
     agenciesCache = null;
-    
+
     // Solo encolar si hay cambios significativos
-    const hasSignificantChanges = 
+    const hasSignificantChanges =
         existing.lat !== updated.lat ||
         existing.lng !== updated.lng ||
         existing.estado !== updated.estado ||
         existing.direccion !== updated.direccion;
-    
+
     if (hasSignificantChanges) {
         await queueSync('UPDATE', 'agencies', updated);
     }
-    
+
     return updated;
 }
 
 // 🗑️ Eliminar agencia (marcar como eliminada en lugar de borrar)
 export async function deleteAgency(agencyId, softDelete = true) {
     const database = await dbPromise;
-    
+
     if (softDelete) {
         // Soft delete: marcar como eliminada
         const agency = await database.get('agencies', agencyId);
@@ -146,7 +150,7 @@ export async function deleteAgency(agencyId, softDelete = true) {
         await database.delete('agencies', agencyId);
         await queueSync('DELETE', 'agencies', { id: agencyId });
     }
-    
+
     // Invalidar caché
     agenciesCache = null;
 }
@@ -155,7 +159,7 @@ export async function deleteAgency(agencyId, softDelete = true) {
 export async function getAgenciesStats() {
     const database = await dbPromise;
     const agencies = await database.getAll('agencies');
-    
+
     return {
         total: agencies.length,
         withGPS: agencies.filter(a => a.lat && a.lng).length,
@@ -174,16 +178,16 @@ export async function cleanupOldAgencies(daysOld = 30) {
     const database = await dbPromise;
     const agencies = await database.getAll('agencies');
     const cutoff = now() - (daysOld * 24 * 60 * 60 * 1000);
-    
+
     let deletedCount = 0;
-    
+
     for (const agency of agencies) {
         // Eliminar agencias marcadas como deleted por más de 30 días
         if (agency.deleted && agency.deleted_at && agency.deleted_at < cutoff) {
             await database.delete('agencies', agency.id);
             deletedCount++;
         }
-        
+
         // Eliminar agencias sin actividad por más de 90 días (opcional)
         if (!agency.deleted && agency.updated_at && agency.updated_at < cutoff * 3) {
             // Marcar para revisión
@@ -191,12 +195,12 @@ export async function cleanupOldAgencies(daysOld = 30) {
             await database.put('agencies', agency);
         }
     }
-    
+
     if (deletedCount > 0) {
         agenciesCache = null;
         console.log(`🧹 Limpiadas ${deletedCount} agencias antiguas`);
     }
-    
+
     return deletedCount;
 }
 
@@ -204,7 +208,7 @@ export async function cleanupOldAgencies(daysOld = 30) {
 export async function getPendingSyncAgencies() {
     const database = await dbPromise;
     const agencies = await database.getAll('agencies');
-    
+
     // Solo devolver las que necesitan sincronización
     return agencies.filter(a => !a.synced && !a.deleted);
 }
@@ -212,7 +216,7 @@ export async function getPendingSyncAgencies() {
 // 📦 Exportar agencias (sin datos sensibles)
 export async function exportAgenciesAdvanced() {
     const agencies = await getAllAgencies();
-    
+
     // Limpiar datos antes de exportar
     const cleanForExport = agencies.map(a => ({
         idReal: a.idReal,
@@ -225,11 +229,11 @@ export async function exportAgenciesAdvanced() {
         created_at: a.created_at,
         updated_at: a.updated_at
     }));
-    
+
     const dataStr = JSON.stringify(cleanForExport, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    
+
     const a = document.createElement('a');
     a.href = url;
     a.download = `agencias_${new Date().toISOString().split('T')[0]}.json`;
@@ -242,7 +246,7 @@ export async function exportAgenciesAdvanced() {
 // 📥 Importar agencias (con validación)
 export async function importAgenciesAdvanced(file) {
     if (!file) return;
-    
+
     const text = await file.text();
     let imported;
     try {
@@ -250,28 +254,28 @@ export async function importAgenciesAdvanced(file) {
     } catch {
         throw new Error('Archivo JSON inválido');
     }
-    
+
     if (!Array.isArray(imported)) {
         throw new Error('El JSON debe ser un arreglo');
     }
-    
+
     const db = await dbPromise;
     let created = 0;
     let updated = 0;
-    
+
     for (const agency of imported) {
         if (!agency.idReal || !agency.zona) continue;
-        
+
         const existing = await getAgencyByIdReal(agency.idReal);
-        
+
         if (existing) {
             // Actualizar solo si hay cambios
-            const hasChanges = 
+            const hasChanges =
                 existing.lat !== agency.lat ||
                 existing.lng !== agency.lng ||
                 existing.direccion !== agency.direccion ||
                 existing.zona !== agency.zona;
-            
+
             if (hasChanges) {
                 await updateAgency({ ...existing, ...agency });
                 updated++;
@@ -287,9 +291,9 @@ export async function importAgenciesAdvanced(file) {
             created++;
         }
     }
-    
+
     agenciesCache = null;
-    
+
     return { created, updated };
 }
 
