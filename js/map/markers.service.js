@@ -1,23 +1,33 @@
 export function agencyMarker(agency) {
   // Mapeo de colores modernos por zona
   const zonaColors = {
-    OTRA: '#64748b', // Gris
-    'PEDRO CORTO': '#a855f7',
-    'SAN JUAN CENTRO': '#f59e0b',
-    'Los Corbano': '#f59e0b',
-    'VALLEJUELO': '#a855f7',
-    'Luis Edwardo Luciano': '#3b82f6',
-    'LAS MATAS DE FARFAN': '#a855f7',
-    'EL CARRIL': '#a855f7',
-    'EL ROSARIO': '#a855f7',
-    'Rafael Baez': '#3b82f6',
-    'KM.11': '#a855f7',
-    'CUENDA': '#a855f7',
-    'ELIAS PIÑA': '#a855f7',
-    'CARDON': '#a855f7',
-    'LA CUALTA': '#a855f7',
-    'EL CERCADO': '#a855f7',
-    'JUAN SANTIAGO': '#a855f7'
+    OTRA: '#111827', // Gris
+    'ZONA A San Juan': '#ef4444',      // rojo
+    'ZONA B San Juan': '#3b82f6',      // azul
+    'ZONA C San Juan': '#10b981',      // verde
+    'ZONA D San Juan': '#f59e0b',      // naranja
+  
+    'LAS MATAS DE FARFAN': '#8b5cf6',  // violeta
+    'LUIS EDWARDO LUCIANO': '#ec4899', // rosado
+    'RAFAEL BAEZ': '#14b8a6',          // turquesa
+    'ELIAS PIÑA': '#6366f1',           // índigo
+    'VALLEJUELO': '#22c55e',           // verde claro
+    'PEDRO CORTO': '#eab308',          // amarillo
+    'EL CERCADO': '#f97316',           // naranja fuerte
+    'EL ROSARIO': '#0ea5e9',           // celeste
+  
+    'LA CUALTA 2': '#a855f7',          // púrpura
+    'EL CARRIL 2': '#06b6d4',          // cyan
+    'CUENDA 2': '#84cc16',             // lima
+    'CARDON 1': '#f43f5e',             // rojo rosado
+    'KM.11 1': '#64748b',              // gris azulado
+    'LA CUALTA': '#a855f7',          // púrpura
+    'EL CARRIL': '#06b6d4',          // cyan
+    'CUENDA': '#84cc16',             // lima
+    'CARDON': '#f43f5e',             // rojo rosado
+    'km.11': '#64748b',              // gris azulado
+
+    'JUAN SANTIAGO': '#d946ef'         // magenta
   };
 
   const color = zonaColors[agency.zona] || '#64748b';
