@@ -46,6 +46,12 @@
     </footer>
 
     <script type="module">
+        import { requireAuth } from "./js/auth.guard.js";
+      
+        requireAuth();
+      </script>
+
+    <script type="module">
         import { processBulkAgencies } from './js/agencies/agencies.actions.js';
 
         const btnProcess = document.getElementById('btn-process');
